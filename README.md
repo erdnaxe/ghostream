@@ -75,17 +75,17 @@ Now enable and start OvenMediaEngine, `sudo systemctl enable --now ovenmediaengi
 
 ### Ghostreamer web server
 
-It's WIP.
+On Debian you can install [ghostream deb](https://gitlab.crans.org/nounous/ghostream/-/jobs/artifacts/master/raw/build/ghostream_0.1.0_all.deb?job=build-deb).
 
-```
-sudo apt install python3-ldap python3-flask uwsgi-plugin-python3
-git clone https://gitlab.crans.org/nounous/ghostream && cd ghostream
-```
+On other system, you might install manually the Python module.
+
+#### Service unit
 
 Copy [ghostreamer.service](doc/ghostream.service) to `/etc/systemd/system/ghostream.service`
 and customize.
 
 ```
+sudo apt install uwsgi-plugin-python3
 sudo systemctl daemon-reload
 sudo systemctl enable --now ghostream
 ```
