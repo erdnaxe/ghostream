@@ -6,7 +6,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'flask>=1.1.1',
-        'python-ldap>=3.2.0',
+        'flask>=1.0.2',
+        'python-ldap>=3.1.0',
     ],
 )

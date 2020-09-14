@@ -69,3 +69,15 @@ sudo make install
 Copy [Server.xml](doc/ovenmediaengine/conf/Server.xml) to `/usr/share/ovenmediaengine/conf/Server.xml`.
 
 Now enable and start OvenMediaEngine, `sudo systemctl enable --now ovenmediaengine`.
+
+### Ghostreamer web server
+
+It's WIP.
+
+```
+sudo apt install python3-ldap python3-flask
+python3 -m venv venv --system-site-packages
+source venv/bin/activate
+pip install -e .
+FLASK_APP=/home/erdnaxe/ghostreamer/ghostream flask run
+```

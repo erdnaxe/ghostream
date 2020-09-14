@@ -4,7 +4,6 @@ import ldap
 app = Flask(__name__)
 app.logger.setLevel(20)  # log info
 app.config.from_object('ghostream.default_settings')
-app.config.from_envvar('GHOSTREAM_SETTINGS')
 
 @app.route('/')
 def index():
