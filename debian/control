@@ -10,7 +10,7 @@ X-Python3-Version: >= 3.6
 Package: ghostream
 Architecture: all
 Multi-Arch: foreign
-Depends: ${misc:Depends}, ${python3:Depends}
+Depends: ${misc:Depends}, ${python3:Depends}, uwsgi-plugin-python3
 Description: simple streaming server web interface
  Gostream is a web interface that uses OvenMediaEngine and NGINX streaming
  capabilities to build a simple and efficient streaming server.

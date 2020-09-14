@@ -77,15 +77,4 @@ Now enable and start OvenMediaEngine, `sudo systemctl enable --now ovenmediaengi
 
 On Debian you can install [ghostream deb](https://gitlab.crans.org/nounous/ghostream/-/jobs/artifacts/master/raw/build/ghostream_0.1.0_all.deb?job=build-deb).
 
-On other system, you might install manually the Python module.
-
-#### Service unit
-
-Copy [ghostreamer.service](doc/ghostream.service) to `/etc/systemd/system/ghostream.service`
-and customize.
-
-```
-sudo apt install uwsgi-plugin-python3
-sudo systemctl daemon-reload
-sudo systemctl enable --now ghostream
-```
+On other system, you might install manually the Python module and Systemd unit [ghostreamer.service](debian/ghostream.service).
