@@ -17,7 +17,7 @@ build-deb:
   image: debian:buster
   stage: build
   before_script:
-    - apt-get update && apt-get -y --no-install-recommends install build-essential debmake dh-python debhelper python3-all python3-setuptools
+    - apt-get update && apt-get -y --no-install-recommends install build-essential debmake dh-python debhelper python3-all python3-flask python3-ldap python3-setuptools
   script:
     - dpkg-buildpackage
     - mkdir build && cp ../*.deb build/
