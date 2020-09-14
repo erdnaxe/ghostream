@@ -1,0 +1,7 @@
+# You may change the following
+FLASK_CONFIG="production"
+LDAP_URI="ldap://127.0.0.1:389"
+LDAP_USER_DN="cn=Users,dc=example,dc=com"
+SITE_NAME="Ghostream"
+SITE_HOSTNAME="localhost"
+FAVICON="/favicon.ico"
