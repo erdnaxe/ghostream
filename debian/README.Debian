@@ -1,0 +1,5 @@
+ghostream for Debian
+
+Install ghostream web server and systemd service unit.
+
+ -- Alexandre Iooss <erdnaxe@crans.org>  Wed, 14 Sep 2020 15:10:42 +0200

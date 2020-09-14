@@ -1,5 +1,6 @@
 stages:
   - quality-assurance
+  - build
 
 linters:
   image: python:3.7
@@ -11,3 +12,15 @@ linters:
 
   # Be nice to new contributors, but please use `tox` before commit
   allow_failure: true
+
+build-deb:
+  image: debian:buster
+  stage: build
+  before_script:
+    - apt-get update && apt-get -y --no-install-recommends install build-essential debmake dh-python debhelper python3-all python3-setuptools
+  script:
+    - dpkg-buildpackage
+    - mkdir build && cp ../*.deb build/
+  artifacts:
+    paths:
+      - build/*.deb

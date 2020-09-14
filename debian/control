@@ -1,0 +1,16 @@
+Source: ghostream
+Section: devel
+Priority: optional
+Maintainer: Les Nounous <roots@crans.org>
+Build-Depends: debhelper (>=11~), dh-python, python3-all, python3-setuptools
+Standards-Version: 4.1.4
+Homepage: https://gitlab.crans.org/nounous/ghostream
+X-Python3-Version: >= 3.6
+
+Package: ghostream
+Architecture: all
+Multi-Arch: foreign
+Depends: ${misc:Depends}, ${python3:Depends}
+Description: simple streaming server web interface
+ Gostream is a web interface that uses OvenMediaEngine and NGINX streaming
+ capabilities to build a simple and efficient streaming server.
