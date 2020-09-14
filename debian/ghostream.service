@@ -4,9 +4,8 @@ After=syslog.target
 
 [Service]
 User=www-data
-WorkingDirectory=/var/local/ghostream
 EnvironmentFile=-/etc/default/ghostream
-ExecStart=/usr/bin/uwsgi --http-socket 127.0.0.1:8080 --master --plugin python3 --module ghostream:app --static-map /static=/var/local/ghostream/ghostream/static
+ExecStart=/usr/bin/uwsgi --http-socket 127.0.0.1:8080 --master --plugin python3 --module ghostream:app --static-map /static=/usr/lib/python3/dist-packages/ghostream/static
 Restart=on-failure
 KillSignal=SIGQUIT
 Type=notify
