@@ -27,10 +27,12 @@ def auth():
         # so just ignore login here, and NGINX will still allow streaming.
         return "Malformed request", 400
 
-    bind_dn = f"cn={name},{app.config.LDAP_USER_DN}"
+    ldap_user_dn = app.config.get('LDAP_USER_DN')
+    bind_dn = f"cn={name},{ldap_user_dn}"
     try:
         # Try to bind LDAP as the user
-        connect = ldap.initialize(app.config.LDAP_URI)
+        ldap_uri = app.config.get('LDAP_URI')
+        connect = ldap.initialize(ldap_uri)
         connect.bind_s(bind_dn, password)
         connect.unbind_s()
         app.logger.info("%s logged in successfully", name)
