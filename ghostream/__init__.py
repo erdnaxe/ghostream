@@ -15,13 +15,9 @@ def viewer(path):
     """Show stream that match this path"""
     return render_template('viewer.html', path=path)
 
-@app.route('/auth', methods=['POST'])
+@app.route('/app/auth', methods=['POST'])
 def auth():
     """Authentication on stream start"""
-    # Limit to NGINX auth
-    if request.remote_addr != '127.0.0.1':
-        return "Permission denied", 403
-
     name = request.form.get('name')
     password = request.form.get('pass')
 

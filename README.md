@@ -79,10 +79,10 @@ sudo apt install python3-ldap python3-flask uwsgi-plugin-python3
 git clone https://gitlab.crans.org/nounous/ghostream && cd ghostream
 ```
 
-Copy [ghostreamer.service](doc/ghostreamer.service) to `/etc/systemd/system/ghostreamer.service`
+Copy [ghostreamer.service](doc/ghostream.service) to `/etc/systemd/system/ghostream.service`
 and customize.
 
 ```
 sudo systemctl daemon-reload
-sudo systemctl enable --now ghostreamer
+sudo systemctl enable --now ghostream
 ```

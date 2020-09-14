@@ -23,7 +23,7 @@
   <ul>
     <li>
       <b>Serveur :</b>
-      <code>rtmps://{{ request.remote_addr }}:1935/app</code>,
+      <code>rtmps://{{ config.SITE_HOSTNAME }}:1935/app</code>,
     </li>
     <li>
       <b>Clé de stream :</b>
@@ -43,7 +43,7 @@
 
   <p>
     Votre stream sera alors disponible sur
-    <code>https://{{ request.remote_addr }}/IDENTIFIANT</code>.
+    <code>https://{{ config.SITE_HOSTNAME }}/IDENTIFIANT</code>.
   </p>
 
   <h3>Avec FFmpeg</h3>
@@ -51,7 +51,7 @@
     <code>
       ffmpeg -re -i mavideo.webm -vcodec libx264 -vprofile baseline
       -acodec aac -strict -2 -f flv
-      rtmps://{{ request.remote_addr }}:1935/app/IDENTIFIANT?pass=MOT_DE_PASSE
+      rtmps://{{ config.SITE_HOSTNAME }}:1935/app/IDENTIFIANT?pass=MOT_DE_PASSE
     </code>
   </p>
 
