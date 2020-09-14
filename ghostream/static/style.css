@@ -59,6 +59,7 @@ h1, h2, h3, h4 {
   position: relative;
   width: 100%;
   text-align: right;
+  max-height: 90vh;
 }
 
 .col-chat {
