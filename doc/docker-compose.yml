@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  # FIXME: adapt URL in conf
+  ovenmediaengine:
+    image: airensoft/ovenmediaengine:0.10.7
+    ports:
+      - 10000-10005:10000-10005/udp
+    volumes:
+      - ./ovenmediaengine/conf/Server.xml:/opt/ovenmediaengine/bin/origin_conf/Server.xml
+
+  # FIXME: relay RTMPS to RTMP, auth RTMP with ghostream and relay HTTPS to ghostream HTTP and ovenmediaengine websocket
+  rtmp_server:
+    image: nginx:1.19.2
+    ports:
+      - 1935:1935
+      - 443:443
+      - 80:80
+
+  # ghostream will serve a HTTP server on 8080
+  ghostream:
+    build: ../
+    environment:
+      - FLASK_CONFIG="production"
+      - LDAP_URI="ldap://127.0.0.1:389"
+      - LDAP_USER_DN="cn=Users,dc=example,dc=com"
+      - SITE_NAME="Ghostream"
+      - SITE_HOSTNAME="localhost"
+      - FAVICON="/favicon.ico"
