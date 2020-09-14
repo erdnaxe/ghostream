@@ -1,0 +1,17 @@
+body, html {
+  height: 100%;
+}
+
+body {
+  background-color: #3b4b5b;
+  user-select: none;
+}
+
+.text-select {
+  user-select: text;
+}
+
+.my-row {
+  display: flex;
+  height: 100%;
+}

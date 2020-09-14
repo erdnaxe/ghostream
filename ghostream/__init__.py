@@ -1,0 +1,46 @@
+from flask import Flask, request, redirect, render_template
+import ldap
+
+app = Flask(__name__)
+app.logger.setLevel(20)  # log info
+app.config.from_object('ghostream.default_settings')
+app.config.from_envvar('GHOSTREAM_SETTINGS')
+
+@app.route('/')
+def index():
+    """Welcome page"""
+    return render_template('index.html')
+
+@app.route('/<path:path>')
+def viewer(path):
+    """Show stream that match this path"""
+    return render_template('viewer.html', path=path)
+
+@app.route('/auth', methods=['POST'])
+def auth():
+    """Authentication on stream start"""
+    # Limit to NGINX auth
+    if request.remote_addr != '127.0.0.1':
+        return "Permission denied", 403
+
+    name = request.form.get('name')
+    password = request.form.get('pass')
+
+    # Stream need a name and password
+    if name is None or password is None:
+        # When login success, the RTMP is redirected to remove the "?pass=xxx"
+        # so just ignore login here, and NGINX will still allow streaming.
+        return "Malformed request", 400
+
+    bind_dn = f"cn={name},{app.config.LDAP_USER_DN}"
+    try:
+        # Try to bind LDAP as the user
+        connect = ldap.initialize(app.config.LDAP_URI)
+        connect.bind_s(bind_dn, password)
+        connect.unbind_s()
+        app.logger.info("%s logged in successfully", name)
+        # Remove "?pass=xxx" from RTMP URL
+        return redirect(f"rtmp://127.0.0.1:1925/app/{name}", code=302)
+    except:
+        app.logger.warning("%s failed to log in", name)
+        return 'Incorrect credentials', 401
