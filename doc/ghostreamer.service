@@ -1,0 +1,17 @@
+[Unit]
+Description=Simple streaming server
+After=network.target
+
+[Service]
+User=www-data
+WorkingDirectory=/var/local/ghostream
+Environment=FLASK_CONFIG=production
+Environment=LDAP_URI=ldap://127.0.0.1:389
+Environment=LDAP_USER_DN=cn=Utilisateurs,dc=crans,dc=org
+Environment=SITE_NAME=Crans Stream
+Environment=FAVICON=https://www.crans.org/images/favicon.ico
+ExecStart=uwsgi --http-socket 127.0.0.1:8080 --master --plugin python3 --module ghostream:app --static-map /static=/var/local/ghostream/ghostream/static
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

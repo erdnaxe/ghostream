@@ -75,9 +75,14 @@ Now enable and start OvenMediaEngine, `sudo systemctl enable --now ovenmediaengi
 It's WIP.
 
 ```
-sudo apt install python3-ldap python3-flask
-python3 -m venv venv --system-site-packages
-source venv/bin/activate
-pip install -e .
-FLASK_APP=/home/erdnaxe/ghostreamer/ghostream flask run
+sudo apt install python3-ldap python3-flask uwsgi-plugin-python3
+git clone https://gitlab.crans.org/nounous/ghostream && cd ghostream
+```
+
+Copy [ghostreamer.service](doc/ghostreamer.service) to `/etc/systemd/system/ghostreamer.service`
+and customize.
+
+```
+sudo systemctl daemon-reload
+sudo systemctl enable --now ghostreamer
 ```
