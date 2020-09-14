@@ -1,6 +1,6 @@
 [Unit]
 Description=Simple streaming server
-After=network.target
+After=syslog.target
 
 [Service]
 User=www-data
@@ -11,8 +11,12 @@ Environment=LDAP_USER_DN=cn=Utilisateurs,dc=crans,dc=org
 Environment=SITE_NAME=Crans Stream
 Environment=SITE_HOSTNAME=stream.crans.org
 Environment=FAVICON=https://www.crans.org/images/favicon.ico
-ExecStart=uwsgi --http-socket 127.0.0.1:8080 --master --plugin python3 --module ghostream:app --static-map /static=/var/local/ghostream/ghostream/static
-Restart=always
+ExecStart=/usr/bin/uwsgi --http-socket 127.0.0.1:8080 --master --plugin python3 --module ghostream:app --static-map /static=/var/local/ghostream/ghostream/static
+Restart=on-failure
+KillSignal=SIGQUIT
+Type=notify
+StandardError=syslog
+NotifyAccess=all
 
 [Install]
 WantedBy=multi-user.target
