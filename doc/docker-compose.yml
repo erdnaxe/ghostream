@@ -3,9 +3,25 @@
 version: '3'
 
 services:
+  traefik:
+    image: traefik:v2.2.11
+    restart: always
+    ports:
+      - 443:443
+      - 80:80
+      - 1935:1935
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
+      - ./traefik_data:/data
+    labels:
+      # middleware hsts
+      - "traefik.http.middlewares.security_header.headers.stsPreload=true"
+
   # RTMP to WebRTC server
   ovenmediaengine:
     image: airensoft/ovenmediaengine:0.10.7
+    restart: always
     ports:
       # WebRTC ICE
       - 10000-10005:10000-10005/udp
@@ -15,21 +31,29 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.ovenmediaengine.rule=Host(`stream.example.com`) && PathPrefix(`/app/`)"
       - "traefik.http.routers.ovenmediaengine.priority=101"
+      - "traefik.http.routers.ovenmediaengine.entrypoints=websecure"
+      - "traefik.http.routers.ovenmediaengine.tls.certresolver=mytlschallenge"
       - "traefik.http.services.ovenmediaengine.loadbalancer.server.port=3333"
 
   # RTMP server that authenticate stream against ghostream
   rtmp_server:
-    image: nginx:1.19.2
+    # FIXME: nginx image does not have RTMP module
+    # this image should be build from this repo
+    image: tiangolo/nginx-rtmp:latest-2020-08-16
+    restart: always
     volumes:
       - ./nginx/nginx-docker.conf:/etc/nginx/nginx.conf:ro
     labels:
       - "traefik.enable=true"
       - "traefik.tcp.routers.rtmp.rule=Host(`stream.example.com`)"
+      - "traefik.tcp.routers.rtmp.entrypoints=rtmpsecure"
+      - "traefik.tcp.routers.rtmp.tls.certresolver=mytlschallenge"
       - "traefik.tcp.services.rtmp.loadbalancer.server.port=1925"
 
   # Ghostream is the web frontend to OvenMediaEngine
   ghostream:
     build: ../
+    restart: always
     environment:
       - FLASK_CONFIG=production
       - LDAP_URI=ldap://127.0.0.1:389
@@ -41,4 +65,6 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.ghostream.rule=Host(`stream.example.com`)"
       - "traefik.http.routers.ghostream.priority=100"
+      - "traefik.http.routers.ghostream.entrypoints=websecure"
+      - "traefik.http.routers.ghostream.tls.certresolver=mytlschallenge"
       - "traefik.http.services.ghostream.loadbalancer.server.port=8080"
