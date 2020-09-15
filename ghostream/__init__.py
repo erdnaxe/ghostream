@@ -39,8 +39,8 @@ def auth():
         connect.bind_s(bind_dn, password)
         connect.unbind_s()
         app.logger.info("%s logged in successfully", name)
-        # Remove "?pass=xxx" from RTMP URL
-        return redirect(f"rtmp://127.0.0.1:1925/app/{name}", code=302)
+        # Remove "?pass=xxx" from RTMP URL and redirect to new name
+        return redirect(f"rtmp://127.0.0.1:1925/play/{name}", code=302)
     except Exception:
         app.logger.warning("%s failed to log in", name)
         return 'Incorrect credentials', 401

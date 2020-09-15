@@ -38,7 +38,7 @@ services:
       - ./ovenmediaengine/conf/Server-docker.xml:/opt/ovenmediaengine/bin/origin_conf/Server.xml:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ovenmediaengine.rule=Host(`stream.example.com`) && PathPrefix(`/app/`)"
+      - "traefik.http.routers.ovenmediaengine.rule=Host(`stream.example.com`) && PathPrefix(`/play/`)"
       - "traefik.http.routers.ovenmediaengine.priority=101"
       - "traefik.http.routers.ovenmediaengine.entrypoints=websecure"
       - "traefik.http.routers.ovenmediaengine.tls.certresolver=mytlschallenge"
@@ -54,7 +54,7 @@ services:
       - ./nginx/nginx-docker.conf:/etc/nginx/nginx.conf:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.tcp.routers.rtmp.rule=Host(`stream.example.com`)"
+      - "traefik.tcp.routers.rtmp.rule=HostSNI(`stream.example.com`)"
       - "traefik.tcp.routers.rtmp.entrypoints=rtmpsecure"
       - "traefik.tcp.routers.rtmp.tls.certresolver=mytlschallenge"
       - "traefik.tcp.services.rtmp.loadbalancer.server.port=1925"
