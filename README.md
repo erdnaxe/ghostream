@@ -5,7 +5,15 @@
 
 *Boooo!* A simple streaming server with authentication and open-source technologies.
 
-## Installation
+Features:
+
+-   RTMPS ingest (OBS compatible).
+-   RTMPS playback (VLC, MPV compatible).
+-   WebRTC playback with a lightweight web interface.
+-   Low-latency streaming, sub-second with web player.
+-   Authentification of incoming stream using a LDAP server.
+
+## Installation on Debian/Ubuntu
 
 This instructions were tested on Debian Buster.
 You need to unable non-free repository to have AAC codec.
@@ -80,3 +88,8 @@ On Debian you can install [ghostream deb](https://gitlab.crans.org/nounous/ghost
 On other system, you might install manually the Python module and Systemd unit [ghostreamer.service](debian/ghostream.service).
 
 You might customize `/etc/default/ghostream`.
+
+## Installation with Docker
+
+An example is given in [doc/docker-compose.yml](doc/docker-compose.yml).
+It uses Traefik reverse proxy.

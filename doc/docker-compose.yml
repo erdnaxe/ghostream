@@ -15,7 +15,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.ovenmediaengine.rule=Host(`stream.example.com`) && PathPrefix(`/app/`)"
       - "traefik.http.routers.ovenmediaengine.priority=101"
-      - "traefik.http.services.ovenmediaenfine.loadbalancer.server.port=3333"
+      - "traefik.http.services.ovenmediaengine.loadbalancer.server.port=3333"
 
   # RTMP server that authenticate stream against ghostream
   rtmp_server:
