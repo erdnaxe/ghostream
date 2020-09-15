@@ -1,23 +1,33 @@
+# Example of Docker Compose setup using Traefik reverse proxy
+
 version: '3'
 
 services:
-  # FIXME: adapt URL in conf
+  # RTMP to WebRTC server
   ovenmediaengine:
     image: airensoft/ovenmediaengine:0.10.7
     ports:
+      # WebRTC ICE
       - 10000-10005:10000-10005/udp
     volumes:
-      - ./ovenmediaengine/conf/Server.xml:/opt/ovenmediaengine/bin/origin_conf/Server.xml
+      - ./ovenmediaengine/conf/Server-docker.xml:/opt/ovenmediaengine/bin/origin_conf/Server.xml:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ovenmediaengine.rule=Host(`stream.example.com`) && PathPrefix(`/app/`)"
+      - "traefik.http.routers.ovenmediaengine.priority=101"
+      - "traefik.http.services.ovenmediaenfine.loadbalancer.server.port=3333"
 
-  # FIXME: relay RTMPS to RTMP, auth RTMP with ghostream and relay HTTPS to ghostream HTTP and ovenmediaengine websocket
+  # RTMP server that authenticate stream against ghostream
   rtmp_server:
     image: nginx:1.19.2
-    ports:
-      - 1935:1935
-      - 443:443
-      - 80:80
+    volumes:
+      - ./nginx/nginx-docker.conf:/etc/nginx/nginx.conf:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.rtmp.rule=Host(`stream.example.com`)"
+      - "traefik.tcp.services.rtmp.loadbalancer.server.port=1925"
 
-  # ghostream will serve a HTTP server on 8080
+  # Ghostream is the web frontend to OvenMediaEngine
   ghostream:
     build: ../
     environment:
@@ -27,3 +37,8 @@ services:
       - SITE_NAME="Ghostream"
       - SITE_HOSTNAME="localhost"
       - FAVICON="/favicon.ico"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ghostream.rule=Host(`stream.example.com`)"
+      - "traefik.http.routers.ghostream.priority=100"
+      - "traefik.http.services.ghostream.loadbalancer.server.port=8080"

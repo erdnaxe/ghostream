@@ -18,7 +18,7 @@ def viewer(path):
     return render_template('viewer.html', path=path)
 
 
-@app.route('/app/auth', methods=['POST'])
+@app.route('/rtmp/auth', methods=['POST'])
 def auth():
     """Authentication on stream start"""
     name = request.form.get('name')
