@@ -12,11 +12,20 @@ services:
       - 1935:1935
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
       - ./traefik_data:/data
-    labels:
-      # middleware hsts
-      - "traefik.http.middlewares.security_header.headers.stsPreload=true"
+    command:
+      # Read docker-compose labels but do not expose by default
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      # Define entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.rtmpsecure.address=:1935"
+      # Define certificates
+      - "--certificatesResolvers.mytlschallenge.acme.email=root@example.com"
+      - "--certificatesResolvers.mytlschallenge.acme.storage=/data/acme.json"
+      - "--certificatesResolvers.mytlschallenge.acme.httpChallenge.entryPoint=web"
 
   # RTMP to WebRTC server
   ovenmediaengine:
