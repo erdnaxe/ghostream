@@ -17,7 +17,7 @@ entryPoints:
     address: ":1935"
 
 certificatesResolvers:
-  le:
+  mytlschallenge:
     acme:
       email: root@example.com
       storage: /data/acme.json
