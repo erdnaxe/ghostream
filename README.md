@@ -72,7 +72,6 @@ Finally compile OvenMediaEngine,
 curl -LOJ https://github.com/AirenSoft/OvenMediaEngine/archive/v0.10.7.tar.gz
 tar xvf OvenMediaEngine-0.10.7.tar.gz
 cd OvenMediaEngine-0.10.7/src
-# Ajouter dans projects/base/ovlibrary/AMS.mk et projects/modules/dtls_srtp/AMS.mk et projects/orchestrator/AMS.mk et projects/monitoring/AMS.mk : $(call add_pkg_config,srt)
 make release
 sudo make install
 ```
