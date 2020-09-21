@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"gitlab.crans.org/nounous/ghostream/internal/config"
-	"gitlab.crans.org/nounous/ghostream/monitoring"
+	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
 	"gitlab.crans.org/nounous/ghostream/web"
 )
 
