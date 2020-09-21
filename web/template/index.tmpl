@@ -1,8 +1,8 @@
 {{define "index"}}
 <div style="max-width:720px;margin:0 auto; padding: 1rem">
-  <h1>SITE_NAME</h1>
+  <h1>{{.Cfg.Site.Name}}</h1>
   <p>
-    SITE_NAME est un service maintenu par le
+    {{.Cfg.Site.Name}} est un service maintenu par le
     <a href="https://crans.org/">Crans</a> permettant de diffuser
     un contenu vidéo. Il a pour but d'être utilisé pour diffuser
     des séminaires ou évènements.
@@ -21,7 +21,7 @@
   <ul>
     <li>
       <b>Serveur :</b>
-      <code>rtmps://config.SITE_HOSTNAME:1935/stream</code>,
+      <code>rtmps://{{.Cfg.Site.Hostname}}:1935/stream</code>,
     </li>
     <li>
       <b>Clé de stream :</b>
@@ -41,7 +41,7 @@
 
   <p>
     Votre stream sera alors disponible sur
-    <code>https://SITE_HOSTNAME/IDENTIFIANT</code>.
+    <code>https://{{.Cfg.Site.Hostname}}/IDENTIFIANT</code>.
   </p>
 
   <h3>Avec FFmpeg</h3>
@@ -49,7 +49,7 @@
     <code>
       ffmpeg -re -i mavideo.webm -vcodec libx264 -vprofile baseline
       -acodec aac -strict -2 -f flv
-      rtmps://SITE_HOSTNAME:1935/stream/IDENTIFIANT?pass=MOT_DE_PASSE
+      rtmps://{{.Cfg.Site.Hostname}}:1935/stream/IDENTIFIANT?pass=MOT_DE_PASSE
     </code>
   </p>
 

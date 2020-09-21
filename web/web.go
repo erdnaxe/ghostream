@@ -13,12 +13,17 @@ import (
 var templates = template.Must(template.ParseGlob("web/template/*.tmpl"))
 
 // Handle site index and viewer pages
-func handlerViewer(w http.ResponseWriter, r *http.Request) {
-	// Remove traling slash
-	//path := r.URL.Path[1:]
+func viewerHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
+	// Data for template
+	data := struct {
+		Path string
+		Cfg  *config.Config
+	}{Path: r.URL.Path[1:], Cfg: cfg}
+
+	// FIXME validation on path: https://golang.org/doc/articles/wiki/#tmp_11
 
 	// Render template
-	err := templates.ExecuteTemplate(w, "base", nil)
+	err := templates.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -26,7 +31,7 @@ func handlerViewer(w http.ResponseWriter, r *http.Request) {
 }
 
 // Auth incoming stream
-func handleStreamAuth(w http.ResponseWriter, r *http.Request) {
+func streamAuthHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 	// FIXME POST request only with "name" and "pass"
 	// if name or pass missing => 400 Malformed request
 	// else login in against LDAP or static users
@@ -35,7 +40,7 @@ func handleStreamAuth(w http.ResponseWriter, r *http.Request) {
 
 // Handle static files
 // We do not use http.FileServer as we do not want directory listing
-func handleStatic(w http.ResponseWriter, r *http.Request) {
+func staticHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 	path := "./web/" + r.URL.Path
 	if f, err := os.Stat(path); err == nil && !f.IsDir() {
 		http.ServeFile(w, r, path)
@@ -44,12 +49,19 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Closure to pass configuration
+func makeHandler(fn func(http.ResponseWriter, *http.Request, *config.Config), cfg *config.Config) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		fn(w, r, cfg)
+	}
+}
+
 // ServeHTTP server
 func ServeHTTP(cfg *config.Config) {
 	// Set up HTTP router and server
-	http.HandleFunc("/", handlerViewer)
-	http.HandleFunc("/rtmp/auth", handleStreamAuth)
-	http.HandleFunc("/static/", handleStatic)
+	http.HandleFunc("/", makeHandler(viewerHandler, cfg))
+	http.HandleFunc("/rtmp/auth", makeHandler(streamAuthHandler, cfg))
+	http.HandleFunc("/static/", makeHandler(staticHandler, cfg))
 	log.Printf("Listening on http://%s/", cfg.Site.ListenAdress)
 	log.Fatal(http.ListenAndServe(cfg.Site.ListenAdress, nil))
 }

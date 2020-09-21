@@ -10,14 +10,14 @@
                 <path fill-rule="evenodd" d="M1.5 13A1.5 1.5 0 0 0 3 14.5h8a1.5 1.5 0 0 0 1.5-1.5V9a.5.5 0 0 0-1 0v4a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 0 0-1H3A1.5 1.5 0 0 0 1.5 5v8zm7-11a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-1 0V2.5H9a.5.5 0 0 1-.5-.5z"/>
                 <path fill-rule="evenodd" d="M14.354 1.646a.5.5 0 0 1 0 .708l-8 8a.5.5 0 0 1-.708-.708l8-8a.5.5 0 0 1 .708 0z"/>
             </svg>
-            <code>rtmps://SITE_HOSTNAME:1935/play/{{.path}}</code>
+            <code>rtmps://{{.Cfg.Site.Hostname}}:1935/play/{{.Path}}</code>
             <a href="#" id="chatToggle" title="Cacher/Afficher le chat">»</a>
         </p>
     </div>
 
     <!-- Chat -->
     <div class="col-chat" id="chatCol">
-        <iframe src="https://irc.crans.org/web/?join=stream_{{.path}}&nick=viewer&password=&realname=Viewer" title="Chat"></iframe>
+        <iframe src="https://irc.crans.org/web/?join=stream_{{.Path}}&nick=viewer&password=&realname=Viewer" title="Chat"></iframe>
     </div>
 </div>
 
@@ -43,7 +43,7 @@ player = OvenPlayer.create("player", {
   expandFullScreenUI: true,
   sources: [
     {
-      "file": "wss://SITE_HOSTNAME/play/{{.path}}",
+      "file": "wss://{{.Cfg.Site.Hostname}}/play/{{.Path}}",
       "type": "webrtc",
       "label": "WebRTC Source"
     }
