@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"gitlab.crans.org/nounous/ghostream/internal/config"
 )
 
 // Preload templates
@@ -42,14 +44,12 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func ServeHTTP() {
-	// Load settings
-	listen_address := "127.0.0.1:8080"
-
+// ServeHTTP server
+func ServeHTTP(cfg *config.Config) {
 	// Set up HTTP router and server
 	http.HandleFunc("/", handlerViewer)
 	http.HandleFunc("/rtmp/auth", handleStreamAuth)
 	http.HandleFunc("/static/", handleStatic)
-	log.Print("Listening on http://" + listen_address)
-	log.Fatal(http.ListenAndServe(listen_address, nil))
+	log.Printf("Listening on http://%s/", cfg.Site.ListenAdress)
+	log.Fatal(http.ListenAndServe(cfg.Site.ListenAdress, nil))
 }
