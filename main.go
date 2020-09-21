@@ -14,6 +14,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Start web server
-	web.ServeHTTP(cfg)
+	// Start web server routine
+	go func() {
+		web.ServeHTTP(cfg)
+	}()
+
+	// Wait for routines
+	select {}
 }
