@@ -1,0 +1,75 @@
+{{define "index"}}
+<div style="max-width:720px;margin:0 auto; padding: 1rem">
+  <h1>SITE_NAME</h1>
+  <p>
+    SITE_NAME est un service maintenu par le
+    <a href="https://crans.org/">Crans</a> permettant de diffuser
+    un contenu vidéo. Il a pour but d'être utilisé pour diffuser
+    des séminaires ou évènements.
+  </p>
+
+  <h2>Comment je diffuse ?</h2>
+  <p>Pour diffuser un contenu vous devez être adhérent Crans.</p>
+
+  <h3>Avec Open Broadcaster Software</h3>
+  <p>
+    <a href="https://obsproject.com/">Open Broadcaster Software</a>
+    est une solution libre et open source de diffusion vidéo.
+    Pour diffuser sur cette plateforme, allez dans les paramètres
+    « <i>Stream (flux)</i> » :
+  </p>
+  <ul>
+    <li>
+      <b>Serveur :</b>
+      <code>rtmps://config.SITE_HOSTNAME:1935/stream</code>,
+    </li>
+    <li>
+      <b>Clé de stream :</b>
+      <code>IDENTIFIANT?pass=MOT_DE_PASSE</code>
+      avec <code>IDENTIFIANT</code> et <code>MOT_DE_PASSE</code>
+      vos identifiants.
+    </li>
+  </ul>
+  <img alt="" src="static/obs_stream.png">
+
+  <p>
+    Pour éviter les saccades, changez vos paramètres d'encodage dans
+    « <i>Sortie</i> » avec un profil <code>baseline</code> et un
+    règlage fin <code>zerolatency</code>.
+  </p>
+  <img alt="" src="static/obs_sortie.png">
+
+  <p>
+    Votre stream sera alors disponible sur
+    <code>https://SITE_HOSTNAME/IDENTIFIANT</code>.
+  </p>
+
+  <h3>Avec FFmpeg</h3>
+  <p>
+    <code>
+      ffmpeg -re -i mavideo.webm -vcodec libx264 -vprofile baseline
+      -acodec aac -strict -2 -f flv
+      rtmps://SITE_HOSTNAME:1935/stream/IDENTIFIANT?pass=MOT_DE_PASSE
+    </code>
+  </p>
+
+  <h2>Mentions légales</h2>
+  <p>
+    Le service de diffusion vidéo du Crans est un service d'hébergement
+    au sens de l'article 6, I, 2e de la loi 2004-575 du 21 juin 2004.
+    Conformément aux dispositions de l'article 6, II du même,
+    l'association Crans conserve les données de nature à permettre
+    l'identification des auteurs du contenu diffusé.
+    Ce service est hébergé par l'association Crans, au
+    61 Avenue du Président Wilson, 94235 Cachan Cedex, France.
+  </p>
+  <p>
+    <b>En cas de réclamation sur le contenu diffusé</b>,
+    la loi vous autorise à contacter directement l'hébergeur à
+    l'adresse suivante :
+    <pre>Association Cr@ns - ENS Paris-Saclay<br/>Notification de Contenus Illicites<br/>4, avenue des Sciences<br/>91190 Gif-sur-Yvette<br/>France</pre>
+    Vous pouvez également envoyer directement vos réclamations par
+    courrier électronique à l'adresse <code>bureau[at]crans.org</code>.
+  </p>
+</div>
+{{end}}

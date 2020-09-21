@@ -1,0 +1,12 @@
+[Unit]
+Description=Simple streaming server
+After=syslog.target
+
+[Service]
+User=www-data
+EnvironmentFile=-/etc/default/ghostream
+ExecStart=/usr/bin/ghostream
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
