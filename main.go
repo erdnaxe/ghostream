@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"gitlab.crans.org/nounous/ghostream/internal/config"
+	"gitlab.crans.org/nounous/ghostream/monitoring"
 	"gitlab.crans.org/nounous/ghostream/web"
 )
 
@@ -17,6 +18,11 @@ func main() {
 	// Start web server routine
 	go func() {
 		web.ServeHTTP(cfg)
+	}()
+
+	// Start monitoring server routine
+	go func() {
+		monitoring.ServeHTTP(cfg)
 	}()
 
 	// Wait for routines

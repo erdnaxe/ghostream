@@ -20,12 +20,15 @@ type Config struct {
 		URI    string
 		UserDn string
 	}
+	Prometheus struct {
+		ListenAddress string
+	}
 	Site struct {
-		ListenAdress string
-		Name         string
-		Hostname     string
-		Favicon      string
-		WidgetURL    string
+		ListenAddress string
+		Name          string
+		Hostname      string
+		Favicon       string
+		WidgetURL     string
 	}
 }
 
@@ -62,7 +65,8 @@ func New() (*Config, error) {
 	viper.SetDefault("AuthBackend", "LDAP")
 	viper.SetDefault("LDAP.URI", "ldap://127.0.0.1:389")
 	viper.SetDefault("LDAP.UserDn", "cn=users,dc=example,dc=com")
-	viper.SetDefault("Site.ListenAdress", "127.0.0.1:8080")
+	viper.SetDefault("Prometheus.ListenAddress", "0.0.0.0:2112")
+	viper.SetDefault("Site.ListenAddress", "127.0.0.1:8080")
 	viper.SetDefault("Site.Name", "Ghostream")
 	viper.SetDefault("Site.Hostname", "localhost")
 	viper.SetDefault("Site.Favicon", "/favicon.ico")

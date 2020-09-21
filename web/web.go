@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"gitlab.crans.org/nounous/ghostream/internal/config"
+	"gitlab.crans.org/nounous/ghostream/monitoring"
 )
 
 // Preload templates
@@ -28,6 +29,9 @@ func viewerHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 		log.Println(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
+
+	// Increment monitoring
+	monitoring.ViewerServed.Inc()
 }
 
 // Auth incoming stream
@@ -59,9 +63,10 @@ func makeHandler(fn func(http.ResponseWriter, *http.Request, *config.Config), cf
 // ServeHTTP server
 func ServeHTTP(cfg *config.Config) {
 	// Set up HTTP router and server
-	http.HandleFunc("/", makeHandler(viewerHandler, cfg))
-	http.HandleFunc("/rtmp/auth", makeHandler(streamAuthHandler, cfg))
-	http.HandleFunc("/static/", makeHandler(staticHandler, cfg))
-	log.Printf("Listening on http://%s/", cfg.Site.ListenAdress)
-	log.Fatal(http.ListenAndServe(cfg.Site.ListenAdress, nil))
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", makeHandler(viewerHandler, cfg))
+	mux.HandleFunc("/rtmp/auth", makeHandler(streamAuthHandler, cfg))
+	mux.HandleFunc("/static/", makeHandler(staticHandler, cfg))
+	log.Printf("Listening on http://%s/", cfg.Site.ListenAddress)
+	log.Fatal(http.ListenAndServe(cfg.Site.ListenAddress, mux))
 }
