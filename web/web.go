@@ -19,7 +19,7 @@ type Options struct {
 }
 
 // Preload templates
-var templates = template.Must(template.ParseGlob("web/template/*.tmpl"))
+var templates = template.Must(template.ParseGlob("web/template/*.html"))
 
 // Handle site index and viewer pages
 func viewerHandler(w http.ResponseWriter, r *http.Request, cfg *Options) {

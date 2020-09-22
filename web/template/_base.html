@@ -1,0 +1,21 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <title>{{if .Path}}{{.Path}} - {{end}}{{.Cfg.Name}}</title>
+  <link rel="stylesheet" href="static/css/style.css">
+  <link rel="shortcut icon" href="{{.Cfg.Favicon}}">
+</head>
+
+<body>
+  {{if .Path}}
+  {{template "viewer" .}}
+  {{else}}
+  {{template "index" .}}
+  {{end}}
+</body>
+
+</html>
+{{end}}
