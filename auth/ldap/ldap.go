@@ -22,12 +22,9 @@ func (a LDAP) Login(username string, password string) (bool, error) {
 	// Try to bind as user
 	bindDn := "cn=" + username + "," + a.Cfg.UserDn
 	err := a.Conn.Bind(bindDn, password)
-	if err != nil {
-		return false, err
-	}
 
-	// Login succeeded
-	return true, nil
+	// Login succeeded if no error
+	return err == nil, err
 }
 
 // Close LDAP connection
@@ -35,8 +32,8 @@ func (a LDAP) Close() {
 	a.Conn.Close()
 }
 
-// NewLDAP instanciate a new LDAP connection
-func NewLDAP(cfg *Options) (LDAP, error) {
+// New instanciates a new LDAP connection
+func New(cfg *Options) (LDAP, error) {
 	backend := LDAP{Cfg: cfg}
 
 	// Connect to LDAP server

@@ -1,0 +1,28 @@
+# Example configuration
+
+# Authentification
+auth:
+  backend: basic
+  basic:
+    credentials:
+      # Demo user with password "demo"
+      demo: $2b$15$LRnG3eIHFlYIguTxZOLH7eHwbQC/vqjnLq6nDFiHSUDKIU.f5/1H6
+
+  # Example to bypass login, dangerous!
+  #backend: bypass
+
+  # Example of LDAP server login
+  #backend: ldap
+  #ldap:
+  #  uri: ldap://127.0.0.1:389
+  #  userdn: cn=users,dc=example,dc=com
+
+# Prometheus monitoring endpoint
+monitoring:
+  listenaddress: 127.0.0.1:2112
+
+# Customize web server
+web:
+  name: Demo
+  Hostname: localhost
+  Favicon: https://www.crans.org/images/favicon.ico
