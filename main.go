@@ -61,6 +61,9 @@ func main() {
 		log.Fatalln("Failed to load settings", err)
 	}
 
+	// Init authentification
+	//authBackend := auth.New(&cfg.Auth)
+
 	// Start web server routine
 	go func() {
 		web.ServeHTTP(&cfg.Web)
