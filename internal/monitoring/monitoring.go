@@ -7,8 +7,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"gitlab.crans.org/nounous/ghostream/internal/config"
 )
+
+// Options holds web package configuration
+type Options struct {
+	ListenAddress string
+}
 
 var (
 	// ViewerServed is the total amount of viewer page served
@@ -19,9 +23,9 @@ var (
 )
 
 // ServeHTTP server that expose prometheus metrics
-func ServeHTTP(cfg *config.Config) {
+func ServeHTTP(cfg *Options) {
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
-	log.Printf("Monitoring listening on http://%s/", cfg.Prometheus.ListenAddress)
-	log.Fatal(http.ListenAndServe(cfg.Prometheus.ListenAddress, mux))
+	log.Printf("Monitoring HTTP server listening on %s", cfg.ListenAddress)
+	log.Fatal(http.ListenAndServe(cfg.ListenAddress, mux))
 }

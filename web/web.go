@@ -6,19 +6,27 @@ import (
 	"net/http"
 	"os"
 
-	"gitlab.crans.org/nounous/ghostream/internal/config"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
 )
+
+// Options holds web package configuration
+type Options struct {
+	ListenAddress string
+	Name          string
+	Hostname      string
+	Favicon       string
+	WidgetURL     string
+}
 
 // Preload templates
 var templates = template.Must(template.ParseGlob("web/template/*.tmpl"))
 
 // Handle site index and viewer pages
-func viewerHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
+func viewerHandler(w http.ResponseWriter, r *http.Request, cfg *Options) {
 	// Data for template
 	data := struct {
 		Path string
-		Cfg  *config.Config
+		Cfg  *Options
 	}{Path: r.URL.Path[1:], Cfg: cfg}
 
 	// FIXME validation on path: https://golang.org/doc/articles/wiki/#tmp_11
@@ -35,7 +43,7 @@ func viewerHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 }
 
 // Auth incoming stream
-func streamAuthHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
+func streamAuthHandler(w http.ResponseWriter, r *http.Request, cfg *Options) {
 	// FIXME POST request only with "name" and "pass"
 	// if name or pass missing => 400 Malformed request
 	// else login in against LDAP or static users
@@ -44,7 +52,7 @@ func streamAuthHandler(w http.ResponseWriter, r *http.Request, cfg *config.Confi
 
 // Handle static files
 // We do not use http.FileServer as we do not want directory listing
-func staticHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
+func staticHandler(w http.ResponseWriter, r *http.Request, cfg *Options) {
 	path := "./web/" + r.URL.Path
 	if f, err := os.Stat(path); err == nil && !f.IsDir() {
 		http.ServeFile(w, r, path)
@@ -54,19 +62,19 @@ func staticHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 }
 
 // Closure to pass configuration
-func makeHandler(fn func(http.ResponseWriter, *http.Request, *config.Config), cfg *config.Config) http.HandlerFunc {
+func makeHandler(fn func(http.ResponseWriter, *http.Request, *Options), cfg *Options) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fn(w, r, cfg)
 	}
 }
 
 // ServeHTTP server
-func ServeHTTP(cfg *config.Config) {
+func ServeHTTP(cfg *Options) {
 	// Set up HTTP router and server
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", makeHandler(viewerHandler, cfg))
 	mux.HandleFunc("/rtmp/auth", makeHandler(streamAuthHandler, cfg))
 	mux.HandleFunc("/static/", makeHandler(staticHandler, cfg))
-	log.Printf("Listening on http://%s/", cfg.Site.ListenAddress)
-	log.Fatal(http.ListenAndServe(cfg.Site.ListenAddress, mux))
+	log.Printf("HTTP server listening on %s", cfg.ListenAddress)
+	log.Fatal(http.ListenAndServe(cfg.ListenAddress, mux))
 }
