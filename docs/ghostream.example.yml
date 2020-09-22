@@ -19,10 +19,12 @@ auth:
 
 # Prometheus monitoring endpoint
 monitoring:
-  listenaddress: 127.0.0.1:2112
+  listenAddress: 127.0.0.1:2112
 
 # Customize web server
 web:
+  listenAddress: 127.0.0.1:8080
   name: Demo
-  Hostname: localhost
-  Favicon: https://www.crans.org/images/favicon.ico
+  hostname: localhost
+  favicon: https://www.crans.org/images/favicon.ico
+  widgetURL: https://example.com/
