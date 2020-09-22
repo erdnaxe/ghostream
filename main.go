@@ -62,7 +62,11 @@ func main() {
 	}
 
 	// Init authentification
-	//authBackend := auth.New(&cfg.Auth)
+	authBackend, err := auth.New(&cfg.Auth)
+	if err != nil {
+		log.Fatalln("Failed to load authentification backend:", err)
+	}
+	defer authBackend.Close()
 
 	// Start web server routine
 	go func() {

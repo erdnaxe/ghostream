@@ -12,25 +12,35 @@ type Options struct {
 
 // LDAP authentification backend
 type LDAP struct {
-	Cfg Options
+	Cfg  *Options
+	Conn *ldap.Conn
 }
 
 // Login tries to bind to LDAP
 // Returns (true, nil) if success
 func (a LDAP) Login(username string, password string) (bool, error) {
-	// Connect to LDAP server
-	l, err := ldap.DialURL(a.Cfg.URI)
-	if err != nil {
-		return false, err
-	}
-	defer l.Close()
-
 	// Try to bind as user
-	err = l.Bind("cn=username,dc=example,dc=com", password)
+	bindDn := "cn=" + username + "," + a.Cfg.UserDn
+	err := a.Conn.Bind(bindDn, password)
 	if err != nil {
 		return false, err
 	}
 
 	// Login succeeded
 	return true, nil
+}
+
+// Close LDAP connection
+func (a LDAP) Close() {
+	a.Conn.Close()
+}
+
+// NewLDAP instanciate a new LDAP connection
+func NewLDAP(cfg *Options) (LDAP, error) {
+	backend := LDAP{Cfg: cfg}
+
+	// Connect to LDAP server
+	c, err := ldap.DialURL(backend.Cfg.URI)
+	backend.Conn = c
+	return backend, err
 }
