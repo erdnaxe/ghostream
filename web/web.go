@@ -1,11 +1,13 @@
 package web
 
 import (
+	"encoding/json"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/pion/webrtc/v3"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
 )
 
@@ -21,33 +23,58 @@ type Options struct {
 // Preload templates
 var templates = template.Must(template.ParseGlob("web/template/*.html"))
 
-// Handle site index and viewer pages
-func viewerHandler(w http.ResponseWriter, r *http.Request, cfg *Options) {
-	// Data for template
-	data := struct {
-		Path string
-		Cfg  *Options
-	}{Path: r.URL.Path[1:], Cfg: cfg}
+// Handle WebRTC session description exchange via POST
+func sessionExchangeHandler(w http.ResponseWriter, r *http.Request) {
+	// Limit response body to 128KB
+	r.Body = http.MaxBytesReader(w, r.Body, 131072)
 
+	// Decode client description
+	dec := json.NewDecoder(r.Body)
+	dec.DisallowUnknownFields()
+	remoteDescription := webrtc.SessionDescription{}
+	if err := dec.Decode(&remoteDescription); err != nil {
+		http.Error(w, "The JSON WebRTC offer is malformed", http.StatusBadRequest)
+		return
+	}
+
+	// FIXME remoteDescription -> "Magic" -> localDescription
+	localDescription := remoteDescription
+
+	// Send server description as JSON
+	jsonDesc, err := json.Marshal(localDescription)
+	if err != nil {
+		http.Error(w, "An error occured while formating response", http.StatusInternalServerError)
+		log.Println("An error occured while sending session description", err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonDesc)
+}
+
+// Handle site index and viewer pages
+// POST requests are used to exchange WebRTC session descriptions
+func viewerHandler(w http.ResponseWriter, r *http.Request, cfg *Options) {
 	// FIXME validation on path: https://golang.org/doc/articles/wiki/#tmp_11
 
-	// Render template
-	err := templates.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	switch r.Method {
+	case "GET":
+		// Render template
+		data := struct {
+			Path string
+			Cfg  *Options
+		}{Path: r.URL.Path[1:], Cfg: cfg}
+		if err := templates.ExecuteTemplate(w, "base", data); err != nil {
+			log.Println(err.Error())
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+	case "POST":
+		sessionExchangeHandler(w, r)
+	default:
+		http.Error(w, "Sorry, only GET and POST methods are supported.", http.StatusBadRequest)
 	}
 
 	// Increment monitoring
 	monitoring.ViewerServed.Inc()
-}
-
-// Auth incoming stream
-func streamAuthHandler(w http.ResponseWriter, r *http.Request, cfg *Options) {
-	// FIXME POST request only with "name" and "pass"
-	// if name or pass missing => 400 Malformed request
-	// else login in against LDAP or static users
-	http.Error(w, "Not implemented", 400)
 }
 
 // Handle static files
@@ -73,7 +100,6 @@ func ServeHTTP(cfg *Options) {
 	// Set up HTTP router and server
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", makeHandler(viewerHandler, cfg))
-	mux.HandleFunc("/rtmp/auth", makeHandler(streamAuthHandler, cfg))
 	mux.HandleFunc("/static/", makeHandler(staticHandler, cfg))
 	log.Printf("HTTP server listening on %s", cfg.ListenAddress)
 	log.Fatal(http.ListenAndServe(cfg.ListenAddress, mux))

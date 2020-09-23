@@ -1,5 +1,5 @@
 // Init peer connection
-let pc = new RTCPeerConnection({
+peerConnection = new RTCPeerConnection({
     iceServers: [
         {
             // FIXME: let admin customize the stun server
@@ -8,33 +8,58 @@ let pc = new RTCPeerConnection({
     ]
 })
 
-// Create an offer to receive one video and one audio track
-pc.addTransceiver('video', { 'direction': 'sendrecv' })
-pc.addTransceiver('audio', { 'direction': 'sendrecv' })
-pc.createOffer().then(d => pc.setLocalDescription(d)).catch(console.log)
+// On connection change, inform user
+peerConnection.oniceconnectionstatechange = e => {
+    console.log(peerConnection.iceConnectionState)
 
-// When local session description is ready, send it to streaming server
-// FIXME: also send stream path
-// FIXME: send to wss://{{.Cfg.Hostname}}/play/{{.Path}}
-pc.oniceconnectionstatechange = e => console.log(pc.iceConnectionState)
-pc.onicecandidate = event => {
+    switch (myPeerConnection.iceConnectionState) {
+        case "closed":
+        case "failed":
+            console.log("FIXME Failed");
+            break;
+        case "disconnected":
+            console.log("temp network issue")
+            break;
+        case "connected":
+            console.log("temp network issue resolved!")
+            break;
+    }
+}
+
+// We want to receive audio and video
+peerConnection.addTransceiver('video', { 'direction': 'sendrecv' })
+peerConnection.addTransceiver('audio', { 'direction': 'sendrecv' })
+
+// Create offer and set local description
+peerConnection.createOffer().then(offer => {
+    // After setLocalDescription, the browser will fire onicecandidate events
+    peerConnection.setLocalDescription(offer)
+}).catch(console.log)
+
+// When candidate is null, ICE layer has run out of potential configurations to suggest
+// so let's send the offer to the server
+peerConnection.onicecandidate = event => {
     if (event.candidate === null) {
-        document.getElementById('localSessionDescription').value = JSON.stringify(pc.localDescription)
+        // Send offer to server
+        // The server know the stream name from the url
+        // The server replies with its description
+        // After setRemoteDescription, the browser will fire ontrack events
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(peerConnection.localDescription)
+        })
+            .then(response => response.json())
+            .then((data) => peerConnection.setRemoteDescription(new RTCSessionDescription(data)))
+            .catch(console.log)
     }
 }
 
-// When remote session description is received, load it
-window.startSession = () => {
-    let sd = document.getElementById('remoteSessionDescription').value
-    try {
-        pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(sd)))
-    } catch (e) {
-        console.log(e)
-    }
-}
-
-// When video track is received, mount player
-pc.ontrack = function (event) {
+// When video track is received, configure player
+peerConnection.ontrack = function (event) {
     if (event.track.kind === "video") {
         const viewer = document.getElementById('viewer')
         viewer.srcObject = event.streams[0]
