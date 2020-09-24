@@ -4,9 +4,11 @@ import (
 	"log"
 	"strings"
 
+	"github.com/pion/webrtc/v3"
 	"github.com/spf13/viper"
 	"gitlab.crans.org/nounous/ghostream/auth"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
+	"gitlab.crans.org/nounous/ghostream/stream"
 	"gitlab.crans.org/nounous/ghostream/web"
 )
 
@@ -68,15 +70,14 @@ func main() {
 	}
 	defer authBackend.Close()
 
-	// Start web server routine
-	go func() {
-		web.ServeHTTP(&cfg.Web)
-	}()
+	// WebRTC session description channels
+	remoteSdpChan := make(chan webrtc.SessionDescription)
+	localSdpChan := make(chan webrtc.SessionDescription)
 
-	// Start monitoring server routine
-	go func() {
-		monitoring.ServeHTTP(&cfg.Monitoring)
-	}()
+	// Start stream, web and monitoring server
+	go stream.Serve(remoteSdpChan, localSdpChan)
+	go web.Serve(remoteSdpChan, localSdpChan, &cfg.Web)
+	go monitoring.Serve(&cfg.Monitoring)
 
 	// Wait for routines
 	select {}

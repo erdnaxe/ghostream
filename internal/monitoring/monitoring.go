@@ -15,15 +15,21 @@ type Options struct {
 }
 
 var (
-	// ViewerServed is the total amount of viewer page served
-	ViewerServed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "ghostream_viewer_served_total",
+	// WebViewerServed is the total amount of viewer page served
+	WebViewerServed = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "ghostream_web_viewer_served_total",
 		Help: "The total amount of viewer served",
+	})
+
+	// WebSessions is the total amount of WebRTC session exchange
+	WebSessions = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "ghostream_web_sessions_total",
+		Help: "The total amount of WebRTC sessions exchanged",
 	})
 )
 
-// ServeHTTP server that expose prometheus metrics
-func ServeHTTP(cfg *Options) {
+// Serve monitoring server that expose prometheus metrics
+func Serve(cfg *Options) {
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
 	log.Printf("Monitoring HTTP server listening on %s", cfg.ListenAddress)

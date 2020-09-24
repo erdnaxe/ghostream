@@ -12,7 +12,7 @@ peerConnection = new RTCPeerConnection({
 peerConnection.oniceconnectionstatechange = e => {
     console.log(peerConnection.iceConnectionState)
 
-    switch (myPeerConnection.iceConnectionState) {
+    switch (peerConnection.iceConnectionState) {
         case "closed":
         case "failed":
             console.log("FIXME Failed");

@@ -20,11 +20,19 @@ type Options struct {
 	WidgetURL     string
 }
 
-// Preload templates
-var templates = template.Must(template.ParseGlob("web/template/*.html"))
+var (
+	cfg *Options
+
+	// WebRTC session description channels
+	remoteSdpChan chan webrtc.SessionDescription
+	localSdpChan  chan webrtc.SessionDescription
+
+	// Preload templates
+	templates = template.Must(template.ParseGlob("web/template/*.html"))
+)
 
 // Handle WebRTC session description exchange via POST
-func sessionExchangeHandler(w http.ResponseWriter, r *http.Request) {
+func viewerPostHandler(w http.ResponseWriter, r *http.Request) {
 	// Limit response body to 128KB
 	r.Body = http.MaxBytesReader(w, r.Body, 131072)
 
@@ -37,8 +45,9 @@ func sessionExchangeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// FIXME remoteDescription -> "Magic" -> localDescription
-	localDescription := remoteDescription
+	// Exchange session descriptions with WebRTC stream server
+	remoteSdpChan <- remoteDescription
+	localDescription := <-localSdpChan
 
 	// Send server description as JSON
 	jsonDesc, err := json.Marshal(localDescription)
@@ -49,37 +58,46 @@ func sessionExchangeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonDesc)
+
+	// Increment monitoring
+	monitoring.WebSessions.Inc()
+}
+
+func viewerGetHandler(w http.ResponseWriter, r *http.Request) {
+	// Render template
+	data := struct {
+		Path string
+		Cfg  *Options
+	}{Path: r.URL.Path[1:], Cfg: cfg}
+	if err := templates.ExecuteTemplate(w, "base", data); err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	// Increment monitoring
+	monitoring.WebViewerServed.Inc()
 }
 
 // Handle site index and viewer pages
 // POST requests are used to exchange WebRTC session descriptions
-func viewerHandler(w http.ResponseWriter, r *http.Request, cfg *Options) {
+func viewerHandler(w http.ResponseWriter, r *http.Request) {
 	// FIXME validation on path: https://golang.org/doc/articles/wiki/#tmp_11
 
+	// Route depending on HTTP method
 	switch r.Method {
-	case "GET":
-		// Render template
-		data := struct {
-			Path string
-			Cfg  *Options
-		}{Path: r.URL.Path[1:], Cfg: cfg}
-		if err := templates.ExecuteTemplate(w, "base", data); err != nil {
-			log.Println(err.Error())
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		}
-	case "POST":
-		sessionExchangeHandler(w, r)
+	case http.MethodGet:
+		viewerGetHandler(w, r)
+	case http.MethodPost:
+		viewerPostHandler(w, r)
 	default:
 		http.Error(w, "Sorry, only GET and POST methods are supported.", http.StatusBadRequest)
 	}
-
-	// Increment monitoring
-	monitoring.ViewerServed.Inc()
 }
 
 // Handle static files
 // We do not use http.FileServer as we do not want directory listing
-func staticHandler(w http.ResponseWriter, r *http.Request, cfg *Options) {
+func staticHandler(w http.ResponseWriter, r *http.Request) {
 	path := "./web/" + r.URL.Path
 	if f, err := os.Stat(path); err == nil && !f.IsDir() {
 		http.ServeFile(w, r, path)
@@ -88,19 +106,16 @@ func staticHandler(w http.ResponseWriter, r *http.Request, cfg *Options) {
 	}
 }
 
-// Closure to pass configuration
-func makeHandler(fn func(http.ResponseWriter, *http.Request, *Options), cfg *Options) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		fn(w, r, cfg)
-	}
-}
+// Serve HTTP server
+func Serve(rSdpChan chan webrtc.SessionDescription, lSdpChan chan webrtc.SessionDescription, c *Options) {
+	remoteSdpChan = rSdpChan
+	localSdpChan = lSdpChan
+	cfg = c
 
-// ServeHTTP server
-func ServeHTTP(cfg *Options) {
 	// Set up HTTP router and server
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", makeHandler(viewerHandler, cfg))
-	mux.HandleFunc("/static/", makeHandler(staticHandler, cfg))
+	mux.HandleFunc("/", viewerHandler)
+	mux.HandleFunc("/static/", staticHandler)
 	log.Printf("HTTP server listening on %s", cfg.ListenAddress)
 	log.Fatal(http.ListenAndServe(cfg.ListenAddress, mux))
 }
