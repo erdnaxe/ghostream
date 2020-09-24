@@ -3,7 +3,7 @@
   <div class="col-video">
     <!-- Video -->
     <div class="video-responsive">
-      <video id="viewer" poster="/static/img/no_stream.svg"></video>
+      <video id="viewer" poster="/static/img/no_stream.svg" muted controls autoplay></video>
     </div>
 
     <!-- Links under video -->
@@ -16,6 +16,13 @@
           d="M14.354 1.646a.5.5 0 0 1 0 .708l-8 8a.5.5 0 0 1-.708-.708l8-8a.5.5 0 0 1 .708 0z" />
       </svg>
       <code>rtmps://{{.Cfg.Hostname}}:1935/play/{{.Path}}</code>-->
+
+      <svg id="connectionIndicator" width="1em" height="1em" viewBox="0 0 16 16" fill="#dc3545" xmlns="http://www.w3.org/2000/svg">
+        <rect width="4" height="5" x="1" y="10" rx="1"/>
+        <rect width="4" height="9" x="6" y="6" rx="1"/>
+        <rect width="4" height="14" x="11" y="1" rx="1"/>
+      </svg>
+
       <a href="#" id="sideWidgetToggle" title="Cacher/Afficher le chat">»</a>
     </p>
   </div>
