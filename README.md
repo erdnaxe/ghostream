@@ -20,3 +20,4 @@ It uses Traefik reverse proxy.
 
 -   Phil Cluff (2019), *[Streaming video on the internet without MPEG.](https://mux.com/blog/streaming-video-on-the-internet-without-mpeg/)*
 -   MDN web docs, *[Signaling and video calling.](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling)*
+-   [WebRTC For The Curious](https://webrtcforthecurious.com/)
