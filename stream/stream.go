@@ -1,7 +1,6 @@
 package stream
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"log"
@@ -21,13 +20,32 @@ const (
 )
 
 var (
-	iceConnectedCtx, iceConnectedCtxCancel = context.WithCancel(context.Background())
+	videoTracks []*webrtc.Track
+	audioTracks []*webrtc.Track
 )
+
+// Helper to reslice tracks
+func removeTrack(tracks []*webrtc.Track, track *webrtc.Track) []*webrtc.Track {
+	for i, t := range tracks {
+		if t == track {
+			return append(tracks[:i], tracks[i+1:]...)
+		}
+	}
+	return nil
+}
 
 // newPeerHandler is called when server receive a new session description
 // this initiates a WebRTC connection and return server description
-func newPeerHandler(api *webrtc.API, remoteSdp webrtc.SessionDescription, audioTrack *webrtc.Track, videoTrack *webrtc.Track) webrtc.SessionDescription {
+func newPeerHandler(remoteSdp webrtc.SessionDescription) webrtc.SessionDescription {
+	// Create media engine using client SDP
+	mediaEngine := webrtc.MediaEngine{}
+	if err := mediaEngine.PopulateFromSDP(remoteSdp); err != nil {
+		log.Println("Failed to create new media engine", err)
+		return webrtc.SessionDescription{}
+	}
+
 	// Create a new PeerConnection
+	api := webrtc.NewAPI(webrtc.WithMediaEngine(mediaEngine))
 	peerConnection, err := api.NewPeerConnection(webrtc.Configuration{
 		ICEServers: []webrtc.ICEServer{
 			{
@@ -40,22 +58,27 @@ func newPeerHandler(api *webrtc.API, remoteSdp webrtc.SessionDescription, audioT
 		return webrtc.SessionDescription{}
 	}
 
-	// Set the handler for ICE connection state
-	// This will notify you when the peer has connected/disconnected
-	peerConnection.OnICEConnectionStateChange(func(connectionState webrtc.ICEConnectionState) {
-		log.Printf("Connection State has changed %s \n", connectionState.String())
-		if connectionState == webrtc.ICEConnectionStateConnected {
-			iceConnectedCtxCancel()
-		}
-	})
-
-	// Add audio and video tracks
-	if _, err = peerConnection.AddTrack(audioTrack); err != nil {
-		log.Println("Failed to add audio track", err)
+	// Create video track
+	codec, payloadType := getPayloadType(mediaEngine, webrtc.RTPCodecTypeVideo, "VP8")
+	videoTrack, err := webrtc.NewTrack(payloadType, rand.Uint32(), "video", "pion", codec)
+	if err != nil {
+		log.Println("Failed to create new video track", err)
 		return webrtc.SessionDescription{}
 	}
 	if _, err = peerConnection.AddTrack(videoTrack); err != nil {
 		log.Println("Failed to add video track", err)
+		return webrtc.SessionDescription{}
+	}
+
+	// Create audio track
+	codec, payloadType = getPayloadType(mediaEngine, webrtc.RTPCodecTypeAudio, "opus")
+	audioTrack, err := webrtc.NewTrack(payloadType, rand.Uint32(), "audio", "pion", codec)
+	if err != nil {
+		log.Println("Failed to create new audio track", err)
+		return webrtc.SessionDescription{}
+	}
+	if _, err = peerConnection.AddTrack(audioTrack); err != nil {
+		log.Println("Failed to add audio track", err)
 		return webrtc.SessionDescription{}
 	}
 
@@ -81,6 +104,21 @@ func newPeerHandler(api *webrtc.API, remoteSdp webrtc.SessionDescription, audioT
 		return webrtc.SessionDescription{}
 	}
 
+	// Set the handler for ICE connection state
+	// This will notify you when the peer has connected/disconnected
+	peerConnection.OnICEConnectionStateChange(func(connectionState webrtc.ICEConnectionState) {
+		log.Printf("Connection State has changed %s \n", connectionState.String())
+		if connectionState == webrtc.ICEConnectionStateConnected {
+			// Register tracks
+			videoTracks = append(videoTracks, videoTrack)
+			audioTracks = append(audioTracks, audioTrack)
+		} else if connectionState == webrtc.ICEConnectionStateDisconnected {
+			// Unregister tracks
+			videoTracks = removeTrack(videoTracks, videoTrack)
+			audioTracks = removeTrack(audioTracks, audioTrack)
+		}
+	})
+
 	// Block until ICE Gathering is complete, disabling trickle ICE
 	// we do this because we only can exchange one signaling message
 	// in a production application you should exchange ICE Candidates via OnICECandidate
@@ -90,130 +128,81 @@ func newPeerHandler(api *webrtc.API, remoteSdp webrtc.SessionDescription, audioT
 	return *peerConnection.LocalDescription()
 }
 
-// Serve WebRTC media streaming server
-func Serve(remoteSdpChan chan webrtc.SessionDescription, localSdpChan chan webrtc.SessionDescription) {
-	// Assert that we have an audio or video file
-	_, err := os.Stat(videoFileName)
-	haveVideoFile := !os.IsNotExist(err)
-	_, err = os.Stat(audioFileName)
-	haveAudioFile := !os.IsNotExist(err)
-	if !haveAudioFile || !haveVideoFile {
-		panic("Could not find `" + audioFileName + "` or `" + videoFileName + "`")
+func playVideo() {
+	// Open a IVF file and start reading using our IVFReader
+	file, ivfErr := os.Open(videoFileName)
+	if ivfErr != nil {
+		panic(ivfErr)
 	}
 
-	// Create media engine
-	// Only support VP8 and Opus
-	mediaEngine := webrtc.MediaEngine{}
-	offer := <-remoteSdpChan
-	if err = mediaEngine.PopulateFromSDP(offer); err != nil {
-		panic(err)
+	ivf, header, ivfErr := ivfreader.NewWith(file)
+	if ivfErr != nil {
+		panic(ivfErr)
 	}
 
-	// Create a new API object
-	api := webrtc.NewAPI(webrtc.WithMediaEngine(mediaEngine))
+	// Send our video file frame at a time. Pace our sending so we send it at the same speed it should be played back as.
+	// This isn't required since the video is timestamped, but we will such much higher loss if we send all at once.
+	sleepTime := time.Millisecond * time.Duration((float32(header.TimebaseNumerator)/float32(header.TimebaseDenominator))*1000)
+	for {
+		// Need at least one client
+		frame, _, ivfErr := ivf.ParseNextFrame()
+		if ivfErr == io.EOF {
+			fmt.Printf("All video frames parsed and sent")
+			os.Exit(0)
+		}
 
-	// Create video track
-	codec, payloadType := getPayloadType(mediaEngine, webrtc.RTPCodecTypeVideo, "VP8")
-	videoTrack, err := webrtc.NewTrack(payloadType, rand.Uint32(), "video", "pion", codec)
-	if err != nil {
-		panic(err)
-	}
-
-	// Create audio track
-	codec, payloadType = getPayloadType(mediaEngine, webrtc.RTPCodecTypeAudio, "opus")
-	audioTrack, err := webrtc.NewTrack(payloadType, rand.Uint32(), "audio", "pion", codec)
-	if err != nil {
-		panic(err)
-	}
-
-	localSdpChan <- newPeerHandler(api, offer, audioTrack, videoTrack)
-
-	go func() {
-		// Open a IVF file and start reading using our IVFReader
-		file, ivfErr := os.Open(videoFileName)
 		if ivfErr != nil {
 			panic(ivfErr)
 		}
 
-		ivf, header, ivfErr := ivfreader.NewWith(file)
-		if ivfErr != nil {
-			panic(ivfErr)
-		}
-
-		// Wait for connection established
-		<-iceConnectedCtx.Done()
-
-		// Send our video file frame at a time. Pace our sending so we send it at the same speed it should be played back as.
-		// This isn't required since the video is timestamped, but we will such much higher loss if we send all at once.
-		sleepTime := time.Millisecond * time.Duration((float32(header.TimebaseNumerator)/float32(header.TimebaseDenominator))*1000)
-		for {
-			// Need at least one client
-			frame, _, ivfErr := ivf.ParseNextFrame()
-			if ivfErr == io.EOF {
-				fmt.Printf("All video frames parsed and sent")
-				os.Exit(0)
-			}
-
-			if ivfErr != nil {
-				panic(ivfErr)
-			}
-
-			time.Sleep(sleepTime)
-			if ivfErr = videoTrack.WriteSample(media.Sample{Data: frame, Samples: 90000}); ivfErr != nil {
+		time.Sleep(sleepTime)
+		for _, t := range videoTracks {
+			if ivfErr = t.WriteSample(media.Sample{Data: frame, Samples: 90000}); ivfErr != nil {
 				log.Fatalln("Failed to write video stream:", ivfErr)
 			}
 		}
-	}()
+	}
+}
 
-	go func() {
-		// Open a IVF file and start reading using our IVFReader
-		file, oggErr := os.Open(audioFileName)
+func playAudio() {
+	// Open a IVF file and start reading using our IVFReader
+	file, oggErr := os.Open(audioFileName)
+	if oggErr != nil {
+		panic(oggErr)
+	}
+
+	// Open on oggfile in non-checksum mode.
+	ogg, _, oggErr := oggreader.NewWith(file)
+	if oggErr != nil {
+		panic(oggErr)
+	}
+
+	// Keep track of last granule, the difference is the amount of samples in the buffer
+	var lastGranule uint64
+	for {
+		// Need at least one client
+		pageData, pageHeader, oggErr := ogg.ParseNextPage()
+		if oggErr == io.EOF {
+			fmt.Printf("All audio pages parsed and sent")
+			os.Exit(0)
+		}
+
 		if oggErr != nil {
 			panic(oggErr)
 		}
 
-		// Open on oggfile in non-checksum mode.
-		ogg, _, oggErr := oggreader.NewWith(file)
-		if oggErr != nil {
-			panic(oggErr)
-		}
+		// The amount of samples is the difference between the last and current timestamp
+		sampleCount := float64(pageHeader.GranulePosition - lastGranule)
+		lastGranule = pageHeader.GranulePosition
 
-		// Wait for connection established
-		<-iceConnectedCtx.Done()
-
-		// Keep track of last granule, the difference is the amount of samples in the buffer
-		var lastGranule uint64
-		for {
-			// Need at least one client
-			pageData, pageHeader, oggErr := ogg.ParseNextPage()
-			if oggErr == io.EOF {
-				fmt.Printf("All audio pages parsed and sent")
-				os.Exit(0)
-			}
-
-			if oggErr != nil {
-				panic(oggErr)
-			}
-
-			// The amount of samples is the difference between the last and current timestamp
-			sampleCount := float64(pageHeader.GranulePosition - lastGranule)
-			lastGranule = pageHeader.GranulePosition
-
-			if oggErr = audioTrack.WriteSample(media.Sample{Data: pageData, Samples: uint32(sampleCount)}); oggErr != nil {
+		for _, t := range audioTracks {
+			if oggErr = t.WriteSample(media.Sample{Data: pageData, Samples: uint32(sampleCount)}); oggErr != nil {
 				log.Fatalln("Failed to write audio stream:", oggErr)
 			}
-
-			// Convert seconds to Milliseconds, Sleep doesn't accept floats
-			time.Sleep(time.Duration((sampleCount/48000)*1000) * time.Millisecond)
 		}
-	}()
 
-	// Handle new connections
-	for {
-		// Wait for incoming session description
-		// then send the local description to browser
-		offer := <-remoteSdpChan
-		localSdpChan <- newPeerHandler(api, offer, audioTrack, videoTrack)
+		// Convert seconds to Milliseconds, Sleep doesn't accept floats
+		time.Sleep(time.Duration((sampleCount/48000)*1000) * time.Millisecond)
 	}
 }
 
@@ -227,4 +216,18 @@ func getPayloadType(m webrtc.MediaEngine, codecType webrtc.RTPCodecType, codecNa
 		}
 	}
 	panic(fmt.Sprintf("Remote peer does not support %s", codecName))
+}
+
+// Serve WebRTC media streaming server
+func Serve(remoteSdpChan chan webrtc.SessionDescription, localSdpChan chan webrtc.SessionDescription) {
+	go playVideo()
+	go playAudio()
+
+	// Handle new connections
+	for {
+		// Wait for incoming session description
+		// then send the local description to browser
+		offer := <-remoteSdpChan
+		localSdpChan <- newPeerHandler(offer)
+	}
 }
