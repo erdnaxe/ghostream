@@ -1,9 +1,11 @@
 # Ghostream
 
-[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/gpl-2.0.txt)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![pipeline status](https://gitlab.crans.org/nounous/ghostream/badges/master/pipeline.svg)](https://gitlab.crans.org/nounous/ghostream/commits/master)
 
 *Boooo!* A simple streaming server with authentication and open-source technologies.
+
+This project was developped at [Cr@ns](https://crans.org/) to stream events.
 
 Features:
 
