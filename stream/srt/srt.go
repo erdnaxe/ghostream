@@ -26,9 +26,10 @@ func Serve(cfg *Options) {
 		s, err := sck.Accept()
 		if err != nil {
 			log.Println("Error occured while accepting request:", err)
+			continue
 		}
 
-		go func() {
+		go func(s *sck.SrtSocket) {
 			buff := make([]byte, 2048)
 			for {
 				n, err := s.Read(buff, 10000)
@@ -42,6 +43,6 @@ func Serve(cfg *Options) {
 				}
 				log.Printf("Received %d bytes", n)
 			}
-		}()
+		}(s)
 	}
 }
