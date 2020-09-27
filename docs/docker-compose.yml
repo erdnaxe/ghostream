@@ -7,8 +7,9 @@ services:
     image: traefik:v2.2.11
     restart: always
     ports:
-      - 443:443
       - 80:80
+      - 443:443
+      - 9710:9710
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./traefik_data:/data
@@ -20,6 +21,7 @@ services:
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.srtsecure.address=:9710"
       # Define certificates
       - "--certificatesResolvers.mytlschallenge.acme.email=root@example.com"
       - "--certificatesResolvers.mytlschallenge.acme.storage=/data/acme.json"
@@ -28,6 +30,25 @@ services:
   ghostream:
     build: ..
     restart: always
-    ports:
-      - 2112:2112
-      - 9710:9710
+    volumes:
+      - ./ghostream_data/ghostream.yml:/code/ghostream.yml:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ghostream.rule=Host(`stream.example.com`)"
+      - "traefik.http.routers.ghostream.entrypoints=websecure"
+      - "traefik.http.routers.ghostream.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.ghostream.service=ghostream"
+      - "traefik.http.services.ghostream.loadbalancer.server.port=8080"
+
+      - "traefik.http.routers.ghostream-metrics.rule=Host(`stream.example.com`) && PathPrefix(`/metrics`)"
+      - "traefik.http.routers.ghostream-metrics.priority=100"
+      - "traefik.http.routers.ghostream-metrics.entrypoints=websecure"
+      - "traefik.http.routers.ghostream-metrics.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.ghostream-metrics.service=ghostream-metrics"
+      - "traefik.http.services.ghostream-metrics.loadbalancer.server.port=2112"
+
+      - "traefik.tcp.routers.ghostream-srt.rule=HostSNI(`stream.example.com`)"
+      - "traefik.tcp.routers.ghostream-srt.entrypoints=srtsecure"
+      - "traefik.tcp.routers.ghostream-srt.tls.certresolver=mytlschallenge"
+      - "traefik.tcp.routers.ghostream-srt.service=ghostream-srt"
+      - "traefik.tcp.services.ghostream-srt.loadbalancer.server.port=9710"

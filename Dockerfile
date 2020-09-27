@@ -17,5 +17,6 @@ COPY --from=build_base /code/web/static /app/web/static
 COPY --from=build_base /code/web/template /app/web/template
 COPY --from=build_base /usr/local/lib64/libsrt.so.1 /lib/libsrt.so.1
 WORKDIR /app
-EXPOSE 8080
+# 8080 for Web and Websocket, 2112 for prometheus monitoring and 9710 for SRT
+EXPOSE 8080 2112 9710
 CMD ["/app/ghostream"]
