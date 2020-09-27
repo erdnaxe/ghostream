@@ -7,13 +7,15 @@ WORKDIR /code
 COPY go.* ./
 RUN go mod download
 COPY . .
-RUN go build -ldflags '-extldflags "-static"' -o ./out/ghostream .
+RUN go build -o ./out/ghostream .
 
 # Production image
 FROM alpine:3.12
-RUN apk add ca-certificates
+RUN apk add ca-certificates libressl libstdc++ libgcc
 COPY --from=build_base /code/out/ghostream /app/ghostream
 COPY --from=build_base /code/web/static /app/web/static
 COPY --from=build_base /code/web/template /app/web/template
+COPY --from=build_base /usr/local/lib64/libsrt.so.1 /lib/libsrt.so.1
+WORKDIR /app
 EXPOSE 8080
 CMD ["/app/ghostream"]
