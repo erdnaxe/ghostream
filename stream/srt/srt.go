@@ -1,7 +1,6 @@
 package srt
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/haivision/srtgo"
@@ -22,14 +21,27 @@ func Serve(cfg *Options) {
 	// FIXME: cfg.ListenAddress -> host and port
 	sck := srtgo.NewSrtSocket("0.0.0.0", 9710, options)
 	sck.Listen(1)
-	s, _ := sck.Accept()
 
-	buff := make([]byte, 2048)
 	for {
-		n, _ := s.Read(buff, 10000)
-		if n == 0 {
-			break
+		s, err := sck.Accept()
+		if err != nil {
+			log.Println("Error occured while accepting request:", err)
 		}
-		fmt.Printf("Received %d bytes", n)
+
+		go func() {
+			buff := make([]byte, 2048)
+			for {
+				n, err := s.Read(buff, 10000)
+				if err != nil {
+					log.Println("Error occured while reading SRT socket:", err)
+					break
+				}
+				if n == 0 {
+					// End of stream
+					break
+				}
+				log.Printf("Received %d bytes", n)
+			}
+		}()
 	}
 }
