@@ -1,0 +1,9 @@
+# Don't commit project files
+.idea/
+
+# Configuration file
+ghostream.yml
+
+# Test video and audio files
+*.vif
+*.ogg
