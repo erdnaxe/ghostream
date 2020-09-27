@@ -9,6 +9,7 @@ import (
 	"gitlab.crans.org/nounous/ghostream/auth"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
 	"gitlab.crans.org/nounous/ghostream/stream"
+	"gitlab.crans.org/nounous/ghostream/stream/srt"
 	"gitlab.crans.org/nounous/ghostream/web"
 )
 
@@ -45,6 +46,7 @@ func loadConfiguration() {
 	viper.SetDefault("Auth.LDAP.URI", "ldap://127.0.0.1:389")
 	viper.SetDefault("Auth.LDAP.UserDn", "cn=users,dc=example,dc=com")
 	viper.SetDefault("Monitoring.ListenAddress", ":2112")
+	viper.SetDefault("Srt.ListenAddress", ":9710")
 	viper.SetDefault("Web.ListenAddress", "127.0.0.1:8080")
 	viper.SetDefault("Web.Name", "Ghostream")
 	viper.SetDefault("Web.Hostname", "localhost")
@@ -57,6 +59,7 @@ func main() {
 	cfg := struct {
 		Auth       auth.Options
 		Monitoring monitoring.Options
+		Srt        srt.Options
 		Web        web.Options
 	}{}
 	if err := viper.Unmarshal(&cfg); err != nil {
@@ -75,6 +78,7 @@ func main() {
 	localSdpChan := make(chan webrtc.SessionDescription)
 
 	// Start stream, web and monitoring server
+	go srt.Serve(&cfg.Srt)
 	go stream.Serve(remoteSdpChan, localSdpChan)
 	go web.Serve(remoteSdpChan, localSdpChan, &cfg.Web)
 	go monitoring.Serve(&cfg.Monitoring)

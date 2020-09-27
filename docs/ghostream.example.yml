@@ -28,3 +28,6 @@ web:
   hostname: localhost
   favicon: https://www.crans.org/images/favicon.ico
   widgetURL: https://example.com/
+
+srt:
+  listenAddress: 127.0.0.1:9710
