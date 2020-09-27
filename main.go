@@ -23,7 +23,7 @@ func loadConfiguration() {
 	viper.AutomaticEnv()
 
 	// Load configuration file if exists
-	viper.SetConfigName("ghostream")
+	viper.SetConfigName("ghostream.yml")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("$HOME/.ghostream")
 	viper.AddConfigPath("/etc/ghostream")
