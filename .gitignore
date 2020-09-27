@@ -7,3 +7,6 @@ ghostream.yml
 # Test video and audio files
 *.ivf
 *.ogg
+
+# Coverage files
+*.cov
