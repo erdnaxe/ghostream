@@ -1,10 +1,10 @@
 package srt
 
 import (
+	"fmt"
 	"log"
-	"net"
 
-	"github.com/openfresh/gosrt/srt"
+	"github.com/haivision/srtgo"
 )
 
 // Options holds web package configuration
@@ -15,23 +15,21 @@ type Options struct {
 // Serve SRT server
 func Serve(cfg *Options) {
 	log.Printf("SRT server listening on %s", cfg.ListenAddress)
-	l, _ := srt.Listen("srt", cfg.ListenAddress)
-	defer l.Close()
+
+	options := make(map[string]string)
+	options["transtype"] = "file"
+
+	// FIXME: cfg.ListenAddress -> host and port
+	sck := srtgo.NewSrtSocket("0.0.0.0", 9710, options)
+	sck.Listen(1)
+	s, _ := sck.Accept()
+
+	buff := make([]byte, 2048)
 	for {
-		conn, err := l.Accept()
-		if err != nil {
-			log.Println("Error on incoming SRT stream", err)
+		n, _ := s.Read(buff, 10000)
+		if n == 0 {
+			break
 		}
-		log.Printf("New incomming SRT stream from %s", conn.RemoteAddr())
-
-		go func(sc net.Conn) {
-			defer sc.Close()
-
-			for {
-				//mon := conn.(*srt.SRTConn).Stats()
-				//s, _ := json.MarshalIndent(mon, "", "\t")
-				//fmt.Println(string(s))
-			}
-		}(conn)
+		fmt.Println("Received %d bytes", n)
 	}
 }
