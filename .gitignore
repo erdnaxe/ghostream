@@ -5,5 +5,5 @@
 ghostream.yml
 
 # Test video and audio files
-*.vif
+*.ivf
 *.ogg
