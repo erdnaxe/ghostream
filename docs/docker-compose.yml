@@ -9,7 +9,6 @@ services:
     ports:
       - 443:443
       - 80:80
-      - 1935:1935
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./traefik_data:/data
@@ -21,8 +20,14 @@ services:
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.websecure.address=:443"
-      - "--entrypoints.rtmpsecure.address=:1935"
       # Define certificates
       - "--certificatesResolvers.mytlschallenge.acme.email=root@example.com"
       - "--certificatesResolvers.mytlschallenge.acme.storage=/data/acme.json"
       - "--certificatesResolvers.mytlschallenge.acme.httpChallenge.entryPoint=web"
+
+  ghostream:
+    build: ..
+    restart: always
+    ports:
+      - 2112:2112
+      - 9710:9710
