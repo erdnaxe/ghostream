@@ -22,6 +22,7 @@ It uses Traefik reverse proxy.
 You can also launch the Docker image using,
 
 ```
+docker build . -t ghostream
 docker run -it --rm -p 8080:8080 -p 2112:2112 -p 9710:9710 ghostream
 ```
 
