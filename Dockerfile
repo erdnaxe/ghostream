@@ -4,9 +4,10 @@ RUN apk add --no-cache git build-base tcl pkgconfig cmake libressl-dev linux-hea
 RUN git clone --depth 1 --branch v1.4.2 https://github.com/Haivision/srt && \
     cd srt && ./configure --enable-apps=OFF && make install && cd .. && rm -rf srt
 WORKDIR /code
-COPY . .
+COPY go.* ./
 RUN go mod download
-RUN go build -o ./out/ghostream .
+COPY . .
+RUN go build -ldflags '-extldflags "-static"' -o ./out/ghostream .
 
 # Production image
 FROM alpine:3.12
