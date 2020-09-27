@@ -29,7 +29,7 @@ func Serve(cfg *Options) {
 			continue
 		}
 
-		go func(s *sck.SrtSocket) {
+		go func(s sck.SrtSocket) {
 			buff := make([]byte, 2048)
 			for {
 				n, err := s.Read(buff, 10000)
