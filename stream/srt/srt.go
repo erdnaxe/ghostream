@@ -30,6 +30,6 @@ func Serve(cfg *Options) {
 		if n == 0 {
 			break
 		}
-		fmt.Println("Received %d bytes", n)
+		fmt.Printf("Received %d bytes", n)
 	}
 }
