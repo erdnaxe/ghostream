@@ -17,4 +17,5 @@ linters:
   stage: quality-assurance
   script:
     - go get -u golang.org/x/lint/golint
-    - golint -min_confidence 0 -set_exit_status ./...
+    - golint -min_confidence 0.3 -set_exit_status ./...
+  allow_failure: true

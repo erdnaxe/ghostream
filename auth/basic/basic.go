@@ -25,7 +25,7 @@ type Basic struct {
 func (a Basic) Login(username string, password string) (bool, error) {
 	hash, ok := a.Cfg.Credentials[username]
 	if !ok {
-		return false, errors.New("User not found in credentials")
+		return false, errors.New("user not found in credentials")
 	}
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 

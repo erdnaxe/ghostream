@@ -37,7 +37,7 @@ func New(cfg *Options) (Backend, error) {
 		backend, err = ldap.New(&cfg.LDAP)
 	default:
 		// Package is misconfigured
-		backend, err = nil, errors.New("Authentification backend not found")
+		backend, err = nil, errors.New("authentification backend not found")
 	}
 
 	if err != nil {
