@@ -19,6 +19,12 @@ Features:
 An example is given in [docs/docker-compose.yml](docs/docker-compose.yml).
 It uses Traefik reverse proxy.
 
+You can also launch the Docker image using,
+
+```
+docker run -it --rm -p 8080:8080 -p 2112:2112 -p 9710:9710 ghostream
+```
+
 ## References
 
 -   Phil Cluff (2019), *[Streaming video on the internet without MPEG.](https://mux.com/blog/streaming-video-on-the-internet-without-mpeg/)*
