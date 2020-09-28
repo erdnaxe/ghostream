@@ -4,6 +4,9 @@
 # Configuration file
 ghostream.yml
 
+# Compiled files
+pkged.go
+
 # Test video and audio files
 *.ivf
 *.ogg
