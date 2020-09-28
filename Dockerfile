@@ -5,9 +5,9 @@ RUN git clone --depth 1 --branch v1.4.2 https://github.com/Haivision/srt && \
     cd srt && ./configure --enable-apps=OFF && make install && cd .. && rm -rf srt
 WORKDIR /code
 COPY go.* ./
-RUN go mod download
+RUN go mod download && go get github.com/markbates/pkger/cmd/pkger
 COPY . .
-RUN go build -o ./out/ghostream .
+RUN go generate && go build -o ./out/ghostream .
 
 # Production image
 FROM alpine:3.12
