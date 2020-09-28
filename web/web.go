@@ -56,8 +56,8 @@ func viewerPostHandler(w http.ResponseWriter, r *http.Request) {
 	// Send server description as JSON
 	jsonDesc, err := json.Marshal(localDescription)
 	if err != nil {
-		http.Error(w, "An error occured while formating response", http.StatusInternalServerError)
-		log.Println("An error occured while sending session description", err)
+		http.Error(w, "An error occurred while formating response", http.StatusInternalServerError)
+		log.Println("An error occurred while sending session description", err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
