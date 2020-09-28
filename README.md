@@ -1,6 +1,7 @@
 # Ghostream
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![PkgGoDev](https://pkg.go.dev/badge/mod/gitlab.crans.org/nounous/ghostream)](https://pkg.go.dev/mod/gitlab.crans.org/nounous/ghostream)
 [![pipeline status](https://gitlab.crans.org/nounous/ghostream/badges/master/pipeline.svg)](https://gitlab.crans.org/nounous/ghostream/commits/master)
 [![coverage report](https://gitlab.crans.org/nounous/ghostream/badges/master/coverage.svg)](https://gitlab.crans.org/nounous/ghostream/-/commits/master)
 
