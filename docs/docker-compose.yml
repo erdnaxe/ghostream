@@ -31,7 +31,7 @@ services:
     build: ..
     restart: always
     volumes:
-      - ./ghostream_data/ghostream.yml:/code/ghostream.yml:ro
+      - ./ghostream_data:/etc/ghostream:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ghostream.rule=Host(`stream.example.com`)"
