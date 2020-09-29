@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/markbates/pkger"
-	"github.com/pion/webrtc/v3"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
+	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
 )
 
 // Handle WebRTC session description exchange via POST
@@ -90,5 +90,5 @@ func statisticsHandler(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	enc.Encode(struct {
 		ConnectedViewers int
-	}{int(monitoring.GetGaugeValue(monitoring.WebRTCConnectedSessions))})
+	}{webrtc.GetNumberConnectedSessions()})
 }

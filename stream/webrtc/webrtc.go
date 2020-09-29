@@ -2,7 +2,6 @@ package webrtc
 
 import (
 	"fmt"
-	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
 	"io"
 	"log"
 	"math/rand"
@@ -13,6 +12,7 @@ import (
 	"github.com/pion/webrtc/v3/pkg/media"
 	"github.com/pion/webrtc/v3/pkg/media/ivfreader"
 	"github.com/pion/webrtc/v3/pkg/media/oggreader"
+	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
 )
 
 // Options holds web package configuration
@@ -45,6 +45,11 @@ func removeTrack(tracks []*webrtc.Track, track *webrtc.Track) []*webrtc.Track {
 		}
 	}
 	return nil
+}
+
+// GetNumberConnectedSessions get the number of currently connected clients
+func GetNumberConnectedSessions() int {
+	return len(videoTracks)
 }
 
 // newPeerHandler is called when server receive a new session description
