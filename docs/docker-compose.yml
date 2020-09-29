@@ -30,6 +30,8 @@ services:
   ghostream:
     build: ..
     restart: always
+    ports:
+      - 10000-10005:10000-10005/udp
     volumes:
       - ./ghostream_data:/etc/ghostream:ro
     labels:
