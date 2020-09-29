@@ -30,7 +30,7 @@ startPeerConnection = () => {
                 console.log("Connection failed, restarting...")
                 peerConnection.close()
                 peerConnection = null
-                startPeerConnection()
+                setTimeout(startPeerConnection, 1000)
                 break
             default:
                 console.log(peerConnection.iceConnectionState)
