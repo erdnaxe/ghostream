@@ -16,5 +16,5 @@ RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing libs
 COPY --from=build_base /code/out/ghostream /app/ghostream
 WORKDIR /app
 # 8080 for Web and Websocket, 2112 for prometheus monitoring and 9710 for SRT
-EXPOSE 8080 2112 9710
+EXPOSE 8080 2112 9710 10000-10005/udp
 CMD ["/app/ghostream"]

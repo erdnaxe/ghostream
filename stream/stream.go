@@ -46,7 +46,7 @@ func newPeerHandler(remoteSdp webrtc.SessionDescription) webrtc.SessionDescripti
 
 	// Create a new PeerConnection
 	settingsEngine := webrtc.SettingEngine{}
-	if err := settingsEngine.SetEphemeralUDPPortRange(10000, 11000); err != nil {
+	if err := settingsEngine.SetEphemeralUDPPortRange(10000, 10005); err != nil {
 		log.Println("Failed to set min/max UDP ports", err)
 		return webrtc.SessionDescription{}
 	}
