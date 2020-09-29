@@ -13,6 +13,7 @@ This project was developped at [Cr@ns](https://crans.org/) to stream events.
 Features:
 
 -   WebRTC playback with a lightweight web interface.
+-   SRT stream input, supported by FFMpeg, OBS and Gstreamer.
 -   Low-latency streaming, sub-second with web player.
 -   Authentification of incoming stream using LDAP server.
 
@@ -37,6 +38,13 @@ docker run -it --rm -p 8080:8080 -p 2112:2112 -p 9710:9710 ghostream
 ## Streaming
 
 As stated by OBS wiki, when streaming you should adapt the latency to `2.5 * (the round-trip time with server, in μs)`.
+
+### With OBS
+
+As OBS uses FFMpeg, you need to have FFMpeg compiled with SRT support. To check if SR is available, run `ffmpeg -protocols | grep srt`.
+On Windows and MacOS, OBS comes with his own FFMpeg that will work.
+
+In OBS, go to "Settings" -> "Stream" and change "Service" to "Custom..." and "Server" to `srt://127.0.0.1:9710`.
 
 ### With GStreamer
 
