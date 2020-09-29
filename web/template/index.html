@@ -21,7 +21,7 @@
   <ul>
     <li>
       <b>Serveur :</b>
-      <code>rtmps://{{.Cfg.Hostname}}:1935/stream</code>,
+      <code>srt://{{.Cfg.Hostname}}:9710</code>,
     </li>
     <li>
       <b>Clé de stream :</b>
@@ -45,9 +45,10 @@
   <h3>Avec FFmpeg</h3>
   <p>
     <code>
+      {{/* FIXME replace with good SRT params */}}
       ffmpeg -re -i mavideo.webm -vcodec libx264 -vprofile baseline
       -acodec aac -strict -2 -f flv
-      rtmps://{{.Cfg.Hostname}}:1935/stream/IDENTIFIANT?pass=MOT_DE_PASSE
+      srt://{{.Cfg.Hostname}}:9710/IDENTIFIANT?pass=MOT_DE_PASSE
     </code>
   </p>
 
