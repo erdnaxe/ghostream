@@ -36,4 +36,12 @@
 
 <script src="/static/js/sideWidget.js"></script>
 <script src="/static/js/viewer.js"></script>
+<script>
+  const stunServers = [
+    {{range $id, $value := .Cfg.STUNServers}}
+    '{{$value}}',
+    {{end}}
+  ]
+  startPeerConnection()
+</script>
 {{end}}

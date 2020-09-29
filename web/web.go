@@ -20,6 +20,9 @@ type Options struct {
 	Hostname      string
 	Favicon       string
 	WidgetURL     string
+
+	// Copied from WebRTC configuration
+	STUNServers []string
 }
 
 var (

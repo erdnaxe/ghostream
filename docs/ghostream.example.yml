@@ -10,7 +10,7 @@ auth:
 
   # Example to bypass login, dangerous!
   #backend: bypass
-
+  #
   # Example of LDAP server login
   #backend: ldap
   #ldap:
@@ -41,3 +41,7 @@ webrtc:
   # UDP port range used to stream
   minPortUDP: 10000
   maxPortUDP: 10005
+
+  # STUN servers, you should host your own Coturn instance
+  STUNServers:
+    - stun:stun.l.google.com:19302

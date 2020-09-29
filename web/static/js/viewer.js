@@ -3,12 +3,7 @@ let peerConnection;
 startPeerConnection = () => {
     // Init peer connection
     peerConnection = new RTCPeerConnection({
-        iceServers: [
-            {
-                // FIXME: let admin customize the stun server
-                urls: 'stun:stun.l.google.com:19302'
-            }
-        ]
+        iceServers: [{ urls: stunServers }]
     })
 
     // On connection change, change indicator color
@@ -80,6 +75,3 @@ startPeerConnection = () => {
         }
     }
 }
-
-// Start
-startPeerConnection()

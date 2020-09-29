@@ -55,6 +55,10 @@ func loadConfiguration() {
 	viper.SetDefault("Web.Favicon", "/favicon.ico")
 	viper.SetDefault("WebRTC.MinPortUDP", 10000)
 	viper.SetDefault("WebRTC.MaxPortUDP", 10005)
+	viper.SetDefault("WebRTC.STUNServers", []string{"stun:stun.l.google.com:19302"})
+
+	// Copy STUN configuration to clients
+	viper.Set("Web.STUNServers", viper.Get("WebRTC.STUNServers"))
 }
 
 func main() {

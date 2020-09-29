@@ -18,6 +18,8 @@ import (
 type Options struct {
 	MinPortUDP uint16
 	MaxPortUDP uint16
+
+	STUNServers []string
 }
 
 // SessionDescription contains SDP data
@@ -65,11 +67,7 @@ func newPeerHandler(remoteSdp webrtc.SessionDescription, cfg *Options) webrtc.Se
 		webrtc.WithSettingEngine(settingsEngine),
 	)
 	peerConnection, err := api.NewPeerConnection(webrtc.Configuration{
-		ICEServers: []webrtc.ICEServer{
-			{
-				URLs: []string{"stun:stun.l.google.com:19302"},
-			},
-		},
+		ICEServers: []webrtc.ICEServer{{URLs: cfg.STUNServers}},
 	})
 	if err != nil {
 		log.Println("Failed to initiate peer connection", err)
