@@ -34,6 +34,22 @@ docker build . -t ghostream
 docker run -it --rm -p 8080:8080 -p 2112:2112 -p 9710:9710 ghostream
 ```
 
+## Streaming
+
+As stated by OBS wiki, when streaming you should adapt the latency to `2.5 * (the round-trip time with server, in μs)`.
+
+### With GStreamer
+
+To stream X11 screen,
+
+```bash
+gst-launch-1.0 ximagesrc startx=0 show-pointer=true use-damage=0 \
+! videoconvert \
+! x264enc bitrate=32000 tune=zerolatency speed-preset=veryfast byte-stream=true threads=1 key-int-max=15 intra-refresh=true ! video/x-h264, profile=baseline, framerate=30/1 \
+! mpegtsmux \
+! srtserversink uri=srt://127.0.0.1:9710/ latency=1000000
+```
+
 ## References
 
 -   Phil Cluff (2019), *[Streaming video on the internet without MPEG.](https://mux.com/blog/streaming-video-on-the-internet-without-mpeg/)*
