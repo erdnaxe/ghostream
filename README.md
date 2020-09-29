@@ -32,7 +32,7 @@ You can also launch the Docker image using,
 
 ```
 docker build . -t ghostream
-docker run -it --rm -p 2112:2112 -p 9710:9710 -p 8080:8080 -p 10000-10005:10000-10005/udp ghostream
+docker run -it --rm -p 2112:2112 -p 9710:9710/udp -p 8080:8080 -p 10000-10005:10000-10005/udp ghostream
 ```
 
 ## Streaming
