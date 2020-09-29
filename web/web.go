@@ -84,6 +84,7 @@ func Serve(rSdpChan chan webrtc.SessionDescription, lSdpChan chan webrtc.Session
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", viewerHandler)
 	mux.Handle("/static/", staticHandler())
+	mux.HandleFunc("/_stats/", statisticsHandler)
 	log.Printf("HTTP server listening on %s", cfg.ListenAddress)
 	log.Fatal(http.ListenAndServe(cfg.ListenAddress, mux))
 }

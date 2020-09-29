@@ -2,6 +2,7 @@ package webrtc
 
 import (
 	"fmt"
+	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
 	"io"
 	"log"
 	"math/rand"
@@ -128,10 +129,12 @@ func newPeerHandler(remoteSdp webrtc.SessionDescription, cfg *Options) webrtc.Se
 			// Register tracks
 			videoTracks = append(videoTracks, videoTrack)
 			audioTracks = append(audioTracks, audioTrack)
+			monitoring.WebRTCConnectedSessions.Inc()
 		} else if connectionState == webrtc.ICEConnectionStateDisconnected {
 			// Unregister tracks
 			videoTracks = removeTrack(videoTracks, videoTrack)
 			audioTracks = removeTrack(audioTracks, audioTrack)
+			monitoring.WebRTCConnectedSessions.Dec()
 		}
 	})
 

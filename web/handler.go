@@ -84,3 +84,11 @@ func staticHandler() http.Handler {
 	staticFs := http.FileServer(pkger.Dir("/web/static"))
 	return http.StripPrefix("/static/", staticFs)
 }
+
+func statisticsHandler(w http.ResponseWriter, r *http.Request) {
+	// Display connected users stats
+	enc := json.NewEncoder(w)
+	enc.Encode(struct {
+		ConnectedViewers int
+	}{int(monitoring.GetGaugeValue(monitoring.WebRTCConnectedSessions))})
+}
