@@ -31,10 +31,8 @@ func RegisterStream(streamKey string) {
 
 	params := []string{"-re", "-i", "pipe:0"}
 	for _, stream := range options.Outputs[streamKey] {
-		// TODO Set optimal parameters
-		params = append(params, "-f", "flv", "-c:v", "libx264", "-preset",
-			"veryfast", "-maxrate", "3000k", "-bufsize", "6000k", "-pix_fmt", "yuv420p", "-g", "50", "-c:a", "aac",
-			"-b:a", "160k", "-ac", "2", "-ar", "44100", stream)
+		params = append(params, "-f", "flv", "-preset", "ultrafast", "-tune", "zerolatency",
+			"-c", "copy", stream)
 	}
 	// Launch FFMPEG instance
 	ffmpeg := exec.Command("ffmpeg", params...)
