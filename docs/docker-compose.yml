@@ -9,7 +9,6 @@ services:
     ports:
       - 80:80
       - 443:443
-      - 9710:9710/udp
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./traefik_data:/data
@@ -21,7 +20,6 @@ services:
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.websecure.address=:443"
-      - "--entrypoints.srtsecure.address=:9710/udp"
       # Define certificates
       - "--certificatesResolvers.mytlschallenge.acme.email=root@example.com"
       - "--certificatesResolvers.mytlschallenge.acme.storage=/data/acme.json"
@@ -31,6 +29,7 @@ services:
     build: ..
     restart: always
     ports:
+      - 9710:9710/udp
       - 10000-10005:10000-10005/udp
     volumes:
       - ./ghostream_data:/etc/ghostream:ro
@@ -41,14 +40,3 @@ services:
       - "traefik.http.routers.ghostream.tls.certresolver=mytlschallenge"
       - "traefik.http.routers.ghostream.service=ghostream"
       - "traefik.http.services.ghostream.loadbalancer.server.port=8080"
-
-      - "traefik.http.routers.ghostream-metrics.rule=Host(`stream.example.com`) && PathPrefix(`/metrics`)"
-      - "traefik.http.routers.ghostream-metrics.priority=100"
-      - "traefik.http.routers.ghostream-metrics.entrypoints=websecure"
-      - "traefik.http.routers.ghostream-metrics.tls.certresolver=mytlschallenge"
-      - "traefik.http.routers.ghostream-metrics.service=ghostream-metrics"
-      - "traefik.http.services.ghostream-metrics.loadbalancer.server.port=2112"
-
-      - "traefik.udp.routers.ghostream-srt.entrypoints=srt"
-      - "traefik.udp.routers.ghostream-srt.service=ghostream-srt"
-      - "traefik.udp.services.ghostream-srt.loadbalancer.server.port=9710"
