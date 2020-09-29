@@ -1,8 +1,11 @@
 package srt
 
 import (
+	"bufio"
+	"fmt"
 	"log"
 	"net"
+	"os/exec"
 	"strconv"
 
 	"github.com/haivision/srtgo"
@@ -48,8 +51,14 @@ func Serve(cfg *Options) {
 			continue
 		}
 
+		// Launch ffmpeg to stream on other RTMP servers
+		ffmpeg := exec.Command("ffmpeg", "-re", "-i", "pipe:0", "-f", "flv", "-c:v", "libx264", "-preset", "veryfast", "-maxrate", "3000k", "-bufsize", "6000k", "-pix_fmt", "yuv420p", "-g", "50", "-c:a", "aac", "-b:a", "160k", "-ac", "2", "-ar", "44100", fmt.Sprintf("rtmp://live.twitch.tv/app/%s", "TWITCH_STREAM_KEY")) //nolint
+		ffmpegIn, _ := ffmpeg.StdinPipe()
+		ffmpegOut, _ := ffmpeg.StderrPipe()
+
 		buff := make([]byte, 2048)
 		n, err := s.Read(buff, 10000)
+		ffmpegIn.Write(buff[:n])
 		if err != nil {
 			log.Println("Error occurred while reading SRT socket:", err)
 			break
@@ -68,6 +77,18 @@ func Serve(cfg *Options) {
 
 		// videoTrack, err := peerConnection.NewTrack(payloadType, packet.SSRC, "video", "pion")
 
+		if err := ffmpeg.Start(); err != nil {
+			panic(err)
+		}
+
+		// Log ffmpeg output
+		go func() {
+			scanner := bufio.NewScanner(ffmpegOut)
+			for scanner.Scan() {
+				log.Println(scanner.Text())
+			}
+		}()
+
 		// Read RTP packets forever and send them to the WebRTC Client
 		for {
 			n, err := s.Read(buff, 10000)
@@ -79,6 +100,7 @@ func Serve(cfg *Options) {
 			log.Printf("Received %d bytes", n)
 
 			packet := &rtp.Packet{}
+			ffmpegIn.Write(buff[:n])
 			if err := packet.Unmarshal(buff[:n]); err != nil {
 				panic(err)
 			}
