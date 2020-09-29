@@ -98,9 +98,12 @@ h1, h2, h3, h4 {
   border: 0;
 }
 
+.ml-1 {
+  margin-left: 0.5rem;
+}
+
 /* Hide chat toggler on small screen */
 #sideWidgetToggle {
-  margin-left: 0.5rem;
   display: none;
 }
 
