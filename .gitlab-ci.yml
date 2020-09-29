@@ -6,7 +6,8 @@ unit_tests:
   image: golang:1.15-alpine
   stage: test
   before_script:
-    - apk add -X http://dl-cdn.alpinelinux.org/alpine/edge/testing libsrt-dev
+    - apk add --no-cache build-base gcc
+    - apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing libsrt-dev
   script:
     - go test -v -covermode=count -coverprofile cover.cov ./...
     - go tool cover -func=cover.cov
