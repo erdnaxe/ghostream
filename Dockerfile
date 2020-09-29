@@ -15,6 +15,6 @@ RUN apk add ca-certificates
 RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing libsrt
 COPY --from=build_base /code/out/ghostream /app/ghostream
 WORKDIR /app
-# 8080 for Web and Websocket, 2112 for prometheus monitoring and 9710 for SRT
-EXPOSE 8080 2112 9710 10000-10005/udp
+# 9710 for SRT, 8080 for Web, 2112 for monitoring and 10000-10005 (UDP) for WebRTC
+EXPOSE 9710 8080 2112 10000-10005/udp
 CMD ["/app/ghostream"]
