@@ -1,4 +1,4 @@
-package stream
+package webrtc
 
 import (
 	"fmt"
@@ -13,6 +13,16 @@ import (
 	"github.com/pion/webrtc/v3/pkg/media/ivfreader"
 	"github.com/pion/webrtc/v3/pkg/media/oggreader"
 )
+
+// Options holds web package configuration
+type Options struct {
+	MinPortUDP uint16
+	MaxPortUDP uint16
+}
+
+// SessionDescription contains SDP data
+// to initiate a WebRTC connection between one client and this app
+type SessionDescription = webrtc.SessionDescription
 
 const (
 	audioFileName = "output.ogg"
@@ -36,7 +46,7 @@ func removeTrack(tracks []*webrtc.Track, track *webrtc.Track) []*webrtc.Track {
 
 // newPeerHandler is called when server receive a new session description
 // this initiates a WebRTC connection and return server description
-func newPeerHandler(remoteSdp webrtc.SessionDescription) webrtc.SessionDescription {
+func newPeerHandler(remoteSdp webrtc.SessionDescription, cfg *Options) webrtc.SessionDescription {
 	// Create media engine using client SDP
 	mediaEngine := webrtc.MediaEngine{}
 	if err := mediaEngine.PopulateFromSDP(remoteSdp); err != nil {
@@ -46,7 +56,7 @@ func newPeerHandler(remoteSdp webrtc.SessionDescription) webrtc.SessionDescripti
 
 	// Create a new PeerConnection
 	settingsEngine := webrtc.SettingEngine{}
-	if err := settingsEngine.SetEphemeralUDPPortRange(10000, 10005); err != nil {
+	if err := settingsEngine.SetEphemeralUDPPortRange(cfg.MinPortUDP, cfg.MaxPortUDP); err != nil {
 		log.Println("Failed to set min/max UDP ports", err)
 		return webrtc.SessionDescription{}
 	}
@@ -227,7 +237,9 @@ func getPayloadType(m webrtc.MediaEngine, codecType webrtc.RTPCodecType, codecNa
 }
 
 // Serve WebRTC media streaming server
-func Serve(remoteSdpChan chan webrtc.SessionDescription, localSdpChan chan webrtc.SessionDescription) {
+func Serve(remoteSdpChan, localSdpChan chan webrtc.SessionDescription, cfg *Options) {
+	log.Printf("WebRTC server using UDP from %d to %d", cfg.MinPortUDP, cfg.MaxPortUDP)
+
 	go playVideo()
 	go playAudio()
 
@@ -236,6 +248,6 @@ func Serve(remoteSdpChan chan webrtc.SessionDescription, localSdpChan chan webrt
 		// Wait for incoming session description
 		// then send the local description to browser
 		offer := <-remoteSdpChan
-		localSdpChan <- newPeerHandler(offer)
+		localSdpChan <- newPeerHandler(offer, cfg)
 	}
 }

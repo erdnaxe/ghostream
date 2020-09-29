@@ -6,12 +6,11 @@ import (
 	"log"
 	"strings"
 
-	"github.com/pion/webrtc/v3"
 	"github.com/spf13/viper"
 	"gitlab.crans.org/nounous/ghostream/auth"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
-	"gitlab.crans.org/nounous/ghostream/stream"
 	"gitlab.crans.org/nounous/ghostream/stream/srt"
+	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
 	"gitlab.crans.org/nounous/ghostream/web"
 )
 
@@ -49,11 +48,13 @@ func loadConfiguration() {
 	viper.SetDefault("Auth.LDAP.UserDn", "cn=users,dc=example,dc=com")
 	viper.SetDefault("Monitoring.ListenAddress", ":2112")
 	viper.SetDefault("Srt.ListenAddress", ":9710")
-	viper.SetDefault("Srt.MaxClients", "64")
+	viper.SetDefault("Srt.MaxClients", 64)
 	viper.SetDefault("Web.ListenAddress", ":8080")
 	viper.SetDefault("Web.Name", "Ghostream")
 	viper.SetDefault("Web.Hostname", "localhost")
 	viper.SetDefault("Web.Favicon", "/favicon.ico")
+	viper.SetDefault("WebRTC.MinPortUDP", 10000)
+	viper.SetDefault("WebRTC.MaxPortUDP", 10005)
 }
 
 func main() {
@@ -64,6 +65,7 @@ func main() {
 		Monitoring monitoring.Options
 		Srt        srt.Options
 		Web        web.Options
+		WebRTC     webrtc.Options
 	}{}
 	if err := viper.Unmarshal(&cfg); err != nil {
 		log.Fatalln("Failed to load settings", err)
@@ -81,10 +83,10 @@ func main() {
 	localSdpChan := make(chan webrtc.SessionDescription)
 
 	// Start stream, web and monitoring server
-	go srt.Serve(&cfg.Srt)
-	go stream.Serve(remoteSdpChan, localSdpChan)
-	go web.Serve(remoteSdpChan, localSdpChan, &cfg.Web)
 	go monitoring.Serve(&cfg.Monitoring)
+	go srt.Serve(&cfg.Srt)
+	go web.Serve(remoteSdpChan, localSdpChan, &cfg.Web)
+	go webrtc.Serve(remoteSdpChan, localSdpChan, &cfg.WebRTC)
 
 	// Wait for routines
 	select {}

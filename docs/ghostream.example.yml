@@ -21,7 +21,14 @@ auth:
 monitoring:
   listenAddress: 127.0.0.1:2112
 
-# Customize web server
+# Configure SRT server
+srt:
+  listenAddress: 127.0.0.1:9710
+
+  # Max number of active SRT connections
+  maxClients: 64
+
+# Configure web server
 web:
   listenAddress: 127.0.0.1:8080
   name: Demo
@@ -29,8 +36,8 @@ web:
   favicon: https://www.crans.org/images/favicon.ico
   widgetURL: https://example.com/
 
-srt:
-  listenAddress: 127.0.0.1:9710
-
-  # Max number of active SRT connections
-  maxClients: 64
+# Configure WebRTC server
+webrtc:
+  # UDP port range used to stream
+  minPortUDP: 10000
+  maxPortUDP: 10005
