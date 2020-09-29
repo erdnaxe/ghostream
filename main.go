@@ -49,6 +49,7 @@ func loadConfiguration() {
 	viper.SetDefault("Auth.LDAP.UserDn", "cn=users,dc=example,dc=com")
 	viper.SetDefault("Monitoring.ListenAddress", ":2112")
 	viper.SetDefault("Srt.ListenAddress", ":9710")
+	viper.SetDefault("Srt.MaxClients", "64")
 	viper.SetDefault("Web.ListenAddress", ":8080")
 	viper.SetDefault("Web.Name", "Ghostream")
 	viper.SetDefault("Web.Hostname", "localhost")

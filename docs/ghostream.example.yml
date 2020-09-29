@@ -31,3 +31,6 @@ web:
 
 srt:
   listenAddress: 127.0.0.1:9710
+
+  # Max number of active SRT connections
+  maxClients: 64

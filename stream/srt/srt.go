@@ -2,6 +2,8 @@ package srt
 
 import (
 	"log"
+	"net"
+	"strconv"
 
 	"github.com/haivision/srtgo"
 	"github.com/pion/rtp"
@@ -10,18 +12,34 @@ import (
 // Options holds web package configuration
 type Options struct {
 	ListenAddress string
+	MaxClients    int
+}
+
+// Split host and port from listen address
+func splitHostPort(hostport string) (string, uint16) {
+	host, portS, err := net.SplitHostPort(hostport)
+	if err != nil {
+		log.Fatalf("Failed to split host and port from %s", hostport)
+	}
+	if host == "" {
+		host = "0.0.0.0"
+	}
+	port64, err := strconv.ParseUint(portS, 10, 16)
+	if err != nil {
+		log.Fatalf("Port is not a integer: %s", err)
+	}
+	return host, uint16(port64)
 }
 
 // Serve SRT server
 func Serve(cfg *Options) {
-	log.Printf("SRT server listening on %s", cfg.ListenAddress)
-
 	options := make(map[string]string)
 	options["transtype"] = "live"
 
-	// FIXME: cfg.ListenAddress -> host and port
-	sck := srtgo.NewSrtSocket("0.0.0.0", 9710, options)
-	sck.Listen(1)
+	log.Printf("SRT server listening on %s", cfg.ListenAddress)
+	host, port := splitHostPort(cfg.ListenAddress)
+	sck := srtgo.NewSrtSocket(host, uint16(port), options)
+	sck.Listen(cfg.MaxClients)
 
 	for {
 		s, err := sck.Accept()
