@@ -21,7 +21,7 @@ services:
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.websecure.address=:443"
-      - "--entrypoints.srtsecure.address=:9710"
+      - "--entrypoints.srtsecure.address=:9710/udp"
       # Define certificates
       - "--certificatesResolvers.mytlschallenge.acme.email=root@example.com"
       - "--certificatesResolvers.mytlschallenge.acme.storage=/data/acme.json"
@@ -49,8 +49,6 @@ services:
       - "traefik.http.routers.ghostream-metrics.service=ghostream-metrics"
       - "traefik.http.services.ghostream-metrics.loadbalancer.server.port=2112"
 
-      - "traefik.udp.routers.ghostream-srt.rule=HostSNI(`stream.example.com`)"
-      - "traefik.udp.routers.ghostream-srt.entrypoints=srtsecure"
-      - "traefik.udp.routers.ghostream-srt.tls.certresolver=mytlschallenge"
+      - "traefik.udp.routers.ghostream-srt.entrypoints=srt"
       - "traefik.udp.routers.ghostream-srt.service=ghostream-srt"
       - "traefik.udp.services.ghostream-srt.loadbalancer.server.port=9710"
