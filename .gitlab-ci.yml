@@ -6,8 +6,7 @@ unit_tests:
   image: golang:1.15-alpine
   stage: test
   before_script:
-    - apk add --no-cache git build-base tcl pkgconfig cmake libressl-dev linux-headers
-    - git clone --depth 1 --branch v1.4.2 https://github.com/Haivision/srt && cd srt && ./configure --enable-apps=OFF && make install && cd .. && rm -rf srt
+    - apk add -X http://dl-cdn.alpinelinux.org/alpine/edge/testing libsrt-dev
   script:
     - go test -v -covermode=count -coverprofile cover.cov ./...
     - go tool cover -func=cover.cov
