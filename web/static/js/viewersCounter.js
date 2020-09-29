@@ -1,4 +1,5 @@
-function refreshViewersCounter() {
+// Refresh viewer count by pulling metric from server
+function refreshViewersCounter(period) {
     let xhr = new XMLHttpRequest()
     xhr.open("GET", "/_stats/", true)
     xhr.onload = function () {
@@ -12,7 +13,7 @@ function refreshViewersCounter() {
     }
     xhr.send()
 
-    setTimeout(refreshViewersCounter, 20000)
+    setTimeout(() => {
+        refreshViewersCounter(period)
+    }, period)
 }
-
-refreshViewersCounter()

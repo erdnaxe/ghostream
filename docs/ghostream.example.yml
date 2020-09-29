@@ -35,6 +35,7 @@ web:
   hostname: localhost
   favicon: https://www.crans.org/images/favicon.ico
   widgetURL: https://example.com/
+  viewersCounterRefreshPeriod: 20000
 
 # Configure WebRTC server
 webrtc:

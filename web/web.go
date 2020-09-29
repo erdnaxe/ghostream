@@ -15,11 +15,12 @@ import (
 
 // Options holds web package configuration
 type Options struct {
-	ListenAddress string
-	Name          string
-	Hostname      string
-	Favicon       string
-	WidgetURL     string
+	ListenAddress               string
+	Name                        string
+	Hostname                    string
+	Favicon                     string
+	WidgetURL                   string
+	ViewersCounterRefreshPeriod int
 
 	// Copied from WebRTC configuration
 	STUNServers []string

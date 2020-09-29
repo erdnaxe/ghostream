@@ -53,6 +53,7 @@ func loadConfiguration() {
 	viper.SetDefault("Web.Name", "Ghostream")
 	viper.SetDefault("Web.Hostname", "localhost")
 	viper.SetDefault("Web.Favicon", "/favicon.ico")
+	viper.SetDefault("Web.ViewersCounterRefreshPeriod", 20000)
 	viper.SetDefault("WebRTC.MinPortUDP", 10000)
 	viper.SetDefault("WebRTC.MaxPortUDP", 10005)
 	viper.SetDefault("WebRTC.STUNServers", []string{"stun:stun.l.google.com:19302"})
