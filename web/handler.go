@@ -88,7 +88,11 @@ func staticHandler() http.Handler {
 func statisticsHandler(w http.ResponseWriter, r *http.Request) {
 	// Display connected users stats
 	enc := json.NewEncoder(w)
-	enc.Encode(struct {
+	err := enc.Encode(struct {
 		ConnectedViewers int
 	}{webrtc.GetNumberConnectedSessions()})
+	if err != nil {
+		http.Error(w, "Failed to generate JSON.", http.StatusInternalServerError)
+		log.Printf("Failed to generate JSON: %s", err)
+	}
 }
