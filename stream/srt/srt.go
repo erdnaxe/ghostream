@@ -37,42 +37,28 @@ func Serve(cfg *Options) {
 	options := make(map[string]string)
 	options["transtype"] = "live"
 
+	// Start SRT in listen mode
 	log.Printf("SRT server listening on %s", cfg.ListenAddress)
 	host, port := splitHostPort(cfg.ListenAddress)
 	sck := srtgo.NewSrtSocket(host, uint16(port), options)
 	sck.Listen(cfg.MaxClients)
 
+	// FIXME: See srtgo.SocketOptions and value, err := s.GetSockOptString to get parameters
+	// http://ffmpeg.org/ffmpeg-protocols.html#srt
+
 	for {
+		// Wait for new connection
 		s, err := sck.Accept()
 		if err != nil {
 			log.Println("Error occurred while accepting request:", err)
-			continue
+			break // FIXME: should not break here
 		}
 
-		multicast.RegisterStream("demo") // FIXME Replace with real stream key
-
+		// Create a new buffer
 		buff := make([]byte, 2048)
-		n, err := s.Read(buff, 10000)
-		if err != nil {
-			log.Println("Error occurred while reading SRT socket:", err)
-			break
-		}
-		if n == 0 {
-			// End of stream
-			multicast.CloseConnection("demo")
-			break
-		}
 
-		multicast.SendPacket("demo", buff[:n])
-
-		// Unmarshal the incoming packet
-		packet := &rtp.Packet{}
-		if err = packet.Unmarshal(buff[:n]); err != nil {
-			log.Println("Error occured while unmarshaling SRT:", err)
-			break
-		}
-
-		// videoTrack, err := peerConnection.NewTrack(payloadType, packet.SSRC, "video", "pion")
+		// Setup linked multicasts
+		multicast.RegisterStream("demo") // FIXME Replace with real stream key
 
 		// Read RTP packets forever and send them to the WebRTC Client
 		for {
@@ -83,17 +69,29 @@ func Serve(cfg *Options) {
 				break
 			}
 
-			multicast.SendPacket("demo", buff[:n])
+			if n == 0 {
+				// End of stream
+				log.Printf("Received no bytes, stopping stream.")
+				multicast.CloseConnection("demo")
+				break
+			}
 
 			log.Printf("Received %d bytes", n)
 
+			// Send raw packet to other streams
+			multicast.SendPacket("demo", buff[:n])
+
+			// Unmarshal incoming packet
 			packet := &rtp.Packet{}
 			if err := packet.Unmarshal(buff[:n]); err != nil {
-				panic(err)
+				log.Println("Error occured while unmarshaling SRT:", err)
+				multicast.CloseConnection("demo")
+				break
 			}
-			payloadType := uint8(22) // FIXME put vp8 payload
-			packet.Header.PayloadType = payloadType
 
+			// TODO: Send to WebRTC
+			//payloadType := uint8(22) // FIXME put vp8 payload
+			//packet.Header.PayloadType = payloadType
 			//err := videoTrack.WriteRTP(packet)
 		}
 	}
