@@ -53,15 +53,17 @@ func Serve(cfg *Options) {
 
 		buff := make([]byte, 2048)
 		n, err := s.Read(buff, 10000)
-		multicast.SendPacket("demo", buff[:n])
 		if err != nil {
 			log.Println("Error occurred while reading SRT socket:", err)
 			break
 		}
 		if n == 0 {
 			// End of stream
+			multicast.CloseConnection("demo")
 			break
 		}
+
+		multicast.SendPacket("demo", buff[:n])
 
 		// Unmarshal the incoming packet
 		packet := &rtp.Packet{}
@@ -81,10 +83,11 @@ func Serve(cfg *Options) {
 				break
 			}
 
+			multicast.SendPacket("demo", buff[:n])
+
 			log.Printf("Received %d bytes", n)
 
 			packet := &rtp.Packet{}
-			multicast.SendPacket("demo", buff[:n])
 			if err := packet.Unmarshal(buff[:n]); err != nil {
 				panic(err)
 			}
