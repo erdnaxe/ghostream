@@ -46,3 +46,9 @@ webrtc:
   # STUN servers, you should host your own Coturn instance
   STUNServers:
     - stun:stun.l.google.com:19302
+
+# Configuration for the multicast feature
+multicast:
+  outputs:
+  # demo:
+  #   - rtmp://localhost:1925
