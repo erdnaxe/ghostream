@@ -12,6 +12,7 @@ RUN go generate && go build -o ./out/ghostream .
 # Production image
 FROM alpine:3.12
 RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing libsrt
+RUN apk add ffmpeg
 COPY --from=build_base /code/out/ghostream /app/ghostream
 WORKDIR /app
 # 9710 for SRT, 8080 for Web, 2112 for monitoring and 10000-10005 (UDP) for WebRTC
