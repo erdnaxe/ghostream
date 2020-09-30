@@ -96,11 +96,8 @@ func main() {
 	go web.Serve(remoteSdpChan, localSdpChan, &cfg.Web)
 	go webrtc.Serve(remoteSdpChan, localSdpChan, &cfg.WebRTC)
 
-	// Init stream forwarding
-	err = forwarding.New(&cfg.Forwarding)
-	if err != nil {
-		log.Fatalln("Failed to init stream forwarding:", err)
-	}
+	// Configure stream forwarding
+	forwarding.New(cfg.Forwarding)
 
 	// Wait for routines
 	select {}
