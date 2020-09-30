@@ -4,7 +4,6 @@ After=syslog.target
 
 [Service]
 User=www-data
-EnvironmentFile=-/etc/default/ghostream
 ExecStart=/usr/bin/ghostream
 Restart=on-failure
 

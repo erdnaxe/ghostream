@@ -16,6 +16,7 @@ Features:
 -   SRT stream input, supported by FFMpeg, OBS and Gstreamer.
 -   Low-latency streaming, sub-second with web player.
 -   Authentification of incoming stream using LDAP server.
+-   Possibility to forward stream to other streaming servers.
 
 ## Installation on Debian/Ubuntu
 

@@ -1,4 +1,4 @@
-package multicast
+package forwarding
 
 import (
 	"bufio"
@@ -7,11 +7,9 @@ import (
 	"os/exec"
 )
 
-// Options to configure the multicast:
-//for each stream key, we can have several additional stream URL where the main stream is redirected to
-type Options struct {
-	Outputs map[string][]string
-}
+// Options to configure the stream forwarding.
+// For each stream name, user can provide several URL to forward stream to
+type Options map[string][]string
 
 var (
 	options            Options
@@ -27,12 +25,12 @@ func New(cfg *Options) error {
 
 // RegisterStream Declare a new open stream and create ffmpeg instances
 func RegisterStream(streamKey string) {
-	if len(options.Outputs[streamKey]) == 0 {
+	if len(options[streamKey]) == 0 {
 		return
 	}
 
 	params := []string{"-re", "-i", "pipe:0"}
-	for _, stream := range options.Outputs[streamKey] {
+	for _, stream := range options[streamKey] {
 		params = append(params, "-f", "flv", "-preset", "ultrafast", "-tune", "zerolatency",
 			"-c", "copy", stream)
 	}

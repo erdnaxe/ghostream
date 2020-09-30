@@ -17,6 +17,13 @@ auth:
   #  uri: ldap://127.0.0.1:389
   #  userdn: cn=users,dc=example,dc=com
 
+# Configure stream forwarding
+forwarding:
+  # Example to forward a stream named "demo" to Twitch and YouTube
+  #demo:
+  #  - rtmp://live-cdg.twitch.tv/app/STREAM_KEY
+  #  - rtmp://a.rtmp.youtube.com/live2/STREAM_KEY
+
 # Prometheus monitoring endpoint
 monitoring:
   listenAddress: 127.0.0.1:2112
@@ -46,9 +53,3 @@ webrtc:
   # STUN servers, you should host your own Coturn instance
   STUNServers:
     - stun:stun.l.google.com:19302
-
-# Configuration for the multicast feature
-multicast:
-  outputs:
-  # demo:
-  #   - rtmp://localhost:1925
