@@ -3,6 +3,7 @@
 package main
 
 import (
+	"gitlab.crans.org/nounous/ghostream/stream/multicast"
 	"log"
 	"strings"
 
@@ -57,6 +58,7 @@ func loadConfiguration() {
 	viper.SetDefault("WebRTC.MinPortUDP", 10000)
 	viper.SetDefault("WebRTC.MaxPortUDP", 10005)
 	viper.SetDefault("WebRTC.STUNServers", []string{"stun:stun.l.google.com:19302"})
+	viper.SetDefault("Multicast.Outputs", make(map[string][]string))
 
 	// Copy STUN configuration to clients
 	viper.Set("Web.STUNServers", viper.Get("WebRTC.STUNServers"))
@@ -68,6 +70,7 @@ func main() {
 	cfg := struct {
 		Auth       auth.Options
 		Monitoring monitoring.Options
+		Multicast  multicast.Options
 		Srt        srt.Options
 		Web        web.Options
 		WebRTC     webrtc.Options
@@ -92,6 +95,12 @@ func main() {
 	go srt.Serve(&cfg.Srt)
 	go web.Serve(remoteSdpChan, localSdpChan, &cfg.Web)
 	go webrtc.Serve(remoteSdpChan, localSdpChan, &cfg.WebRTC)
+
+	// Init multicast
+	err = multicast.New(&cfg.Multicast)
+	if err != nil {
+		log.Fatalln("Failed to load multicast app:", err)
+	}
 
 	// Wait for routines
 	select {}

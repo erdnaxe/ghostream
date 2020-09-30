@@ -1,6 +1,7 @@
 package srt
 
 import (
+	"gitlab.crans.org/nounous/ghostream/stream/multicast"
 	"log"
 	"net"
 	"strconv"
@@ -56,26 +57,35 @@ func Serve(cfg *Options) {
 		// Create a new buffer
 		buff := make([]byte, 2048)
 
+		// Setup linked multicasts
+		multicast.RegisterStream("demo") // FIXME Replace with real stream key
+
 		// Read RTP packets forever and send them to the WebRTC Client
 		for {
 			n, err := s.Read(buff, 10000)
 			if err != nil {
 				log.Println("Error occured while reading SRT socket:", err)
+				multicast.CloseConnection("demo")
 				break
 			}
 
 			if n == 0 {
 				// End of stream
 				log.Printf("Received no bytes, stopping stream.")
+				multicast.CloseConnection("demo")
 				break
 			}
 
 			log.Printf("Received %d bytes", n)
 
+			// Send raw packet to other streams
+			multicast.SendPacket("demo", buff[:n])
+
 			// Unmarshal incoming packet
 			packet := &rtp.Packet{}
 			if err := packet.Unmarshal(buff[:n]); err != nil {
 				log.Println("Error occured while unmarshaling SRT:", err)
+				multicast.CloseConnection("demo")
 				break
 			}
 
