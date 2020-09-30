@@ -40,7 +40,9 @@ func Serve(cfg *Options) {
 	log.Printf("SRT server listening on %s", cfg.ListenAddress)
 	host, port := splitHostPort(cfg.ListenAddress)
 	sck := srtgo.NewSrtSocket(host, uint16(port), options)
-	sck.Listen(cfg.MaxClients)
+	if err := sck.Listen(cfg.MaxClients); err != nil {
+		log.Fatal("Unable to listen to SRT clients:", err)
+	}
 
 	// FIXME: See srtgo.SocketOptions and value, err := s.GetSockOptString to get parameters
 	// http://ffmpeg.org/ffmpeg-protocols.html#srt

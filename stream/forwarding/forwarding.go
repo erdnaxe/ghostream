@@ -82,6 +82,10 @@ func RegisterStream(name string) error {
 // SendPacket forward data to all FFMpeg instances related to the stream name
 func SendPacket(name string, data []byte) {
 	stdin := ffmpegInputStreams[name]
+	if stdin == nil {
+		// Don't need to forward stream
+		return
+	}
 	_, err := (*stdin).Write(data)
 	if err != nil {
 		log.Printf("Error while sending a packet to external streaming server for key %s: %s", name, err)
@@ -91,6 +95,10 @@ func SendPacket(name string, data []byte) {
 // CloseConnection When the stream is ended, close FFMPEG instances
 func CloseConnection(name string) error {
 	ffmpeg := ffmpegInstances[name]
+	if ffmpeg == nil {
+		// No stream to close
+		return nil
+	}
 	if err := ffmpeg.Process.Kill(); err != nil {
 		return err
 	}
