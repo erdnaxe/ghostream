@@ -36,7 +36,7 @@ func viewerPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(jsonDesc)
+	_, _ = w.Write(jsonDesc)
 
 	// Increment monitoring
 	monitoring.WebSessions.Inc()
