@@ -1,17 +1,9 @@
 // Refresh viewer count by pulling metric from server
 function refreshViewersCounter(period) {
-    let xhr = new XMLHttpRequest()
-    xhr.open("GET", "/_stats/", true)
-    xhr.onload = function () {
-        console.log(xhr.response)
-        if (xhr.status === 200) {
-            let data = JSON.parse(xhr.response)
-            document.getElementById("connected-people").innerText = data.ConnectedViewers
-        }
-        else
-            console.log("WARNING: status code " + xhr.status + " was returned while fetching connected viewers.")
-    }
-    xhr.send()
+    fetch("/_stats/")
+        .then(response => response.json())
+        .then((data) => document.getElementById("connected-people").innerText = data.ConnectedViewers)
+        .catch(console.log)
 
     setTimeout(() => {
         refreshViewersCounter(period)
