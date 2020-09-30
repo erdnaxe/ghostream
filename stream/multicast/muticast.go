@@ -7,6 +7,8 @@ import (
 	"os/exec"
 )
 
+// Options to configure the multicast:
+//for each stream key, we can have several additional stream URL where the main stream is redirected to
 type Options struct {
 	Outputs map[string][]string
 }
