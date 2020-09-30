@@ -24,13 +24,13 @@ func New(cfg *Options) error {
 }
 
 // RegisterStream Declare a new open stream and create ffmpeg instances
-func RegisterStream(streamKey string) {
-	if len(options[streamKey]) == 0 {
+func RegisterStream(name string) {
+	if len(options[name]) == 0 {
 		return
 	}
 
 	params := []string{"-re", "-i", "pipe:0"}
-	for _, stream := range options[streamKey] {
+	for _, stream := range options[name] {
 		params = append(params, "-f", "flv", "-preset", "ultrafast", "-tune", "zerolatency",
 			"-c", "copy", stream)
 	}
@@ -50,8 +50,8 @@ func RegisterStream(streamKey string) {
 	if err != nil {
 		panic(err)
 	}
-	ffmpegInstances[streamKey] = ffmpeg
-	ffmpegInputStreams[streamKey] = &input
+	ffmpegInstances[name] = ffmpeg
+	ffmpegInputStreams[name] = &input
 
 	if err := ffmpeg.Start(); err != nil {
 		panic(err)
@@ -61,33 +61,34 @@ func RegisterStream(streamKey string) {
 	go func() {
 		scanner := bufio.NewScanner(output)
 		for scanner.Scan() {
-			log.Println("[FFMPEG " + streamKey + "] " + scanner.Text())
+			log.Println("[FFMPEG " + name + "] " + scanner.Text())
 		}
 	}()
+
 	// Log also error output
 	go func() {
 		scanner := bufio.NewScanner(errOutput)
 		for scanner.Scan() {
-			log.Println("[FFMPEG ERROR " + streamKey + "] " + scanner.Text())
+			log.Println("[FFMPEG ERROR " + name + "] " + scanner.Text())
 		}
 	}()
 }
 
 // SendPacket When a SRT packet is received, transmit it to all FFMPEG instances related to the stream key
-func SendPacket(streamKey string, data []byte) {
-	stdin := ffmpegInputStreams[streamKey]
+func SendPacket(name string, data []byte) {
+	stdin := ffmpegInputStreams[name]
 	_, err := (*stdin).Write(data)
 	if err != nil {
-		log.Println("Error while sending a packet to external streaming server for key "+streamKey, err)
+		log.Printf("Error while sending a packet to external streaming server for key %s: %s", name, err)
 	}
 }
 
 // CloseConnection When the stream is ended, close FFMPEG instances
-func CloseConnection(streamKey string) {
-	ffmpeg := ffmpegInstances[streamKey]
+func CloseConnection(name string) {
+	ffmpeg := ffmpegInstances[name]
 	if err := ffmpeg.Process.Kill(); err != nil {
 		panic(err)
 	}
-	delete(ffmpegInstances, streamKey)
-	delete(ffmpegInputStreams, streamKey)
+	delete(ffmpegInstances, name)
+	delete(ffmpegInputStreams, name)
 }
