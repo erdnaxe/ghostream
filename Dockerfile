@@ -6,8 +6,7 @@ RUN apt-get update && \
 WORKDIR /code
 COPY go.* ./
 RUN go mod download && go get github.com/markbates/pkger/cmd/pkger
-# Don't copy all to save time each time we touch a non-code file
-COPY auth/ internal/ stream/ web/ go.mod go.sum main.go ./
+COPY . .
 RUN PATH=/root/go/bin:$PATH go generate && go build -o ./out/ghostream .
 
 # Production image
