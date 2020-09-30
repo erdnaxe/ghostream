@@ -23,6 +23,19 @@ func TestSplitHostPort(t *testing.T) {
 
 // TestServeSRT Serve a SRT server, stream content during 5 seconds and ensure that it is well received
 func TestServeSRT(t *testing.T) {
+	which := exec.Command("which", "ffmpeg")
+	if err := which.Start(); err != nil {
+		t.Fatal("Error while checking if ffmpeg got installed:", err)
+	}
+	state, err := which.Process.Wait()
+	if err != nil {
+		t.Fatal("Error while checking if ffmpeg got installed:", err)
+	}
+	if state.ExitCode() != 0 {
+		// FFMPEG is not installed
+		t.Skip("WARNING: FFMPEG is not installed. Skipping stream test")
+	}
+
 	go Serve(&Options{ListenAddress: ":9711", MaxClients: 2})
 
 	ffmpeg := exec.Command("ffmpeg",
