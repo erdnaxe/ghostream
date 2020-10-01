@@ -56,7 +56,7 @@ func TestForwardStream(t *testing.T) {
 	forwardingChannel = make(chan srt.Packet)
 
 	// Register forwarding stream list
-	New(forwardingList, forwardingChannel)
+	Serve(forwardingList, forwardingChannel)
 
 	// Serve HTTP Server
 	go srt.Serve(&srt.Options{ListenAddress: ":9712", MaxClients: 2}, forwardingChannel)

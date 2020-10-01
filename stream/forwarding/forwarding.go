@@ -19,12 +19,12 @@ var (
 	ffmpegInputStreams = make(map[string]*io.WriteCloser)
 )
 
-// New Load configuration and initialize SRT channel
-func New(c Options, channel chan srt.Packet) {
+// Serve Load configuration and initialize SRT channel
+func Serve(c Options, channel chan srt.Packet) {
 	cfg = c
 	forwardingChannel = channel
-	go waitForPackets()
 	log.Printf("Stream forwarding initialized")
+	waitForPackets()
 }
 
 func waitForPackets() {
