@@ -69,4 +69,5 @@ func TestServeSRT(t *testing.T) {
 	time.Sleep(5000000000) // Delay is in nanoseconds, here 5s
 
 	// TODO Check that the stream ran
+	// TODO Kill SRT server
 }

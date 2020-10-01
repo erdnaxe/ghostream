@@ -59,7 +59,7 @@ func TestForwardStream(t *testing.T) {
 	New(forwardingList, forwardingChannel)
 
 	// Serve HTTP Server
-	go srt.Serve(&srt.Options{ListenAddress: ":9711", MaxClients: 2}, forwardingChannel)
+	go srt.Serve(&srt.Options{ListenAddress: ":9712", MaxClients: 2}, forwardingChannel)
 
 	ffmpeg := exec.Command("ffmpeg",
 		"-i", "http://ftp.crans.org/events/Blender%20OpenMovies/big_buck_bunny_480p_stereo.ogg",
@@ -96,4 +96,5 @@ func TestForwardStream(t *testing.T) {
 	}
 
 	// TODO Check that the stream ran
+	// TODO Kill SRT server
 }
