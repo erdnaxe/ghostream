@@ -84,7 +84,10 @@ func Serve(cfg *Options, forwardingChannel chan Packet) {
 			// log.Printf("Received %d bytes", n)
 
 			// Send raw packet to other streams
-			forwardingChannel <- Packet{StreamName: "demo", PacketType: "sendData", Data: buff[:n]}
+			// Copy data in another buffer to ensure that the data would not be overwritten
+			data := make([]byte, n)
+			copy(data, buff[:n])
+			forwardingChannel <- Packet{StreamName: "demo", PacketType: "sendData", Data: data}
 
 			// TODO: Send to WebRTC
 			// See https://github.com/ebml-go/webm/blob/master/reader.go
