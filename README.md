@@ -3,8 +3,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PkgGoDev](https://pkg.go.dev/badge/mod/gitlab.crans.org/nounous/ghostream)](https://pkg.go.dev/mod/gitlab.crans.org/nounous/ghostream)
 [![Go Report Card](https://goreportcard.com/badge/gitlab.crans.org/nounous/ghostream)](https://goreportcard.com/report/gitlab.crans.org/nounous/ghostream)
-[![pipeline status](https://gitlab.crans.org/nounous/ghostream/badges/master/pipeline.svg)](https://gitlab.crans.org/nounous/ghostream/commits/master)
-[![coverage report](https://gitlab.crans.org/nounous/ghostream/badges/master/coverage.svg)](https://gitlab.crans.org/nounous/ghostream/-/commits/master)
+[![pipeline status](https://gitlab.crans.org/nounous/ghostream/badges/golang/pipeline.svg)](https://gitlab.crans.org/nounous/ghostream/commits/golang)
+[![coverage report](https://gitlab.crans.org/nounous/ghostream/badges/golang/coverage.svg)](https://gitlab.crans.org/nounous/ghostream/-/commits/golang)
 
 *Boooo!* A simple streaming server with authentication and open-source technologies.
 
@@ -15,7 +15,7 @@ Features:
 -   WebRTC playback with a lightweight web interface.
 -   SRT stream input, supported by FFMpeg, OBS and Gstreamer.
 -   Low-latency streaming, sub-second with web player.
--   Authentification of incoming stream using LDAP server.
+-   Authentication of incoming stream using LDAP server.
 -   Possibility to forward stream to other streaming servers.
 
 ## Installation on Debian/Ubuntu
@@ -45,7 +45,7 @@ As stated by OBS wiki, when streaming you should adapt the latency to `2.5 * (th
 As OBS uses FFMpeg, you need to have FFMpeg compiled with SRT support. To check if SR is available, run `ffmpeg -protocols | grep srt`.
 On Windows and MacOS, OBS comes with his own FFMpeg that will work.
 
-In OBS, go to "Settings" -> "Stream" and change "Service" to "Custom..." and "Server" to `srt://127.0.0.1:9710`.
+In OBS, go to "Settings" -> "Stream" and change "Service" to "Custom..." and "Server" to `srt://127.0.0.1:9710?streamid=demo|demo`.
 
 ### With GStreamer
 
@@ -56,7 +56,7 @@ gst-launch-1.0 ximagesrc startx=0 show-pointer=true use-damage=0 \
 ! videoconvert \
 ! x264enc bitrate=32000 tune=zerolatency speed-preset=veryfast byte-stream=true threads=1 key-int-max=15 intra-refresh=true ! video/x-h264, profile=baseline, framerate=30/1 \
 ! mpegtsmux \
-! srtserversink uri=srt://127.0.0.1:9710/ latency=1000000
+! srtserversink uri=srt://127.0.0.1:9710/ latency=1000000 streamid=demo|demo
 ```
 
 ## References
