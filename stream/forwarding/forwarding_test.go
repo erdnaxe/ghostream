@@ -63,7 +63,7 @@ func TestForwardStream(t *testing.T) {
 
 	ffmpeg := exec.Command("ffmpeg",
 		"-i", "http://ftp.crans.org/events/Blender%20OpenMovies/big_buck_bunny_480p_stereo.ogg",
-		"-f", "flv", "srt://127.0.0.1:9711")
+		"-f", "flv", "srt://127.0.0.1:9712")
 
 	output, err := ffmpeg.StdoutPipe()
 	errOutput, err := ffmpeg.StderrPipe()
