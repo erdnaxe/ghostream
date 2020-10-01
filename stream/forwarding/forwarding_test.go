@@ -24,8 +24,8 @@ func TestForwardStream(t *testing.T) {
 		t.Skip("WARNING: FFMPEG is not installed. Skipping stream test")
 	}
 
-	forwardedFfmpeg := exec.Command("ffmpeg",
-		"-f", "flv", "-listen", "1", "-i", "rtmp://127.0.0.1:1936/live/app", "-c", "copy", "/dev/null")
+	forwardedFfmpeg := exec.Command("ffmpeg", "-y", // allow overwrite /dev/null
+		"-listen", "1", "-i", "rtmp://127.0.0.1:1936/live/app", "-f", "null", "-c", "copy", "/dev/null")
 	forwardingOutput, err := forwardedFfmpeg.StdoutPipe()
 	forwardingErrOutput, err := forwardedFfmpeg.StderrPipe()
 	if err != nil {
@@ -62,7 +62,7 @@ func TestForwardStream(t *testing.T) {
 	go srt.Serve(&srt.Options{ListenAddress: ":9712", MaxClients: 2}, forwardingChannel)
 
 	ffmpeg := exec.Command("ffmpeg",
-		"-i", "http://ftp.crans.org/events/Blender%20OpenMovies/big_buck_bunny_480p_stereo.ogg",
+		"-re", "-f", "lavfi", "-i", "testsrc=size=640x480:rate=10",
 		"-f", "flv", "srt://127.0.0.1:9712")
 
 	output, err := ffmpeg.StdoutPipe()
@@ -95,6 +95,7 @@ func TestForwardStream(t *testing.T) {
 		t.Errorf("Stream forwarding does not appear to be working")
 	}
 
+	// TODO Check that FFMPEG has no error
 	// TODO Check that the stream ran
 	// TODO Kill SRT server
 }
