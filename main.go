@@ -96,7 +96,7 @@ func main() {
 	// Start stream, web and monitoring server, and stream forwarding
 	go forwarding.Serve(cfg.Forwarding, forwardingChannel)
 	go monitoring.Serve(&cfg.Monitoring)
-	go srt.Serve(&cfg.Srt, forwardingChannel)
+	go srt.Serve(&cfg.Srt, authBackend, forwardingChannel)
 	go web.Serve(remoteSdpChan, localSdpChan, &cfg.Web)
 	go webrtc.Serve(remoteSdpChan, localSdpChan, &cfg.WebRTC)
 

@@ -1,9 +1,12 @@
 package srt
 
 import (
+	"gitlab.crans.org/nounous/ghostream/auth"
+	"gitlab.crans.org/nounous/ghostream/auth/bypass"
 	"log"
 	"net"
 	"strconv"
+	"strings"
 
 	"github.com/haivision/srtgo"
 )
@@ -38,14 +41,18 @@ func splitHostPort(hostport string) (string, uint16) {
 }
 
 // Serve SRT server
-func Serve(cfg *Options, forwardingChannel chan Packet) {
+func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel chan Packet) {
+	if authBackend == nil {
+		authBackend, _ = bypass.New()
+	}
+
 	options := make(map[string]string)
 	options["transtype"] = "live"
 
 	// Start SRT in listen mode
 	log.Printf("SRT server listening on %s", cfg.ListenAddress)
 	host, port := splitHostPort(cfg.ListenAddress)
-	sck := srtgo.NewSrtSocket(host, uint16(port), options)
+	sck := srtgo.NewSrtSocket(host, port, options)
 	if err := sck.Listen(cfg.MaxClients); err != nil {
 		log.Fatal("Unable to listen to SRT clients:", err)
 	}
@@ -61,12 +68,34 @@ func Serve(cfg *Options, forwardingChannel chan Packet) {
 			break // FIXME: should not break here
 		}
 
+		streamId, err := s.GetSockOptString(46) // SRTO_STREAMID
+		if err != nil {
+			log.Println("Error while fetching stream key:", err)
+			s.Close()
+			continue
+		}
+		if !strings.Contains(streamId, "|") {
+			log.Printf("Warning: stream id must be at the format streamId|password. Input: %s", streamId)
+			s.Close()
+			continue
+		}
+
+		splittedStreamId := strings.SplitN(streamId, "|", 2)
+		streamName, password := splittedStreamId[0], splittedStreamId[1]
+		loggedIn, err := authBackend.Login(streamName, password)
+		if !loggedIn {
+			log.Printf("Invalid credentials for stream %s.", streamName)
+			s.Close()
+			continue
+		}
+
+		log.Printf("Starting stream %s...", streamName)
+
 		// Create a new buffer
 		buff := make([]byte, 2048)
 
 		// Setup stream forwarding
-		// FIXME: demo should be replaced by stream name
-		forwardingChannel <- Packet{StreamName: "demo", PacketType: "register", Data: nil}
+		forwardingChannel <- Packet{StreamName: streamName, PacketType: "register", Data: nil}
 
 		// Read RTP packets forever and send them to the WebRTC Client
 		for {
@@ -81,20 +110,21 @@ func Serve(cfg *Options, forwardingChannel chan Packet) {
 				log.Printf("Received no bytes, stopping stream.")
 				break
 			}
-
 			// log.Printf("Received %d bytes", n)
 
 			// Send raw packet to other streams
 			// Copy data in another buffer to ensure that the data would not be overwritten
 			data := make([]byte, n)
 			copy(data, buff[:n])
-			forwardingChannel <- Packet{StreamName: "demo", PacketType: "sendData", Data: data}
+			forwardingChannel <- Packet{StreamName: streamName, PacketType: "sendData", Data: data}
 
 			// TODO: Send to WebRTC
 			// See https://github.com/ebml-go/webm/blob/master/reader.go
 			//err := videoTrack.WriteSample(media.Sample{Data: data, Samples: uint32(sampleCount)})
 		}
 
-		forwardingChannel <- Packet{StreamName: "demo", PacketType: "close", Data: nil}
+		forwardingChannel <- Packet{StreamName: streamName, PacketType: "close", Data: nil}
 	}
+
+	sck.Close()
 }

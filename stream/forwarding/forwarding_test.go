@@ -59,11 +59,11 @@ func TestForwardStream(t *testing.T) {
 	go Serve(forwardingList, forwardingChannel)
 
 	// Serve HTTP Server
-	go srt.Serve(&srt.Options{ListenAddress: ":9712", MaxClients: 2}, forwardingChannel)
+	go srt.Serve(&srt.Options{ListenAddress: ":9712", MaxClients: 2}, nil, forwardingChannel)
 
 	ffmpeg := exec.Command("ffmpeg",
 		"-re", "-f", "lavfi", "-i", "testsrc=size=640x480:rate=10",
-		"-f", "flv", "srt://127.0.0.1:9712")
+		"-f", "flv", "srt://127.0.0.1:9712?streamid=demo|")
 
 	output, err := ffmpeg.StdoutPipe()
 	errOutput, err := ffmpeg.StderrPipe()
