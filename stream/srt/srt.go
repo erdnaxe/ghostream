@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/haivision/srtgo"
-	"gitlab.crans.org/nounous/ghostream/stream/forwarding"
 )
 
 // Options holds web package configuration
@@ -60,10 +59,10 @@ func Serve(cfg *Options) {
 
 		// Setup stream forwarding
 		// FIXME: demo should be replaced by stream name
-		if err := forwarding.RegisterStream("demo"); err != nil {
+		/*	if err := forwarding.RegisterStream("demo"); err != nil {
 			log.Println("Error occurred during forward stream init:", err)
 			break
-		}
+		} */
 
 		// Read RTP packets forever and send them to the WebRTC Client
 		for {
@@ -79,18 +78,18 @@ func Serve(cfg *Options) {
 				break
 			}
 
-			log.Printf("Received %d bytes", n)
+			// log.Printf("Received %d bytes", n)
 
 			// Send raw packet to other streams
-			forwarding.SendPacket("demo", buff[:n])
+			// forwarding.SendPacket("demo", buff[:n])
 
 			// TODO: Send to WebRTC
 			// See https://github.com/ebml-go/webm/blob/master/reader.go
 			//err := videoTrack.WriteSample(media.Sample{Data: data, Samples: uint32(sampleCount)})
 		}
 
-		if err := forwarding.CloseConnection("demo"); err != nil {
+		/*	if err := forwarding.CloseConnection("demo"); err != nil {
 			log.Printf("Failed to close forward stream: %s", err)
-		}
+		} */
 	}
 }
