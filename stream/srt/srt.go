@@ -14,6 +14,12 @@ type Options struct {
 	MaxClients    int
 }
 
+type Packet struct {
+	Data       []byte
+	PacketType string
+	StreamName string
+}
+
 // Split host and port from listen address
 func splitHostPort(hostport string) (string, uint16) {
 	host, portS, err := net.SplitHostPort(hostport)
@@ -31,7 +37,7 @@ func splitHostPort(hostport string) (string, uint16) {
 }
 
 // Serve SRT server
-func Serve(cfg *Options) {
+func Serve(cfg *Options, forwardingChannel chan Packet) {
 	options := make(map[string]string)
 	options["transtype"] = "live"
 
@@ -59,10 +65,7 @@ func Serve(cfg *Options) {
 
 		// Setup stream forwarding
 		// FIXME: demo should be replaced by stream name
-		/*	if err := forwarding.RegisterStream("demo"); err != nil {
-			log.Println("Error occurred during forward stream init:", err)
-			break
-		} */
+		forwardingChannel <- Packet{StreamName: "demo", PacketType: "register", Data: nil}
 
 		// Read RTP packets forever and send them to the WebRTC Client
 		for {
@@ -81,15 +84,13 @@ func Serve(cfg *Options) {
 			// log.Printf("Received %d bytes", n)
 
 			// Send raw packet to other streams
-			// forwarding.SendPacket("demo", buff[:n])
+			forwardingChannel <- Packet{StreamName: "demo", PacketType: "sendData", Data: buff[:n]}
 
 			// TODO: Send to WebRTC
 			// See https://github.com/ebml-go/webm/blob/master/reader.go
 			//err := videoTrack.WriteSample(media.Sample{Data: data, Samples: uint32(sampleCount)})
 		}
 
-		/*	if err := forwarding.CloseConnection("demo"); err != nil {
-			log.Printf("Failed to close forward stream: %s", err)
-		} */
+		forwardingChannel <- Packet{StreamName: "demo", PacketType: "close", Data: nil}
 	}
 }

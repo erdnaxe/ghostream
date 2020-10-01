@@ -2,6 +2,7 @@ package forwarding
 
 import (
 	"bufio"
+	"gitlab.crans.org/nounous/ghostream/stream/srt"
 	"io"
 	"log"
 	"os/exec"
@@ -13,14 +14,41 @@ type Options map[string][]string
 
 var (
 	cfg                Options
+	forwardingChannel  chan srt.Packet
 	ffmpegInstances    = make(map[string]*exec.Cmd)
 	ffmpegInputStreams = make(map[string]*io.WriteCloser)
 )
 
-// New Load configuration
-func New(c Options) {
+// New Load configuration and initialize SRT channel
+func New(c Options, channel chan srt.Packet) {
 	cfg = c
+	forwardingChannel = channel
+	go waitForPackets()
 	log.Printf("Stream forwarding initialized")
+}
+
+func waitForPackets() {
+	for {
+		var err error = nil
+		packet := <-forwardingChannel
+		switch packet.PacketType {
+		case "register":
+			err = RegisterStream(packet.StreamName)
+			break
+		case "sendData":
+			err = SendPacket(packet.StreamName, packet.Data)
+			break
+		case "close":
+			err = CloseConnection(packet.StreamName)
+			break
+		default:
+			log.Println("Unknown SRT packet type:", packet.PacketType)
+			break
+		}
+		if err != nil {
+			log.Printf("Error occured while receiving SRT packet of type %s: %s", packet.PacketType, err)
+		}
+	}
 }
 
 // RegisterStream Declare a new open stream and create ffmpeg instances
@@ -80,16 +108,14 @@ func RegisterStream(name string) error {
 }
 
 // SendPacket forward data to all FFMpeg instances related to the stream name
-func SendPacket(name string, data []byte) {
+func SendPacket(name string, data []byte) error {
 	stdin := ffmpegInputStreams[name]
 	if stdin == nil {
 		// Don't need to forward stream
-		return
+		return nil
 	}
 	_, err := (*stdin).Write(data)
-	if err != nil {
-		log.Printf("Error while sending a packet to external streaming server for key %s: %s", name, err)
-	}
+	return err
 }
 
 // CloseConnection When the stream is ended, close FFMPEG instances

@@ -90,14 +90,17 @@ func main() {
 	remoteSdpChan := make(chan webrtc.SessionDescription)
 	localSdpChan := make(chan webrtc.SessionDescription)
 
+	// SRT channel, to propagate forwarding
+	forwardingChannel := make(chan srt.Packet)
+
 	// Start stream, web and monitoring server
 	go monitoring.Serve(&cfg.Monitoring)
-	go srt.Serve(&cfg.Srt)
+	go srt.Serve(&cfg.Srt, forwardingChannel)
 	go web.Serve(remoteSdpChan, localSdpChan, &cfg.Web)
 	go webrtc.Serve(remoteSdpChan, localSdpChan, &cfg.WebRTC)
 
 	// Configure stream forwarding
-	forwarding.New(cfg.Forwarding)
+	forwarding.New(cfg.Forwarding, forwardingChannel)
 
 	// Wait for routines
 	select {}

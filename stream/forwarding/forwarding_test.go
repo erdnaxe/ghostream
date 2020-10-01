@@ -52,11 +52,14 @@ func TestForwardStream(t *testing.T) {
 
 	forwardingList := make(map[string][]string)
 	forwardingList["demo"] = []string{"rtmp://127.0.0.1:1936/live/app"}
+
+	forwardingChannel = make(chan srt.Packet)
+
 	// Register forwarding stream list
-	New(forwardingList)
+	New(forwardingList, forwardingChannel)
 
 	// Serve HTTP Server
-	go srt.Serve(&srt.Options{ListenAddress: ":9711", MaxClients: 2})
+	go srt.Serve(&srt.Options{ListenAddress: ":9711", MaxClients: 2}, forwardingChannel)
 
 	ffmpeg := exec.Command("ffmpeg",
 		"-i", "http://ftp.crans.org/events/Blender%20OpenMovies/big_buck_bunny_480p_stereo.ogg",
