@@ -1,6 +1,6 @@
 # Install dependencies then build ghostream
 FROM golang:1.15-alpine AS build_base
-RUN apk add --no-cache gcc libsrt-dev musl-dev
+RUN apk add --no-cache -X https://dl-cdn.alpinelinux.org/alpine/edge/community/ gcc libsrt-dev musl-dev
 WORKDIR /code
 COPY go.* ./
 RUN go mod download && go get github.com/markbates/pkger/cmd/pkger
