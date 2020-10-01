@@ -14,6 +14,7 @@ type Options struct {
 	MaxClients    int
 }
 
+// Packet contains the necessary data to broadcast events like stream creating, packet receiving or stream closing.
 type Packet struct {
 	Data       []byte
 	PacketType string
