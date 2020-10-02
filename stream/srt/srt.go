@@ -1,14 +1,15 @@
 package srt
 
+// #include <srt/srt.h>
+import "C"
 import (
+	"github.com/haivision/srtgo"
 	"gitlab.crans.org/nounous/ghostream/auth"
 	"gitlab.crans.org/nounous/ghostream/auth/bypass"
 	"log"
 	"net"
 	"strconv"
 	"strings"
-
-	"github.com/haivision/srtgo"
 )
 
 // Options holds web package configuration
@@ -68,7 +69,7 @@ func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel chan Packet
 			break // FIXME: should not break here
 		}
 
-		streamId, err := s.GetSockOptString(46) // SRTO_STREAMID
+		streamId, err := s.GetSockOptString(C.SRTO_STREAMID)
 		if err != nil {
 			log.Println("Error while fetching stream key:", err)
 			s.Close()
