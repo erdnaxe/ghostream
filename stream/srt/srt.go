@@ -2,14 +2,16 @@ package srt
 
 // #include <srt/srt.h>
 import "C"
+
 import (
-	"github.com/haivision/srtgo"
 	"gitlab.crans.org/nounous/ghostream/auth"
 	"gitlab.crans.org/nounous/ghostream/auth/bypass"
 	"log"
 	"net"
 	"strconv"
 	"strings"
+
+	"github.com/haivision/srtgo"
 )
 
 // Options holds web package configuration
