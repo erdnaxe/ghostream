@@ -41,7 +41,8 @@ web:
   name: Demo
   hostname: localhost
   favicon: https://www.crans.org/images/favicon.ico
-  widgetURL: https://example.com/
+  # You can optionally use {{.Path}} to customize your widget URL
+  widgetURL: https://example.com/stream_{{.Path}}
   viewersCounterRefreshPeriod: 20000
 
 # Configure WebRTC server

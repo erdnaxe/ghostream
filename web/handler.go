@@ -1,7 +1,9 @@
 package web
 
 import (
+	"bytes"
 	"encoding/json"
+	"html/template"
 	"log"
 	"net/http"
 
@@ -45,9 +47,15 @@ func viewerPostHandler(w http.ResponseWriter, r *http.Request) {
 func viewerGetHandler(w http.ResponseWriter, r *http.Request) {
 	// Render template
 	data := struct {
-		Path string
-		Cfg  *Options
+		Cfg       *Options
+		Path      string
+		WidgetURL string
 	}{Path: r.URL.Path[1:], Cfg: cfg}
+	b := &bytes.Buffer{}
+	// Update the WidgetURL with the stream path
+	_ = template.Must(template.New("").Parse(cfg.WidgetURL)).Execute(b, data)
+	data.WidgetURL = b.String()
+
 	if err := templates.ExecuteTemplate(w, "base", data); err != nil {
 		log.Println(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
