@@ -71,20 +71,20 @@ func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel chan Packet
 			break // FIXME: should not break here
 		}
 
-		streamId, err := s.GetSockOptString(C.SRTO_STREAMID)
+		streamID, err := s.GetSockOptString(C.SRTO_STREAMID)
 		if err != nil {
 			log.Println("Error while fetching stream key:", err)
 			s.Close()
 			continue
 		}
-		if !strings.Contains(streamId, "|") {
-			log.Printf("Warning: stream id must be at the format streamId|password. Input: %s", streamId)
+		if !strings.Contains(streamID, "|") {
+			log.Printf("Warning: stream id must be at the format streamID|password. Input: %s", streamID)
 			s.Close()
 			continue
 		}
 
-		splittedStreamId := strings.SplitN(streamId, "|", 2)
-		streamName, password := splittedStreamId[0], splittedStreamId[1]
+		splittedStreamID := strings.SplitN(streamID, "|", 2)
+		streamName, password := splittedStreamID[0], splittedStreamID[1]
 		loggedIn, err := authBackend.Login(streamName, password)
 		if !loggedIn {
 			log.Printf("Invalid credentials for stream %s.", streamName)
