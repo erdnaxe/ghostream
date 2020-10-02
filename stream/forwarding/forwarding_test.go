@@ -63,7 +63,7 @@ func TestForwardStream(t *testing.T) {
 
 	ffmpeg := exec.Command("ffmpeg",
 		"-re", "-f", "lavfi", "-i", "testsrc=size=640x480:rate=10",
-		"-f", "flv", "srt://127.0.0.1:9712?streamid=demo|")
+		"-f", "flv", "srt://127.0.0.1:9712?streamid=demo:")
 
 	output, err := ffmpeg.StdoutPipe()
 	errOutput, err := ffmpeg.StderrPipe()

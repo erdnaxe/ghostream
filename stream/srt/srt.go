@@ -59,6 +59,7 @@ func Serve(cfg *Options, backend auth.Backend, forwarding chan Packet) {
 
 	options := make(map[string]string)
 	options["transtype"] = "live"
+	options["mode"] = "listener"
 
 	// Start SRT in listen mode
 	log.Printf("SRT server listening on %s", cfg.ListenAddress)
@@ -135,11 +136,12 @@ func authenticateSocket(s *srtgo.SrtSocket) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error while fetching stream key: %s", err)
 	}
-	if !strings.Contains(streamID, "|") {
-		return streamID, fmt.Errorf("warning: stream id must be at the format streamID|password. Input: %s", streamID)
+	log.Println(s.GetSockOptString(C.SRTO_PASSPHRASE))
+	if !strings.Contains(streamID, ":") {
+		return streamID, fmt.Errorf("warning: stream id must be at the format streamID:password. Input: %s", streamID)
 	}
 
-	splittedStreamID := strings.SplitN(streamID, "|", 2)
+	splittedStreamID := strings.SplitN(streamID, ":", 2)
 	streamName, password := splittedStreamID[0], splittedStreamID[1]
 	loggedIn, err := authBackend.Login(streamName, password)
 	if !loggedIn {

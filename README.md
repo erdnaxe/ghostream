@@ -45,7 +45,7 @@ As stated by OBS wiki, when streaming you should adapt the latency to `2.5 * (th
 As OBS uses FFMpeg, you need to have FFMpeg compiled with SRT support. To check if SR is available, run `ffmpeg -protocols | grep srt`.
 On Windows and MacOS, OBS comes with his own FFMpeg that will work.
 
-In OBS, go to "Settings" -> "Stream" and change "Service" to "Custom..." and "Server" to `srt://127.0.0.1:9710?streamid=demo|demo`.
+In OBS, go to "Settings" -> "Stream" and change "Service" to "Custom..." and "Server" to `srt://127.0.0.1:9710?streamid=demo:demo`.
 
 ### With GStreamer
 
@@ -56,7 +56,7 @@ gst-launch-1.0 ximagesrc startx=0 show-pointer=true use-damage=0 \
 ! videoconvert \
 ! x264enc bitrate=32000 tune=zerolatency speed-preset=veryfast byte-stream=true threads=1 key-int-max=15 intra-refresh=true ! video/x-h264, profile=baseline, framerate=30/1 \
 ! mpegtsmux \
-! srtserversink uri=srt://127.0.0.1:9710/ latency=1000000 streamid=demo|demo
+! srtserversink uri=srt://127.0.0.1:9710/ latency=1000000 streamid=demo:demo
 ```
 
 ## References
