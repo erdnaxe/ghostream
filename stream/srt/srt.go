@@ -5,14 +5,14 @@ import "C"
 
 import (
 	"fmt"
-	"gitlab.crans.org/nounous/ghostream/auth"
-	"gitlab.crans.org/nounous/ghostream/auth/bypass"
 	"log"
 	"net"
 	"strconv"
 	"strings"
 
 	"github.com/haivision/srtgo"
+	"gitlab.crans.org/nounous/ghostream/auth"
+	"gitlab.crans.org/nounous/ghostream/auth/bypass"
 )
 
 // Options holds web package configuration
@@ -51,19 +51,22 @@ func splitHostPort(hostport string) (string, uint16) {
 
 // Serve SRT server
 func Serve(cfg *Options, backend auth.Backend, forwarding chan Packet) {
+	// If no authentification backend was provided, default to bypass
 	if backend == nil {
 		backend, _ = bypass.New()
 	}
+
+	// FIXME: should not use globals
 	authBackend = backend
 	forwardingChannel = forwarding
-
-	options := make(map[string]string)
-	options["transtype"] = "file"
-	options["mode"] = "listener"
 
 	// Start SRT in listen mode
 	log.Printf("SRT server listening on %s", cfg.ListenAddress)
 	host, port := splitHostPort(cfg.ListenAddress)
+	options := map[string]string{
+		"transtype": "file",
+		"mode":      "listener",
+	}
 	sck := srtgo.NewSrtSocket(host, port, options)
 	if err := sck.Listen(cfg.MaxClients); err != nil {
 		log.Fatal("Unable to listen to SRT clients:", err)
