@@ -59,6 +59,23 @@ gst-launch-1.0 ximagesrc startx=0 show-pointer=true use-damage=0 \
 ! srtserversink uri=srt://127.0.0.1:9710/ latency=1000000 streamid=demo:demo
 ```
 
+## Playing stream
+
+### With a web browser and WebRTC
+
+Ghostream expose a web server on `0.0.0.0:8080` by default.
+By opening this in a browser, you will be able to get instructions on how to stream, and if you happen `/streamname` to the URL, then you will be able to watch the stream named `streamname`.
+
+The web player also integrates a side widget that is configurable.
+
+### With ffplay
+
+You may directly open the SRT stream with ffplay:
+
+```bash
+ffplay -fflags nobuffer srt://127.0.0.1:9710?streamid=demo
+```
+
 ## References
 
 -   Phil Cluff (2019), *[Streaming video on the internet without MPEG.](https://mux.com/blog/streaming-video-on-the-internet-without-mpeg/)*
