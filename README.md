@@ -64,7 +64,7 @@ gst-launch-1.0 ximagesrc startx=0 show-pointer=true use-damage=0 \
 ### With a web browser and WebRTC
 
 Ghostream expose a web server on `0.0.0.0:8080` by default.
-By opening this in a browser, you will be able to get instructions on how to stream, and if you happen `/streamname` to the URL, then you will be able to watch the stream named `streamname`.
+By opening this in a browser, you will be able to get instructions on how to stream, and if you append `/streamname` to the URL, then you will be able to watch the stream named `streamname`.
 
 The web player also integrates a side widget that is configurable.
 
