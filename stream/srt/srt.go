@@ -58,7 +58,7 @@ func Serve(cfg *Options, backend auth.Backend, forwarding chan Packet) {
 	forwardingChannel = forwarding
 
 	options := make(map[string]string)
-	options["transtype"] = "live"
+	options["transtype"] = "file"
 	options["mode"] = "listener"
 
 	// Start SRT in listen mode
@@ -90,9 +90,9 @@ func Serve(cfg *Options, backend auth.Backend, forwarding chan Packet) {
 			go acceptCallerSocket(s, clientDataChannels, &listeners)
 			streamStarted = true
 		} else {
-			dataChannel := make(chan Packet)
+			dataChannel := make(chan Packet, 2048)
 			clientDataChannels[listeners] = dataChannel
-			listeners += 1
+			listeners++
 			go acceptListeningSocket(s, dataChannel)
 		}
 	}
@@ -136,7 +136,7 @@ func acceptCallerSocket(s *srtgo.SrtSocket, clientDataChannels []chan Packet, li
 		data := make([]byte, n)
 		copy(data, buff[:n])
 		forwardingChannel <- Packet{StreamName: streamName, PacketType: "sendData", Data: data}
-		for i := 0; i < *listeners; i += 1 {
+		for i := 0; i < *listeners; i++ {
 			clientDataChannels[i] <- Packet{StreamName: streamName, PacketType: "sendData", Data: data}
 		}
 
