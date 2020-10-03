@@ -76,6 +76,24 @@ You may directly open the SRT stream with ffplay:
 ffplay -fflags nobuffer srt://127.0.0.1:9710?streamid=demo
 ```
 
+## Troubleshooting
+
+### ld returns an error when launching ghostream
+
+When using `libsrt-gnutls-dev` rather than `libsrt-openssl-dev` on Debian/Ubuntu,
+then srtgo package is unable to build.
+
+```bash
+~/ghostream$ go run main.go
+# github.com/haivision/srtgo
+/usr/bin/ld : ne peut trouver -lsrt
+/usr/bin/ld : ne peut trouver -lsrt
+/usr/bin/ld : ne peut trouver -lsrt
+collect2: error: ld returned 1 exit status
+```
+
+The solution is to switch to `libsrt-openssl-dev`.
+
 ## References
 
 -   Phil Cluff (2019), *[Streaming video on the internet without MPEG.](https://mux.com/blog/streaming-video-on-the-internet-without-mpeg/)*
