@@ -86,9 +86,9 @@ then srtgo package is unable to build.
 ```bash
 ~/ghostream$ go run main.go
 # github.com/haivision/srtgo
-/usr/bin/ld : ne peut trouver -lsrt
-/usr/bin/ld : ne peut trouver -lsrt
-/usr/bin/ld : ne peut trouver -lsrt
+/usr/bin/ld: cannot find -lsrt
+/usr/bin/ld: cannot find -lsrt
+/usr/bin/ld: cannot find -lsrt
 collect2: error: ld returned 1 exit status
 ```
 
