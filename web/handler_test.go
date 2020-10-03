@@ -12,6 +12,8 @@ func TestViewerPageGET(t *testing.T) {
 		t.Errorf("Failed to load templates: %v", err)
 	}
 
+	cfg = &Options{}
+
 	// Test GET request
 	r, _ := http.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
