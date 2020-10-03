@@ -12,7 +12,6 @@ import (
 
 	"github.com/haivision/srtgo"
 	"gitlab.crans.org/nounous/ghostream/auth"
-	"gitlab.crans.org/nounous/ghostream/auth/bypass"
 )
 
 // Options holds web package configuration
@@ -27,11 +26,6 @@ type Packet struct {
 	PacketType string
 	StreamName string
 }
-
-var (
-	authBackend       auth.Backend
-	forwardingChannel chan Packet
-)
 
 // Split host and port from listen address
 func splitHostPort(hostport string) (string, uint16) {
@@ -50,16 +44,7 @@ func splitHostPort(hostport string) (string, uint16) {
 }
 
 // Serve SRT server
-func Serve(cfg *Options, backend auth.Backend, forwarding chan Packet) {
-	// If no authentification backend was provided, default to bypass
-	if backend == nil {
-		backend, _ = bypass.New()
-	}
-
-	// FIXME: should not use globals
-	authBackend = backend
-	forwardingChannel = forwarding
-
+func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel chan Packet) {
 	// Start SRT in listen mode
 	log.Printf("SRT server listening on %s", cfg.ListenAddress)
 	host, port := splitHostPort(cfg.ListenAddress)
@@ -71,9 +56,6 @@ func Serve(cfg *Options, backend auth.Backend, forwarding chan Packet) {
 	if err := sck.Listen(cfg.MaxClients); err != nil {
 		log.Fatal("Unable to listen to SRT clients:", err)
 	}
-
-	// FIXME: See srtgo.SocketOptions and value, err := s.GetSockOptString to get parameters
-	// http://ffmpeg.org/ffmpeg-protocols.html#srt
 
 	// FIXME: Get the stream type
 	streamStarted := false
@@ -90,7 +72,7 @@ func Serve(cfg *Options, backend auth.Backend, forwarding chan Packet) {
 		}
 
 		if !streamStarted {
-			go acceptCallerSocket(s, clientDataChannels, &listeners)
+			go acceptCallerSocket(s, clientDataChannels, &listeners, authBackend, forwardingChannel)
 			streamStarted = true
 		} else {
 			dataChannel := make(chan Packet, 2048)
@@ -103,8 +85,8 @@ func Serve(cfg *Options, backend auth.Backend, forwarding chan Packet) {
 	sck.Close()
 }
 
-func acceptCallerSocket(s *srtgo.SrtSocket, clientDataChannels []chan Packet, listeners *int) {
-	streamName, err := authenticateSocket(s)
+func acceptCallerSocket(s *srtgo.SrtSocket, clientDataChannels []chan Packet, listeners *int, authBackend auth.Backend, forwardingChannel chan Packet) {
+	streamName, err := authenticateSocket(s, authBackend)
 	if err != nil {
 		log.Println("Authentication failure:", err)
 		s.Close()
@@ -170,7 +152,7 @@ func acceptListeningSocket(s *srtgo.SrtSocket, dataChannel chan Packet) {
 	}
 }
 
-func authenticateSocket(s *srtgo.SrtSocket) (string, error) {
+func authenticateSocket(s *srtgo.SrtSocket, authBackend auth.Backend) (string, error) {
 	streamID, err := s.GetSockOptString(C.SRTO_STREAMID)
 	if err != nil {
 		return "", fmt.Errorf("error while fetching stream key: %s", err)
@@ -182,6 +164,10 @@ func authenticateSocket(s *srtgo.SrtSocket) (string, error) {
 
 	splittedStreamID := strings.SplitN(streamID, ":", 2)
 	streamName, password := splittedStreamID[0], splittedStreamID[1]
+	if authBackend == nil {
+		// Bypass authentification if none provided
+		return streamName, nil
+	}
 	loggedIn, err := authBackend.Login(streamName, password)
 	if !loggedIn {
 		return streamID, fmt.Errorf("invalid credentials for stream %s", streamName)
