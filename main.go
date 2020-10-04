@@ -45,6 +45,10 @@ func loadConfiguration() {
 
 	// Define configuration default values
 	viper.SetDefault("Auth.Backend", "Basic")
+	viper.SetDefault("Auth.Basic.Credentials", map[string]string{
+		// Demo user with password "demo"
+		"demo": "$2b$15$LRnG3eIHFlYIguTxZOLH7eHwbQC/vqjnLq6nDFiHSUDKIU.f5/1H6",
+	})
 	viper.SetDefault("Auth.LDAP.URI", "ldap://127.0.0.1:389")
 	viper.SetDefault("Auth.LDAP.UserDn", "cn=users,dc=example,dc=com")
 	viper.SetDefault("Monitoring.ListenAddress", ":2112")
