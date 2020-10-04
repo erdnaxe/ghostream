@@ -63,22 +63,22 @@ func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel chan Packet
 		// Wait for new connection
 		s, err := sck.Accept()
 		if err != nil {
-			// log.Println("Error occurred while accepting request:", err)
-			continue // break // FIXME: should not break here
+			// Something wrong happenned
+			continue
 		}
 
 		if !streamStarted {
+			// The first connection is the streamer
 			go acceptCallerSocket(s, clientDataChannels, &listeners, authBackend, forwardingChannel)
 			streamStarted = true
 		} else {
+			// All following connections are viewers
 			dataChannel := make(chan Packet, 2048)
 			clientDataChannels[listeners] = dataChannel
 			listeners++
 			go acceptListeningSocket(s, dataChannel)
 		}
 	}
-
-	sck.Close()
 }
 
 func acceptCallerSocket(s *srtgo.SrtSocket, clientDataChannels []chan Packet, listeners *int, authBackend auth.Backend, forwardingChannel chan Packet) {
