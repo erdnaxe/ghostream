@@ -45,16 +45,12 @@ func splitHostPort(hostport string) (string, uint16) {
 
 // Serve SRT server
 func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel chan Packet) {
-	// Start SRT in listen mode
+	// Start SRT in listening mode
 	log.Printf("SRT server listening on %s", cfg.ListenAddress)
 	host, port := splitHostPort(cfg.ListenAddress)
-	options := map[string]string{
-		"transtype": "file",
-		"mode":      "listener",
-	}
-	sck := srtgo.NewSrtSocket(host, port, options)
+	sck := srtgo.NewSrtSocket(host, port, nil)
 	if err := sck.Listen(cfg.MaxClients); err != nil {
-		log.Fatal("Unable to listen to SRT clients:", err)
+		log.Fatal("Unable to listen for SRT clients:", err)
 	}
 
 	// FIXME: Get the stream type
