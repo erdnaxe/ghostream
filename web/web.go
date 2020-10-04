@@ -19,6 +19,7 @@ type Options struct {
 	Name                        string
 	Hostname                    string
 	Favicon                     string
+	SRTServerPort               string
 	WidgetURL                   string
 	ViewersCounterRefreshPeriod int
 

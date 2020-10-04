@@ -4,6 +4,7 @@ package main
 
 import (
 	"log"
+	"net"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -66,6 +67,14 @@ func loadConfiguration() {
 
 	// Copy STUN configuration to clients
 	viper.Set("Web.STUNServers", viper.Get("WebRTC.STUNServers"))
+
+	// Copy SRT server port to display it on web page
+	hostport := viper.GetString("Srt.ListenAddress")
+	_, srtPort, err := net.SplitHostPort(hostport)
+	if err != nil {
+		log.Fatalf("Failed to split host and port from %s", hostport)
+	}
+	viper.Set("Web.SRTServerPort", srtPort)
 }
 
 func main() {
