@@ -2,7 +2,6 @@ package forwarding
 
 import (
 	"bufio"
-	"log"
 	"os/exec"
 	"testing"
 	"time"
@@ -41,7 +40,7 @@ func TestForwardStream(t *testing.T) {
 	go func() {
 		scanner := bufio.NewScanner(forwardingErrOutput)
 		for scanner.Scan() {
-			log.Printf("[FFMPEG FORWARD TEST] %s", scanner.Text())
+			t.Fatalf("ffmpeg virtual RTMP server returned %s", scanner.Text())
 		}
 	}()
 
@@ -72,18 +71,11 @@ func TestForwardStream(t *testing.T) {
 	go func() {
 		scanner := bufio.NewScanner(errOutput)
 		for scanner.Scan() {
-			log.Printf("[FFMPEG TEST] %s", scanner.Text())
+			t.Fatalf("ffmpeg virtual source returned %s", scanner.Text())
 		}
 	}()
 
 	time.Sleep(5 * time.Second) // Delay is in nanoseconds, here 5s
 
-	// FIXME
-	//if ffmpegInputStreams["demo"] == nil {
-	//t.Errorf("Stream forwarding does not appear to be working")
-	//}
-
-	// TODO Check that FFMPEG has no error
-	// TODO Check that the stream ran
 	// TODO Kill SRT server
 }

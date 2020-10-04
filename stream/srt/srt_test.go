@@ -2,7 +2,6 @@ package srt
 
 import (
 	"bufio"
-	"log"
 	"os/exec"
 	"testing"
 	"time"
@@ -54,12 +53,11 @@ func TestServeSRT(t *testing.T) {
 	go func() {
 		scanner := bufio.NewScanner(errOutput)
 		for scanner.Scan() {
-			log.Printf("[FFMPEG TEST] %s", scanner.Text())
+			t.Fatalf("ffmpeg virtual source returned %s", scanner.Text())
 		}
 	}()
 
 	time.Sleep(5 * time.Second) // Delay is in nanoseconds, here 5s
 
-	// TODO Check that the stream ran
 	// TODO Kill SRT server
 }
