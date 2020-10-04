@@ -103,7 +103,7 @@ func main() {
 	remoteSdpChan := make(chan webrtc.SessionDescription)
 	localSdpChan := make(chan webrtc.SessionDescription)
 
-	// SRT channel, to propagate forwarding
+	// SRT channel for forwarding
 	forwardingChannel := make(chan srt.Packet, 65536)
 
 	// Start stream, web and monitoring server, and stream forwarding
