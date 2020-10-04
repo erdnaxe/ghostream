@@ -45,7 +45,8 @@ As stated by OBS wiki, when streaming you should adapt the latency to `2.5 * (th
 As OBS uses FFMpeg, you need to have FFMpeg compiled with SRT support. To check if SR is available, run `ffmpeg -protocols | grep srt`.
 On Windows and MacOS, OBS comes with his own FFMpeg that will work.
 
-In OBS, go to "Settings" -> "Stream" and change "Service" to "Custom..." and "Server" to `srt://127.0.0.1:9710?streamid=demo:demo`.
+In OBS, go to "Settings" -> "Output" -> "Recording" the select "Output to URL" and change the URL to `srt://127.0.0.1:9710?streamid=demo:demo`.
+For container, you may use MPEGTS for now (will change).
 
 ### With GStreamer
 
@@ -75,6 +76,11 @@ You may directly open the SRT stream with ffplay:
 ```bash
 ffplay -fflags nobuffer srt://127.0.0.1:9710?streamid=demo
 ```
+
+### With MPV
+
+As MPV uses ffmpeg libav, support for SRT streams can be easily added.
+[See current pull request.](https://github.com/mpv-player/mpv/pull/8139)
 
 ## Troubleshooting
 
