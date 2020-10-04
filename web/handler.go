@@ -50,7 +50,7 @@ func viewerGetHandler(w http.ResponseWriter, r *http.Request) {
 	// Get stream ID from URL, or from domain name
 	path := r.URL.Path[1:]
 	if cfg.OneStreamPerDomain {
-		var host = r.Host
+		host := r.Host
 		if strings.Contains(host, ":") {
 			realHost, _, err := net.SplitHostPort(r.Host)
 			if err != nil {
