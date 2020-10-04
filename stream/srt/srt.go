@@ -4,7 +4,6 @@ package srt
 import "C"
 
 import (
-	"fmt"
 	"log"
 	"net"
 	"strconv"
@@ -53,8 +52,6 @@ func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel chan Packet
 		log.Fatal("Unable to listen for SRT clients:", err)
 	}
 
-	// FIXME: Get the stream type
-	streamStarted := false
 	// FIXME Better structure
 	clientDataChannels := make([]chan Packet, cfg.MaxClients)
 	listeners := 0
@@ -67,35 +64,48 @@ func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel chan Packet
 			continue
 		}
 
-		if !streamStarted {
-			// The first connection is the streamer
-			go acceptCallerSocket(s, clientDataChannels, &listeners, authBackend, forwardingChannel)
-			streamStarted = true
+		// streamid can be "name:password" for streamer or "name" for viewer
+		streamID, err := s.GetSockOptString(C.SRTO_STREAMID)
+		if err != nil {
+			log.Print("Failed to get socket streamid")
+			continue
+		}
+		split := strings.Split(streamID, ":")
+
+		if len(split) > 1 {
+			// password was provided so it is a streamer
+			name, password := split[0], split[1]
+			if authBackend != nil {
+				// check password
+				if ok, err := authBackend.Login(name, password); !ok || err != nil {
+					log.Printf("Failed to authenticate for stream %s", name)
+					s.Close()
+					continue
+				}
+			}
+
+			go handleStreamer(s, name, clientDataChannels, &listeners, forwardingChannel)
 		} else {
-			// All following connections are viewers
+			// password was not provided so it is a viewer
+			name := split[0]
+
 			dataChannel := make(chan Packet, 2048)
 			clientDataChannels[listeners] = dataChannel
 			listeners++
-			go acceptListeningSocket(s, dataChannel)
+
+			go handleViewer(s, name, dataChannel)
 		}
 	}
 }
 
-func acceptCallerSocket(s *srtgo.SrtSocket, clientDataChannels []chan Packet, listeners *int, authBackend auth.Backend, forwardingChannel chan Packet) {
-	streamName, err := authenticateSocket(s, authBackend)
-	if err != nil {
-		log.Println("Authentication failure:", err)
-		s.Close()
-		return
-	}
-
-	log.Printf("Starting stream %s...", streamName)
+func handleStreamer(s *srtgo.SrtSocket, name string, clientDataChannels []chan Packet, listeners *int, forwardingChannel chan Packet) {
+	log.Printf("New SRT streamer for stream %s", name)
 
 	// Create a new buffer
 	buff := make([]byte, 2048)
 
 	// Setup stream forwarding
-	forwardingChannel <- Packet{StreamName: streamName, PacketType: "register", Data: nil}
+	forwardingChannel <- Packet{StreamName: name, PacketType: "register", Data: nil}
 
 	// Read RTP packets forever and send them to the WebRTC Client
 	for {
@@ -116,9 +126,9 @@ func acceptCallerSocket(s *srtgo.SrtSocket, clientDataChannels []chan Packet, li
 		// Copy data in another buffer to ensure that the data would not be overwritten
 		data := make([]byte, n)
 		copy(data, buff[:n])
-		forwardingChannel <- Packet{StreamName: streamName, PacketType: "sendData", Data: data}
+		forwardingChannel <- Packet{StreamName: name, PacketType: "sendData", Data: data}
 		for i := 0; i < *listeners; i++ {
-			clientDataChannels[i] <- Packet{StreamName: streamName, PacketType: "sendData", Data: data}
+			clientDataChannels[i] <- Packet{StreamName: name, PacketType: "sendData", Data: data}
 		}
 
 		// TODO: Send to WebRTC
@@ -126,48 +136,21 @@ func acceptCallerSocket(s *srtgo.SrtSocket, clientDataChannels []chan Packet, li
 		//err := videoTrack.WriteSample(media.Sample{Data: data, Samples: uint32(sampleCount)})
 	}
 
-	forwardingChannel <- Packet{StreamName: streamName, PacketType: "close", Data: nil}
+	forwardingChannel <- Packet{StreamName: name, PacketType: "close", Data: nil}
 }
 
-func acceptListeningSocket(s *srtgo.SrtSocket, dataChannel chan Packet) {
-	streamName, err := s.GetSockOptString(C.SRTO_STREAMID)
-	if err != nil {
-		panic(err)
-	}
-	log.Printf("New listener for stream %s", streamName)
+func handleViewer(s *srtgo.SrtSocket, name string, dataChannel chan Packet) {
+	log.Printf("New SRT viewer for stream %s", name)
 
+	// Receive packets from channel and send them
 	for {
 		packet := <-dataChannel
 		if packet.PacketType == "sendData" {
 			_, err := s.Write(packet.Data, 10000)
 			if err != nil {
 				s.Close()
-				break
+				return
 			}
 		}
 	}
-}
-
-func authenticateSocket(s *srtgo.SrtSocket, authBackend auth.Backend) (string, error) {
-	streamID, err := s.GetSockOptString(C.SRTO_STREAMID)
-	if err != nil {
-		return "", fmt.Errorf("error while fetching stream key: %s", err)
-	}
-	log.Println(s.GetSockOptString(C.SRTO_PASSPHRASE))
-	if !strings.Contains(streamID, ":") {
-		return streamID, fmt.Errorf("warning: stream id must be at the format streamID:password. Input: %s", streamID)
-	}
-
-	splittedStreamID := strings.SplitN(streamID, ":", 2)
-	streamName, password := splittedStreamID[0], splittedStreamID[1]
-	if authBackend == nil {
-		// Bypass authentification if none provided
-		return streamName, nil
-	}
-	loggedIn, err := authBackend.Login(streamName, password)
-	if !loggedIn {
-		return streamID, fmt.Errorf("invalid credentials for stream %s", streamName)
-	}
-
-	return streamName, nil
 }
