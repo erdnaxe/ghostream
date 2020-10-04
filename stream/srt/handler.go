@@ -10,15 +10,16 @@ func handleStreamer(s *srtgo.SrtSocket, name string, clientDataChannels *[]chan 
 	log.Printf("New SRT streamer for stream %s", name)
 
 	// Create a new buffer
-	buff := make([]byte, 2048)
+	// UDP packet cannot be larger than MTU (1500)
+	buff := make([]byte, 1500)
 
 	// Setup stream forwarding
 	forwardingChannel <- Packet{StreamName: name, PacketType: "register", Data: nil}
 
 	// Read RTP packets forever and send them to the WebRTC Client
 	for {
-		// UDP packet cannot be larger than MTU (1500)
-		n, err := s.Read(buff, 1500)
+		// 5s timeout
+		n, err := s.Read(buff, 5000)
 		if err != nil {
 			log.Println("Error occured while reading SRT socket:", err)
 			break
