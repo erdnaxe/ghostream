@@ -281,7 +281,6 @@ func Serve(remoteSdpChan, localSdpChan chan webrtc.SessionDescription, inputChan
 	for {
 		// Wait for incoming session description
 		// then send the local description to browser
-		offer := <-remoteSdpChan
-		localSdpChan <- newPeerHandler(offer, cfg)
+		localSdpChan <- newPeerHandler(<-remoteSdpChan, cfg)
 	}
 }

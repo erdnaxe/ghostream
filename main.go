@@ -109,7 +109,7 @@ func main() {
 	webrtcChannel := make(chan srt.Packet, 65536)
 
 	// Start stream, web and monitoring server, and stream forwarding
-	go forwarding.Serve(cfg.Forwarding, forwardingChannel)
+	go forwarding.Serve(forwardingChannel, cfg.Forwarding)
 	go monitoring.Serve(&cfg.Monitoring)
 	go srt.Serve(&cfg.Srt, authBackend, forwardingChannel, webrtcChannel)
 	go web.Serve(remoteSdpChan, localSdpChan, &cfg.Web)

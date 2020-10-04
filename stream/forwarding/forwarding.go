@@ -2,10 +2,11 @@ package forwarding
 
 import (
 	"bufio"
-	"gitlab.crans.org/nounous/ghostream/stream/srt"
 	"io"
 	"log"
 	"os/exec"
+
+	"gitlab.crans.org/nounous/ghostream/stream/srt"
 )
 
 // Options to configure the stream forwarding.
@@ -13,27 +14,20 @@ import (
 type Options map[string][]string
 
 var (
-	cfg                Options
-	forwardingChannel  chan srt.Packet
 	ffmpegInstances    = make(map[string]*exec.Cmd)
 	ffmpegInputStreams = make(map[string]*io.WriteCloser)
 )
 
-// Serve Load configuration and initialize SRT channel
-func Serve(c Options, channel chan srt.Packet) {
-	cfg = c
-	forwardingChannel = channel
+// Serve handles incoming packets from SRT and forward them to other external services
+func Serve(inputChannel chan srt.Packet, cfg Options) {
 	log.Printf("Stream forwarding initialized")
-	waitForPackets()
-}
-
-func waitForPackets() {
 	for {
 		var err error = nil
-		packet := <-forwardingChannel
+		// Wait for packets
+		packet := <-inputChannel
 		switch packet.PacketType {
 		case "register":
-			err = RegisterStream(packet.StreamName)
+			err = RegisterStream(packet.StreamName, cfg)
 			break
 		case "sendData":
 			err = SendPacket(packet.StreamName, packet.Data)
@@ -52,7 +46,7 @@ func waitForPackets() {
 }
 
 // RegisterStream Declare a new open stream and create ffmpeg instances
-func RegisterStream(name string) error {
+func RegisterStream(name string, cfg Options) error {
 	streams, exist := cfg[name]
 	if !exist || len(streams) == 0 {
 		// Nothing to do, not configured

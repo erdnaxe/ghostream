@@ -36,7 +36,7 @@ func TestServeSRT(t *testing.T) {
 		t.Skip("WARNING: FFMPEG is not installed. Skipping stream test")
 	}
 
-	go Serve(&Options{ListenAddress: ":9711", MaxClients: 2}, nil, nil)
+	go Serve(&Options{ListenAddress: ":9711", MaxClients: 2}, nil, nil, nil)
 
 	ffmpeg := exec.Command("ffmpeg",
 		"-i", "http://ftp.crans.org/events/Blender%20OpenMovies/big_buck_bunny_480p_stereo.ogg",

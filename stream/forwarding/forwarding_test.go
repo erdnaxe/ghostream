@@ -2,15 +2,17 @@ package forwarding
 
 import (
 	"bufio"
-	"gitlab.crans.org/nounous/ghostream/stream/srt"
 	"log"
 	"os/exec"
 	"testing"
 	"time"
+
+	"gitlab.crans.org/nounous/ghostream/stream/srt"
 )
 
 // TestServeSRT Serve a SRT server, stream content during 5 seconds and ensure that it is well received
 func TestForwardStream(t *testing.T) {
+	// Check that ffmpeg is installed
 	which := exec.Command("which", "ffmpeg")
 	if err := which.Start(); err != nil {
 		t.Fatal("Error while checking if ffmpeg got installed:", err)
@@ -24,6 +26,7 @@ func TestForwardStream(t *testing.T) {
 		t.Skip("WARNING: FFMPEG is not installed. Skipping stream test")
 	}
 
+	// Start virtual RTMP server with ffmpeg
 	forwardedFfmpeg := exec.Command("ffmpeg", "-y", // allow overwrite /dev/null
 		"-listen", "1", "-i", "rtmp://127.0.0.1:1936/live/app", "-f", "null", "-c", "copy", "/dev/null")
 	forwardingOutput, err := forwardedFfmpeg.StdoutPipe()
@@ -31,7 +34,6 @@ func TestForwardStream(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error while querying ffmpeg forwardingOutput:", err)
 	}
-
 	if err := forwardedFfmpeg.Start(); err != nil {
 		t.Fatal("Error while starting forwarding stream ffmpeg instance:", err)
 	}
@@ -53,13 +55,13 @@ func TestForwardStream(t *testing.T) {
 	forwardingList := make(map[string][]string)
 	forwardingList["demo"] = []string{"rtmp://127.0.0.1:1936/live/app"}
 
-	forwardingChannel = make(chan srt.Packet)
+	forwardingChannel := make(chan srt.Packet)
 
 	// Register forwarding stream list
-	go Serve(forwardingList, forwardingChannel)
+	go Serve(forwardingChannel, forwardingList)
 
-	// Serve HTTP Server
-	go srt.Serve(&srt.Options{ListenAddress: ":9712", MaxClients: 2}, nil, forwardingChannel)
+	// Serve SRT Server without authentification backend
+	go srt.Serve(&srt.Options{ListenAddress: ":9712", MaxClients: 2}, nil, forwardingChannel, nil)
 
 	ffmpeg := exec.Command("ffmpeg",
 		"-re", "-f", "lavfi", "-i", "testsrc=size=640x480:rate=10",
