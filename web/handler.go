@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
 
 	"github.com/markbates/pkger"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
@@ -49,10 +50,14 @@ func viewerGetHandler(w http.ResponseWriter, r *http.Request) {
 	// Get stream ID from URL, or from domain name
 	path := r.URL.Path[1:]
 	if cfg.OneStreamPerDomain {
-		host, _, err := net.SplitHostPort(r.Host)
-		if err != nil {
-			log.Printf("Failed to split host and port from %s", r.Host)
-			return
+		var host = r.Host
+		if strings.Contains(host, ":") {
+			realHost, _, err := net.SplitHostPort(r.Host)
+			if err != nil {
+				log.Printf("Failed to split host and port from %s", r.Host)
+				return
+			}
+			host = realHost
 		}
 		path = host
 	}
