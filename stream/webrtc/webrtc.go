@@ -13,6 +13,7 @@ import (
 	"github.com/pion/webrtc/v3/pkg/media/ivfreader"
 	"github.com/pion/webrtc/v3/pkg/media/oggreader"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
+	"gitlab.crans.org/nounous/ghostream/stream/srt"
 )
 
 // Options holds web package configuration
@@ -242,10 +243,37 @@ func getPayloadType(m webrtc.MediaEngine, codecType webrtc.RTPCodecType, codecNa
 	panic(fmt.Sprintf("Remote peer does not support %s", codecName))
 }
 
+func waitForPackets(inputChannel chan srt.Packet) {
+	for {
+		var err error = nil
+		packet := <-inputChannel
+		switch packet.PacketType {
+		case "register":
+			log.Printf("WebRTC RegisterStream %s", packet.StreamName)
+			break
+		case "sendData":
+			log.Printf("WebRTC SendPacket %s", packet.StreamName)
+			// packet.Data
+			break
+		case "close":
+			log.Printf("WebRTC CloseConnection %s", packet.StreamName)
+			break
+		default:
+			log.Println("Unknown SRT packet type:", packet.PacketType)
+			break
+		}
+		if err != nil {
+			log.Printf("Error occured while receiving SRT packet of type %s: %s", packet.PacketType, err)
+		}
+	}
+}
+
 // Serve WebRTC media streaming server
-func Serve(remoteSdpChan, localSdpChan chan webrtc.SessionDescription, cfg *Options) {
+func Serve(remoteSdpChan, localSdpChan chan webrtc.SessionDescription, inputChannel chan srt.Packet, cfg *Options) {
 	log.Printf("WebRTC server using UDP from %d to %d", cfg.MinPortUDP, cfg.MaxPortUDP)
 
+	// FIXME: use data from inputChannel
+	go waitForPackets(inputChannel)
 	go playVideo()
 	go playAudio()
 

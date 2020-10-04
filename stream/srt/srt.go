@@ -43,7 +43,7 @@ func splitHostPort(hostport string) (string, uint16) {
 }
 
 // Serve SRT server
-func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel chan Packet) {
+func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel, webrtcChannel chan Packet) {
 	// Start SRT in listening mode
 	log.Printf("SRT server listening on %s", cfg.ListenAddress)
 	host, port := splitHostPort(cfg.ListenAddress)
@@ -82,7 +82,7 @@ func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel chan Packet
 				}
 			}
 
-			go handleStreamer(s, name, &clientDataChannels, forwardingChannel)
+			go handleStreamer(s, name, &clientDataChannels, forwardingChannel, webrtcChannel)
 		} else {
 			// password was not provided so it is a viewer
 			name := split[0]

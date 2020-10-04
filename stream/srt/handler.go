@@ -6,7 +6,7 @@ import (
 	"github.com/haivision/srtgo"
 )
 
-func handleStreamer(s *srtgo.SrtSocket, name string, clientDataChannels *[]chan Packet, forwardingChannel chan Packet) {
+func handleStreamer(s *srtgo.SrtSocket, name string, clientDataChannels *[]chan Packet, forwardingChannel, webrtcChannel chan Packet) {
 	log.Printf("New SRT streamer for stream %s", name)
 
 	// Create a new buffer
@@ -15,6 +15,7 @@ func handleStreamer(s *srtgo.SrtSocket, name string, clientDataChannels *[]chan 
 
 	// Setup stream forwarding
 	forwardingChannel <- Packet{StreamName: name, PacketType: "register", Data: nil}
+	webrtcChannel <- Packet{StreamName: name, PacketType: "register", Data: nil}
 
 	// Read RTP packets forever and send them to the WebRTC Client
 	for {
@@ -36,12 +37,14 @@ func handleStreamer(s *srtgo.SrtSocket, name string, clientDataChannels *[]chan 
 		data := make([]byte, n)
 		copy(data, buff[:n])
 		forwardingChannel <- Packet{StreamName: name, PacketType: "sendData", Data: data}
+		webrtcChannel <- Packet{StreamName: name, PacketType: "sendData", Data: data}
 		for _, dataChannel := range *clientDataChannels {
 			dataChannel <- Packet{StreamName: name, PacketType: "sendData", Data: data}
 		}
 	}
 
 	forwardingChannel <- Packet{StreamName: name, PacketType: "close", Data: nil}
+	webrtcChannel <- Packet{StreamName: name, PacketType: "close", Data: nil}
 }
 
 func handleViewer(s *srtgo.SrtSocket, name string, dataChannel chan Packet, dataChannels *[]chan Packet) {

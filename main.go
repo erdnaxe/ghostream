@@ -104,15 +104,16 @@ func main() {
 	remoteSdpChan := make(chan webrtc.SessionDescription)
 	localSdpChan := make(chan webrtc.SessionDescription)
 
-	// SRT channel for forwarding
+	// SRT channel for forwarding and webrtc
 	forwardingChannel := make(chan srt.Packet, 65536)
+	webrtcChannel := make(chan srt.Packet, 65536)
 
 	// Start stream, web and monitoring server, and stream forwarding
 	go forwarding.Serve(cfg.Forwarding, forwardingChannel)
 	go monitoring.Serve(&cfg.Monitoring)
-	go srt.Serve(&cfg.Srt, authBackend, forwardingChannel)
+	go srt.Serve(&cfg.Srt, authBackend, forwardingChannel, webrtcChannel)
 	go web.Serve(remoteSdpChan, localSdpChan, &cfg.Web)
-	go webrtc.Serve(remoteSdpChan, localSdpChan, &cfg.WebRTC)
+	go webrtc.Serve(remoteSdpChan, localSdpChan, webrtcChannel, &cfg.WebRTC)
 
 	// Wait for routines
 	select {}
