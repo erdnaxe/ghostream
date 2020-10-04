@@ -8,6 +8,10 @@
       <path d="m29.61 37.33h-29.54v14.77h29.54z" fill="#37abc8"/>
       <path d="m35.08 19.04c0.876-1.938 1.78-3.835 4.73-2.73m6.42-0.858c2.54-2.016 4.207-1.66 5.38 0.037m-11.68 8.063c3.783 2.094 7.052 0.7 10.13-1.966" fill="none" stroke="#b62525" stroke-linecap="round" stroke-width="1.107"/>
     </g>
-    <text x="641.03516" y="675.07147" fill="#000000" font-family="'Noto Mono'" font-size="40px" letter-spacing="0px" text-align="center" text-anchor="middle" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="641.03516" y="675.07147" fill="#ffffff" font-family="sans-serif" text-align="center" text-anchor="middle">Ce stream semble inactif.</tspan></text>
+    <g fill="#000000" font-family="'Noto Mono'" letter-spacing="0px" text-anchor="middle" word-spacing="0px">
+      <text x="641.35284" y="664.88068" font-size="52.28px" stroke-width="1.307" text-align="center" style="line-height:1.25" xml:space="preserve"><tspan x="641.35284" y="664.88068" fill="#ffffff" font-family="sans-serif" stroke-width="1.307" text-align="center" text-anchor="middle">Chargement du stream...</tspan></text>
+      <text x="640.435" y="713.97107" font-size="28.88px" stroke-width=".7219" text-align="center" style="line-height:1.25" xml:space="preserve"><tspan x="640.435" y="713.97107" fill="#ffffff" font-family="sans-serif" stroke-width=".7219" text-align="center" text-anchor="middle" style="line-height:6.25">Si cela prend trop de temps,</tspan></text>
+      <text x="640.435" y="749.17523" font-size="28.88px" stroke-width=".7219" text-align="center" style="line-height:1.25" xml:space="preserve"><tspan x="640.435" y="749.17523" fill="#ffffff" font-family="sans-serif" stroke-width=".7219" text-align="center" text-anchor="middle"> le stream est potentiellement inactif.</tspan></text>
+    </g>
   </g>
 </svg>
