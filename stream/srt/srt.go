@@ -52,9 +52,7 @@ func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel chan Packet
 		log.Fatal("Unable to listen for SRT clients:", err)
 	}
 
-	// FIXME Better structure
-	clientDataChannels := make([]chan Packet, cfg.MaxClients)
-	listeners := 0
+	clientDataChannels := make([]chan Packet, 0, cfg.MaxClients)
 
 	for {
 		// Wait for new connection
@@ -84,21 +82,20 @@ func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel chan Packet
 				}
 			}
 
-			go handleStreamer(s, name, clientDataChannels, &listeners, forwardingChannel)
+			go handleStreamer(s, name, &clientDataChannels, forwardingChannel)
 		} else {
 			// password was not provided so it is a viewer
 			name := split[0]
 
-			dataChannel := make(chan Packet, 2048)
-			clientDataChannels[listeners] = dataChannel
-			listeners++
+			dataChannel := make(chan Packet, 4096)
+			clientDataChannels = append(clientDataChannels, dataChannel)
 
-			go handleViewer(s, name, dataChannel)
+			go handleViewer(s, name, dataChannel, &clientDataChannels)
 		}
 	}
 }
 
-func handleStreamer(s *srtgo.SrtSocket, name string, clientDataChannels []chan Packet, listeners *int, forwardingChannel chan Packet) {
+func handleStreamer(s *srtgo.SrtSocket, name string, clientDataChannels *[]chan Packet, forwardingChannel chan Packet) {
 	log.Printf("New SRT streamer for stream %s", name)
 
 	// Create a new buffer
@@ -127,8 +124,8 @@ func handleStreamer(s *srtgo.SrtSocket, name string, clientDataChannels []chan P
 		data := make([]byte, n)
 		copy(data, buff[:n])
 		forwardingChannel <- Packet{StreamName: name, PacketType: "sendData", Data: data}
-		for i := 0; i < *listeners; i++ {
-			clientDataChannels[i] <- Packet{StreamName: name, PacketType: "sendData", Data: data}
+		for _, dataChannel := range *clientDataChannels {
+			dataChannel <- Packet{StreamName: name, PacketType: "sendData", Data: data}
 		}
 
 		// TODO: Send to WebRTC
@@ -139,7 +136,9 @@ func handleStreamer(s *srtgo.SrtSocket, name string, clientDataChannels []chan P
 	forwardingChannel <- Packet{StreamName: name, PacketType: "close", Data: nil}
 }
 
-func handleViewer(s *srtgo.SrtSocket, name string, dataChannel chan Packet) {
+func handleViewer(s *srtgo.SrtSocket, name string, dataChannel chan Packet, dataChannels *[]chan Packet) {
+	// FIXME Should not pass all dataChannels to one viewer
+
 	log.Printf("New SRT viewer for stream %s", name)
 
 	// Receive packets from channel and send them
@@ -149,6 +148,11 @@ func handleViewer(s *srtgo.SrtSocket, name string, dataChannel chan Packet) {
 			_, err := s.Write(packet.Data, 10000)
 			if err != nil {
 				s.Close()
+				for i, channel := range *dataChannels {
+					if channel == dataChannel {
+						*dataChannels = append((*dataChannels)[:i], (*dataChannels)[i+1:]...)
+					}
+				}
 				return
 			}
 		}
