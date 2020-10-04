@@ -29,15 +29,19 @@
         <rect width="4" height="14" x="11" y="1" rx="1"/>
       </svg>
 
+      {{if .WidgetURL}}
       <a href="#" id="sideWidgetToggle" class="ml-1" title="Cacher/Afficher le chat">»</a>
+      {{end}}
     </p>
   </div>
 
+  {{if .WidgetURL}}
   <!-- Chat -->
   <div class="col-chat" id="sideWidget">
     <iframe src="{{.WidgetURL}}"
       title="Chat" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
   </div>
+  {{end}}
 </div>
 
 <script src="/static/js/sideWidget.js"></script>
