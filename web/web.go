@@ -15,16 +15,15 @@ import (
 
 // Options holds web package configuration
 type Options struct {
+	Favicon                     string
+	Hostname                    string
 	ListenAddress               string
 	Name                        string
-	Hostname                    string
-	Favicon                     string
+	OneStreamPerDomain          bool
 	SRTServerPort               string
-	WidgetURL                   string
+	STUNServers                 []string
 	ViewersCounterRefreshPeriod int
-
-	// Copied from WebRTC configuration
-	STUNServers []string
+	WidgetURL                   string
 }
 
 var (

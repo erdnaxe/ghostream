@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"html/template"
 	"log"
+	"net"
 	"net/http"
 
 	"github.com/markbates/pkger"
@@ -45,14 +46,26 @@ func viewerPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func viewerGetHandler(w http.ResponseWriter, r *http.Request) {
+	// Get stream ID from URL, or from domain name
+	path := r.URL.Path[1:]
+	if cfg.OneStreamPerDomain {
+		host, _, err := net.SplitHostPort(r.Host)
+		if err != nil {
+			log.Printf("Failed to split host and port from %s", r.Host)
+			return
+		}
+		path = host
+	}
+
 	// Render template
 	data := struct {
 		Cfg       *Options
 		Path      string
 		WidgetURL string
-	}{Path: r.URL.Path[1:], Cfg: cfg}
+	}{Path: path, Cfg: cfg}
+
+	// Compute the WidgetURL with the stream path
 	b := &bytes.Buffer{}
-	// Update the WidgetURL with the stream path
 	_ = template.Must(template.New("").Parse(cfg.WidgetURL)).Execute(b, data)
 	data.WidgetURL = b.String()
 

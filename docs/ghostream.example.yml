@@ -45,6 +45,10 @@ web:
   widgetURL: https://example.com/stream_{{.Path}}
   viewersCounterRefreshPeriod: 20000
 
+  # When oneStreamPerDomain is enabled, the stream name will be the domain name.
+  # For example, on http://example.com:8080/ the stream will always be "example.com"
+  oneStreamPerDomain: false
+
 # Configure WebRTC server
 webrtc:
   # UDP port range used to stream
