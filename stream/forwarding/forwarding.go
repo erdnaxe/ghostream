@@ -63,10 +63,6 @@ func registerStream(name string, ffmpegInstances map[string]*exec.Cmd, ffmpegInp
 	if err != nil {
 		return err
 	}
-	output, err := ffmpeg.StdoutPipe()
-	if err != nil {
-		return err
-	}
 	errOutput, err := ffmpeg.StderrPipe()
 	if err != nil {
 		return err
@@ -79,19 +75,11 @@ func registerStream(name string, ffmpegInstances map[string]*exec.Cmd, ffmpegInp
 		return err
 	}
 
-	// Log ffmpeg output
-	go func() {
-		scanner := bufio.NewScanner(output)
-		for scanner.Scan() {
-			log.Printf("[FFMPEG %s] %s", name, scanner.Text())
-		}
-	}()
-
-	// Log also error output
+	// Log standard error output
 	go func() {
 		scanner := bufio.NewScanner(errOutput)
 		for scanner.Scan() {
-			log.Printf("[FFMPEG ERR %s] %s", name, scanner.Text())
+			log.Printf("[FFMPEG %s] %s", name, scanner.Text())
 		}
 	}()
 
