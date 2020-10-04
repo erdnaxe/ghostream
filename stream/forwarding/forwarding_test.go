@@ -76,7 +76,7 @@ func TestForwardStream(t *testing.T) {
 		}
 	}()
 
-	time.Sleep(5000000000) // Delay is in nanoseconds, here 5s
+	time.Sleep(5 * time.Second) // Delay is in nanoseconds, here 5s
 
 	// FIXME
 	//if ffmpegInputStreams["demo"] == nil {

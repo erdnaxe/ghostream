@@ -38,11 +38,10 @@ func TestServeSRT(t *testing.T) {
 
 	go Serve(&Options{ListenAddress: ":9711", MaxClients: 2}, nil, nil, nil)
 
-	ffmpeg := exec.Command("ffmpeg",
-		"-i", "http://ftp.crans.org/events/Blender%20OpenMovies/big_buck_bunny_480p_stereo.ogg",
+	ffmpeg := exec.Command("ffmpeg", "-hide_banner", "-loglevel", "error",
+		"-f", "lavfi", "-i", "testsrc=size=640x480:rate=10",
 		"-f", "flv", "srt://127.0.0.1:9711?streamid=demo:")
 
-	output, err := ffmpeg.StdoutPipe()
 	errOutput, err := ffmpeg.StderrPipe()
 	if err != nil {
 		t.Fatal("Error while querying ffmpeg output:", err)
@@ -53,20 +52,13 @@ func TestServeSRT(t *testing.T) {
 	}
 
 	go func() {
-		scanner := bufio.NewScanner(output)
+		scanner := bufio.NewScanner(errOutput)
 		for scanner.Scan() {
 			log.Printf("[FFMPEG TEST] %s", scanner.Text())
 		}
 	}()
 
-	go func() {
-		scanner := bufio.NewScanner(errOutput)
-		for scanner.Scan() {
-			log.Printf("[FFMPEG ERR TEST] %s", scanner.Text())
-		}
-	}()
-
-	time.Sleep(5000000000) // Delay is in nanoseconds, here 5s
+	time.Sleep(5 * time.Second) // Delay is in nanoseconds, here 5s
 
 	// TODO Check that the stream ran
 	// TODO Kill SRT server
