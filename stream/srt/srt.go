@@ -13,6 +13,10 @@ import (
 	"gitlab.crans.org/nounous/ghostream/auth"
 )
 
+var (
+	clientDataChannels map[string][]chan Packet
+)
+
 // Options holds web package configuration
 type Options struct {
 	ListenAddress string
@@ -52,7 +56,7 @@ func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel, webrtcChan
 		log.Fatal("Unable to listen for SRT clients:", err)
 	}
 
-	clientDataChannels := make([]chan Packet, 0, cfg.MaxClients)
+	clientDataChannels = make(map[string][]chan Packet)
 
 	for {
 		// Wait for new connection
@@ -70,6 +74,10 @@ func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel, webrtcChan
 		}
 		split := strings.Split(streamID, ":")
 
+		if clientDataChannels[streamID] == nil {
+			clientDataChannels[streamID] = make([]chan Packet, 0, cfg.MaxClients)
+		}
+
 		if len(split) > 1 {
 			// password was provided so it is a streamer
 			name, password := split[0], split[1]
@@ -82,15 +90,15 @@ func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel, webrtcChan
 				}
 			}
 
-			go handleStreamer(s, name, &clientDataChannels, forwardingChannel, webrtcChannel)
+			go handleStreamer(s, name, clientDataChannels, forwardingChannel, webrtcChannel)
 		} else {
 			// password was not provided so it is a viewer
 			name := split[0]
 
 			dataChannel := make(chan Packet, 4096)
-			clientDataChannels = append(clientDataChannels, dataChannel)
+			clientDataChannels[streamID] = append(clientDataChannels[streamID], dataChannel)
 
-			go handleViewer(s, name, dataChannel, &clientDataChannels)
+			go handleViewer(s, name, dataChannel, clientDataChannels)
 		}
 	}
 }

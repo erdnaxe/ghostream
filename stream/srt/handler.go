@@ -6,7 +6,7 @@ import (
 	"github.com/haivision/srtgo"
 )
 
-func handleStreamer(s *srtgo.SrtSocket, name string, clientDataChannels *[]chan Packet, forwardingChannel, webrtcChannel chan Packet) {
+func handleStreamer(s *srtgo.SrtSocket, name string, clientDataChannels map[string][]chan Packet, forwardingChannel, webrtcChannel chan Packet) {
 	log.Printf("New SRT streamer for stream %s", name)
 
 	// Create a new buffer
@@ -38,7 +38,7 @@ func handleStreamer(s *srtgo.SrtSocket, name string, clientDataChannels *[]chan 
 		copy(data, buff[:n])
 		forwardingChannel <- Packet{StreamName: name, PacketType: "sendData", Data: data}
 		webrtcChannel <- Packet{StreamName: name, PacketType: "sendData", Data: data}
-		for _, dataChannel := range *clientDataChannels {
+		for _, dataChannel := range clientDataChannels[name] {
 			dataChannel <- Packet{StreamName: name, PacketType: "sendData", Data: data}
 		}
 	}
@@ -47,7 +47,7 @@ func handleStreamer(s *srtgo.SrtSocket, name string, clientDataChannels *[]chan 
 	webrtcChannel <- Packet{StreamName: name, PacketType: "close", Data: nil}
 }
 
-func handleViewer(s *srtgo.SrtSocket, name string, dataChannel chan Packet, dataChannels *[]chan Packet) {
+func handleViewer(s *srtgo.SrtSocket, name string, dataChannel chan Packet, dataChannels map[string][]chan Packet) {
 	// FIXME Should not pass all dataChannels to one viewer
 
 	log.Printf("New SRT viewer for stream %s", name)
@@ -59,9 +59,9 @@ func handleViewer(s *srtgo.SrtSocket, name string, dataChannel chan Packet, data
 			_, err := s.Write(packet.Data, 10000)
 			if err != nil {
 				s.Close()
-				for i, channel := range *dataChannels {
+				for i, channel := range dataChannels[name] {
 					if channel == dataChannel {
-						*dataChannels = append((*dataChannels)[:i], (*dataChannels)[i+1:]...)
+						dataChannels[name] = append(dataChannels[name][:i], dataChannels[name][i+1:]...)
 					}
 				}
 				return
