@@ -2,7 +2,6 @@ package webrtc
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"log"
 	"net"
@@ -43,13 +42,11 @@ func ingestFrom(inputChannel chan srt.Packet) {
 				}
 			}()
 
-			ffmpeg = exec.Command("ffmpeg", "-re", "-i", "pipe:0",
+			ffmpeg = exec.Command("ffmpeg", "-hide_banner", "-loglevel", "error", "-re", "-i", "pipe:0",
 				"-an", "-vcodec", "libvpx", //"-cpu-used", "5", "-deadline", "1", "-g", "10", "-error-resilient", "1", "-auto-alt-ref", "1",
 				"-f", "rtp", "rtp://127.0.0.1:5004",
 				"-vn", "-acodec", "libopus", //"-cpu-used", "5", "-deadline", "1", "-g", "10", "-error-resilient", "1", "-auto-alt-ref", "1",
 				"-f", "rtp", "rtp://127.0.0.1:5005")
-
-			fmt.Println("Waiting for RTP Packets, please run GStreamer or ffmpeg now")
 
 			input, err := ffmpeg.StdinPipe()
 			if err != nil {
@@ -77,7 +74,6 @@ func ingestFrom(inputChannel chan srt.Packet) {
 					if err := packet.Unmarshal(inboundRTPPacket[:n]); err != nil {
 						panic(err)
 					}
-					log.Printf("[Video] %s", packet)
 
 					// Write RTP packet to all video tracks
 					// Adapt payload and SSRC to match destination
@@ -103,7 +99,9 @@ func ingestFrom(inputChannel chan srt.Packet) {
 					if err := packet.Unmarshal(inboundRTPPacket[:n]); err != nil {
 						panic(err)
 					}
-					log.Printf("[Audio] %s", packet)
+
+					// Write RTP packet to all audio tracks
+					// Adapt payload and SSRC to match destination
 					for _, audioTrack := range audioTracks {
 						packet.Header.PayloadType = audioTrack.PayloadType()
 						packet.Header.SSRC = audioTrack.SSRC()
