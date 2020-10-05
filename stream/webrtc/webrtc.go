@@ -2,16 +2,10 @@ package webrtc
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"math/rand"
-	"os"
-	"time"
 
 	"github.com/pion/webrtc/v3"
-	"github.com/pion/webrtc/v3/pkg/media"
-	"github.com/pion/webrtc/v3/pkg/media/ivfreader"
-	"github.com/pion/webrtc/v3/pkg/media/oggreader"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
 	"gitlab.crans.org/nounous/ghostream/stream/srt"
 )
@@ -27,11 +21,6 @@ type Options struct {
 // SessionDescription contains SDP data
 // to initiate a WebRTC connection between one client and this app
 type SessionDescription = webrtc.SessionDescription
-
-const (
-	audioFileName = "output.ogg"
-	videoFileName = "output.ivf"
-)
 
 var (
 	videoTracks []*webrtc.Track
@@ -153,84 +142,6 @@ func newPeerHandler(remoteSdp webrtc.SessionDescription, cfg *Options) webrtc.Se
 	return *peerConnection.LocalDescription()
 }
 
-func playVideo() {
-	// Open a IVF file and start reading using our IVFReader
-	file, ivfErr := os.Open(videoFileName)
-	if ivfErr != nil {
-		panic(ivfErr)
-	}
-
-	ivf, header, ivfErr := ivfreader.NewWith(file)
-	if ivfErr != nil {
-		panic(ivfErr)
-	}
-
-	// Send our video file frame at a time. Pace our sending so we send it at the same speed it should be played back as.
-	// This isn't required since the video is timestamped, but we will such much higher loss if we send all at once.
-	sleepTime := time.Millisecond * time.Duration((float32(header.TimebaseNumerator)/float32(header.TimebaseDenominator))*1000)
-	for {
-		// Need at least one client
-		frame, _, ivfErr := ivf.ParseNextFrame()
-		if ivfErr == io.EOF {
-			fmt.Printf("All video frames parsed and sent")
-			os.Exit(0)
-		}
-
-		if ivfErr != nil {
-			panic(ivfErr)
-		}
-
-		time.Sleep(sleepTime)
-		for _, t := range videoTracks {
-			if ivfErr = t.WriteSample(media.Sample{Data: frame, Samples: 90000}); ivfErr != nil {
-				log.Fatalln("Failed to write video stream:", ivfErr)
-			}
-		}
-	}
-}
-
-func playAudio() {
-	// Open a IVF file and start reading using our IVFReader
-	file, oggErr := os.Open(audioFileName)
-	if oggErr != nil {
-		panic(oggErr)
-	}
-
-	// Open on oggfile in non-checksum mode.
-	ogg, _, oggErr := oggreader.NewWith(file)
-	if oggErr != nil {
-		panic(oggErr)
-	}
-
-	// Keep track of last granule, the difference is the amount of samples in the buffer
-	var lastGranule uint64
-	for {
-		// Need at least one client
-		pageData, pageHeader, oggErr := ogg.ParseNextPage()
-		if oggErr == io.EOF {
-			fmt.Printf("All audio pages parsed and sent")
-			os.Exit(0)
-		}
-
-		if oggErr != nil {
-			panic(oggErr)
-		}
-
-		// The amount of samples is the difference between the last and current timestamp
-		sampleCount := float64(pageHeader.GranulePosition - lastGranule)
-		lastGranule = pageHeader.GranulePosition
-
-		for _, t := range audioTracks {
-			if oggErr = t.WriteSample(media.Sample{Data: pageData, Samples: uint32(sampleCount)}); oggErr != nil {
-				log.Fatalln("Failed to write audio stream:", oggErr)
-			}
-		}
-
-		// Convert seconds to Milliseconds, Sleep doesn't accept floats
-		time.Sleep(time.Duration((sampleCount/48000)*1000) * time.Millisecond)
-	}
-}
-
 // Search for Codec PayloadType
 //
 // Since we are answering we need to match the remote PayloadType
@@ -243,39 +154,12 @@ func getPayloadType(m webrtc.MediaEngine, codecType webrtc.RTPCodecType, codecNa
 	panic(fmt.Sprintf("Remote peer does not support %s", codecName))
 }
 
-func waitForPackets(inputChannel chan srt.Packet) {
-	for {
-		var err error = nil
-		packet := <-inputChannel
-		switch packet.PacketType {
-		case "register":
-			log.Printf("WebRTC RegisterStream %s", packet.StreamName)
-			break
-		case "sendData":
-			log.Printf("WebRTC SendPacket %s", packet.StreamName)
-			// packet.Data
-			break
-		case "close":
-			log.Printf("WebRTC CloseConnection %s", packet.StreamName)
-			break
-		default:
-			log.Println("Unknown SRT packet type:", packet.PacketType)
-			break
-		}
-		if err != nil {
-			log.Printf("Error occured while receiving SRT packet of type %s: %s", packet.PacketType, err)
-		}
-	}
-}
-
 // Serve WebRTC media streaming server
 func Serve(remoteSdpChan, localSdpChan chan webrtc.SessionDescription, inputChannel chan srt.Packet, cfg *Options) {
-	log.Printf("WebRTC server using UDP from %d to %d", cfg.MinPortUDP, cfg.MaxPortUDP)
+	log.Printf("WebRTC server using UDP from port %d to %d", cfg.MinPortUDP, cfg.MaxPortUDP)
 
-	// FIXME: use data from inputChannel
-	go waitForPackets(inputChannel)
-	go playVideo()
-	go playAudio()
+	// Ingest data from SRT
+	go ingestFrom(inputChannel)
 
 	// Handle new connections
 	for {
