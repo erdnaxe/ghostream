@@ -6,6 +6,19 @@
       <video id="viewer" poster="/static/img/no_stream.svg" muted controls autoplay></video>
     </div>
 
+    <div class="quality-selector">
+      <form name="quality_form">
+        <input type="radio" id="quality_source" name="quality" value="" checked>
+        <label for="quality_source">Source</label>
+        <input type="radio" id="quality_720p" name="quality" value="@720p">
+        <label for="quality_720p">720p</label>
+        <input type="radio" id="quality_480p" name="quality" value="@480p">
+        <label for="quality_480p">480p</label>
+        <input type="radio" id="quality_240p" name="quality" value="@240p">
+        <label for="quality_240p">240p</label>
+      </form>
+    </div>
+
     <!-- Links under video -->
     <p>
       <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-box-arrow-up-right" fill="#d7d7d7" xmlns="http://www.w3.org/2000/svg">
@@ -44,6 +57,7 @@
 </div>
 
 {{if .WidgetURL}}<script src="/static/js/sideWidget.js"></script>{{end}}
+<script src="/static/js/videoQuality.js"></script>
 <script src="/static/js/viewer.js"></script>
 <script src="/static/js/viewersCounter.js"></script>
 <script>

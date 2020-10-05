@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"strings"
 
 	"github.com/pion/webrtc/v3"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
@@ -120,6 +121,14 @@ func newPeerHandler(remoteSdp struct {
 	}
 
 	streamID := remoteSdp.StreamID
+	split := strings.SplitN(streamID, "@", 2)
+	streamID = split[0]
+	quality := "source"
+	if len(split) == 2 {
+		quality = split[1]
+	}
+	log.Printf("New WebRTC session for stream %s, quality %s", streamID, quality)
+	// TODO Consider the quality
 
 	// Set the handler for ICE connection state
 	// This will notify you when the peer has connected/disconnected

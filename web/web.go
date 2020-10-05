@@ -40,7 +40,7 @@ var (
 	templates *template.Template
 
 	// Precompile regex
-	validPath = regexp.MustCompile("^\\/[a-z0-9_-]*\\/?$")
+	validPath = regexp.MustCompile("^/[a-z0-9@_\\-]*/?$")
 )
 
 // Load templates with pkger

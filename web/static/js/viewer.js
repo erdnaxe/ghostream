@@ -52,7 +52,7 @@ startPeerConnection = () => {
             // The server replies with its description
             // After setRemoteDescription, the browser will fire ontrack events
             console.log("Sending session description to server")
-            fetch(window.location.href, {
+            fetch(window.location.href + document.quality_form.quality.value, {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
