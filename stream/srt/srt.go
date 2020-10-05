@@ -46,6 +46,11 @@ func splitHostPort(hostport string) (string, uint16) {
 	return host, uint16(port64)
 }
 
+// GetNumberConnectedSessions get the number of currently connected clients
+func GetNumberConnectedSessions(streamID string) int {
+	return len(clientDataChannels[streamID])
+}
+
 // Serve SRT server
 func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel, webrtcChannel chan Packet) {
 	// Start SRT in listening mode

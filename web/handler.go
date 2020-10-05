@@ -3,6 +3,7 @@ package web
 import (
 	"bytes"
 	"encoding/json"
+	"gitlab.crans.org/nounous/ghostream/stream/srt"
 	"html/template"
 	"log"
 	"net"
@@ -133,11 +134,12 @@ func staticHandler() http.Handler {
 }
 
 func statisticsHandler(w http.ResponseWriter, r *http.Request) {
-	// Display connected users stats
+	// Display connected users stats, from WebRTC or streaming directly from a video player
+	streamID := strings.Replace(r.URL.Path[7:], "/", "", -1)
 	enc := json.NewEncoder(w)
 	err := enc.Encode(struct {
 		ConnectedViewers int
-	}{webrtc.GetNumberConnectedSessions(strings.Replace(r.URL.Path[7:], "/", "", -1))})
+	}{webrtc.GetNumberConnectedSessions(streamID) + srt.GetNumberConnectedSessions(streamID)})
 	if err != nil {
 		http.Error(w, "Failed to generate JSON.", http.StatusInternalServerError)
 		log.Printf("Failed to generate JSON: %s", err)
