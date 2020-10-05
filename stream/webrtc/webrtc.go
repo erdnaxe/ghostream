@@ -38,8 +38,8 @@ func removeTrack(tracks []*webrtc.Track, track *webrtc.Track) []*webrtc.Track {
 }
 
 // GetNumberConnectedSessions get the number of currently connected clients
-func GetNumberConnectedSessions() int {
-	return len(videoTracks)
+func GetNumberConnectedSessions(streamID string) int {
+	return len(videoTracks[streamID])
 }
 
 // newPeerHandler is called when server receive a new session description

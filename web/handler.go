@@ -137,7 +137,7 @@ func statisticsHandler(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	err := enc.Encode(struct {
 		ConnectedViewers int
-	}{webrtc.GetNumberConnectedSessions()})
+	}{webrtc.GetNumberConnectedSessions(strings.Replace(r.URL.Path[7:], "/", "", -1))})
 	if err != nil {
 		http.Error(w, "Failed to generate JSON.", http.StatusInternalServerError)
 		log.Printf("Failed to generate JSON: %s", err)
