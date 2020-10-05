@@ -23,8 +23,8 @@ type Options struct {
 type SessionDescription = webrtc.SessionDescription
 
 var (
-	videoTracks []*webrtc.Track
-	audioTracks []*webrtc.Track
+	videoTracks map[string][]*webrtc.Track
+	audioTracks map[string][]*webrtc.Track
 )
 
 // Helper to reslice tracks
@@ -44,10 +44,13 @@ func GetNumberConnectedSessions() int {
 
 // newPeerHandler is called when server receive a new session description
 // this initiates a WebRTC connection and return server description
-func newPeerHandler(remoteSdp webrtc.SessionDescription, cfg *Options) webrtc.SessionDescription {
+func newPeerHandler(remoteSdp struct {
+	StreamID          string
+	RemoteDescription webrtc.SessionDescription
+}, cfg *Options) webrtc.SessionDescription {
 	// Create media engine using client SDP
 	mediaEngine := webrtc.MediaEngine{}
-	if err := mediaEngine.PopulateFromSDP(remoteSdp); err != nil {
+	if err := mediaEngine.PopulateFromSDP(remoteSdp.RemoteDescription); err != nil {
 		log.Println("Failed to create new media engine", err)
 		return webrtc.SessionDescription{}
 	}
@@ -95,7 +98,7 @@ func newPeerHandler(remoteSdp webrtc.SessionDescription, cfg *Options) webrtc.Se
 	}
 
 	// Set the remote SessionDescription
-	if err = peerConnection.SetRemoteDescription(remoteSdp); err != nil {
+	if err = peerConnection.SetRemoteDescription(remoteSdp.RemoteDescription); err != nil {
 		log.Println("Failed to set remote description", err)
 		return webrtc.SessionDescription{}
 	}
@@ -116,19 +119,27 @@ func newPeerHandler(remoteSdp webrtc.SessionDescription, cfg *Options) webrtc.Se
 		return webrtc.SessionDescription{}
 	}
 
+	streamID := remoteSdp.StreamID
+
 	// Set the handler for ICE connection state
 	// This will notify you when the peer has connected/disconnected
 	peerConnection.OnICEConnectionStateChange(func(connectionState webrtc.ICEConnectionState) {
 		log.Printf("Connection State has changed %s \n", connectionState.String())
+		if videoTracks[streamID] == nil {
+			videoTracks[streamID] = make([]*webrtc.Track, 0, 1)
+		}
+		if audioTracks[streamID] == nil {
+			audioTracks[streamID] = make([]*webrtc.Track, 0, 1)
+		}
 		if connectionState == webrtc.ICEConnectionStateConnected {
 			// Register tracks
-			videoTracks = append(videoTracks, videoTrack)
-			audioTracks = append(audioTracks, audioTrack)
+			videoTracks[streamID] = append(videoTracks[streamID], videoTrack)
+			audioTracks[streamID] = append(audioTracks[streamID], audioTrack)
 			monitoring.WebRTCConnectedSessions.Inc()
 		} else if connectionState == webrtc.ICEConnectionStateDisconnected {
 			// Unregister tracks
-			videoTracks = removeTrack(videoTracks, videoTrack)
-			audioTracks = removeTrack(audioTracks, audioTrack)
+			videoTracks[streamID] = removeTrack(videoTracks[streamID], videoTrack)
+			audioTracks[streamID] = removeTrack(audioTracks[streamID], audioTrack)
 			monitoring.WebRTCConnectedSessions.Dec()
 		}
 	})
@@ -155,8 +166,15 @@ func getPayloadType(m webrtc.MediaEngine, codecType webrtc.RTPCodecType, codecNa
 }
 
 // Serve WebRTC media streaming server
-func Serve(remoteSdpChan, localSdpChan chan webrtc.SessionDescription, inputChannel chan srt.Packet, cfg *Options) {
+func Serve(remoteSdpChan chan struct {
+	StreamID          string
+	RemoteDescription webrtc.SessionDescription
+}, localSdpChan chan webrtc.SessionDescription, inputChannel chan srt.Packet, cfg *Options) {
 	log.Printf("WebRTC server using UDP from port %d to %d", cfg.MinPortUDP, cfg.MaxPortUDP)
+
+	// Allocate memory
+	videoTracks = make(map[string][]*webrtc.Track)
+	audioTracks = make(map[string][]*webrtc.Track)
 
 	// Ingest data from SRT
 	go ingestFrom(inputChannel)

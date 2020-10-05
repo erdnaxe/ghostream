@@ -19,6 +19,21 @@ func viewerPostHandler(w http.ResponseWriter, r *http.Request) {
 	// Limit response body to 128KB
 	r.Body = http.MaxBytesReader(w, r.Body, 131072)
 
+	// Get stream ID from URL, or from domain name
+	path := r.URL.Path[1:]
+	if cfg.OneStreamPerDomain {
+		host := r.Host
+		if strings.Contains(host, ":") {
+			realHost, _, err := net.SplitHostPort(r.Host)
+			if err != nil {
+				log.Printf("Failed to split host and port from %s", r.Host)
+				return
+			}
+			host = realHost
+		}
+		path = host
+	}
+
 	// Decode client description
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
@@ -29,7 +44,10 @@ func viewerPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Exchange session descriptions with WebRTC stream server
-	remoteSdpChan <- remoteDescription
+	remoteSdpChan <- struct {
+		StreamID          string
+		RemoteDescription webrtc.SessionDescription
+	}{StreamID: path, RemoteDescription: remoteDescription}
 	localDescription := <-localSdpChan
 
 	// Send server description as JSON
@@ -40,7 +58,10 @@ func viewerPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	_, _ = w.Write(jsonDesc)
+	_, err = w.Write(jsonDesc)
+	if err != nil {
+		log.Println("An error occurred while sending session description", err)
+	}
 
 	// Increment monitoring
 	monitoring.WebSessions.Inc()

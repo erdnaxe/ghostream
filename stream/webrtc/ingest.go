@@ -2,6 +2,7 @@ package webrtc
 
 import (
 	"bufio"
+	"github.com/pion/webrtc/v3"
 	"io"
 	"log"
 	"net"
@@ -18,10 +19,10 @@ func ingestFrom(inputChannel chan srt.Packet) {
 
 	for {
 		var err error = nil
-		packet := <-inputChannel
-		switch packet.PacketType {
+		srtPacket := <-inputChannel
+		switch srtPacket.PacketType {
 		case "register":
-			log.Printf("WebRTC RegisterStream %s", packet.StreamName)
+			log.Printf("WebRTC RegisterStream %s", srtPacket.StreamName)
 
 			// Open a UDP Listener for RTP Packets on port 5004
 			videoListener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1"), Port: 5004})
@@ -74,13 +75,17 @@ func ingestFrom(inputChannel chan srt.Packet) {
 					}
 					packet := &rtp.Packet{}
 					if err := packet.Unmarshal(inboundRTPPacket[:n]); err != nil {
-						log.Printf("Failed to unmarshal RTP packet: %s", err)
+						log.Printf("Failed to unmarshal RTP srtPacket: %s", err)
 						continue
 					}
 
-					// Write RTP packet to all video tracks
+					if videoTracks[srtPacket.StreamName] == nil {
+						videoTracks[srtPacket.StreamName] = make([]*webrtc.Track, 0)
+					}
+
+					// Write RTP srtPacket to all video tracks
 					// Adapt payload and SSRC to match destination
-					for _, videoTrack := range videoTracks {
+					for _, videoTrack := range videoTracks[srtPacket.StreamName] {
 						packet.Header.PayloadType = videoTrack.PayloadType()
 						packet.Header.SSRC = videoTrack.SSRC()
 						if writeErr := videoTrack.WriteRTP(packet); writeErr != nil {
@@ -102,13 +107,17 @@ func ingestFrom(inputChannel chan srt.Packet) {
 					}
 					packet := &rtp.Packet{}
 					if err := packet.Unmarshal(inboundRTPPacket[:n]); err != nil {
-						log.Printf("Failed to unmarshal RTP packet: %s", err)
+						log.Printf("Failed to unmarshal RTP srtPacket: %s", err)
 						continue
 					}
 
-					// Write RTP packet to all audio tracks
+					if audioTracks[srtPacket.StreamName] == nil {
+						audioTracks[srtPacket.StreamName] = make([]*webrtc.Track, 0)
+					}
+
+					// Write RTP srtPacket to all audio tracks
 					// Adapt payload and SSRC to match destination
-					for _, audioTrack := range audioTracks {
+					for _, audioTrack := range audioTracks[srtPacket.StreamName] {
 						packet.Header.PayloadType = audioTrack.PayloadType()
 						packet.Header.SSRC = audioTrack.SSRC()
 						if writeErr := audioTrack.WriteRTP(packet); writeErr != nil {
@@ -127,20 +136,20 @@ func ingestFrom(inputChannel chan srt.Packet) {
 			}()
 			break
 		case "sendData":
-			// FIXME send to stream packet.StreamName
-			if _, err := ffmpegInput.Write(packet.Data); err != nil {
+			// FIXME send to stream srtPacket.StreamName
+			if _, err := ffmpegInput.Write(srtPacket.Data); err != nil {
 				log.Printf("Failed to write data to ffmpeg input: %s", err)
 			}
 			break
 		case "close":
-			log.Printf("WebRTC CloseConnection %s", packet.StreamName)
+			log.Printf("WebRTC CloseConnection %s", srtPacket.StreamName)
 			break
 		default:
-			log.Println("Unknown SRT packet type:", packet.PacketType)
+			log.Println("Unknown SRT srtPacket type:", srtPacket.PacketType)
 			break
 		}
 		if err != nil {
-			log.Printf("Error occured while receiving SRT packet of type %s: %s", packet.PacketType, err)
+			log.Printf("Error occured while receiving SRT srtPacket of type %s: %s", srtPacket.PacketType, err)
 		}
 	}
 }

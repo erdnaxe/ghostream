@@ -30,8 +30,11 @@ var (
 	cfg *Options
 
 	// WebRTC session description channels
-	remoteSdpChan chan webrtc.SessionDescription
-	localSdpChan  chan webrtc.SessionDescription
+	remoteSdpChan chan struct {
+		StreamID          string
+		RemoteDescription webrtc.SessionDescription
+	}
+	localSdpChan chan webrtc.SessionDescription
 
 	// Preload templates
 	templates *template.Template
@@ -71,7 +74,10 @@ func loadTemplates() error {
 }
 
 // Serve HTTP server
-func Serve(rSdpChan chan webrtc.SessionDescription, lSdpChan chan webrtc.SessionDescription, c *Options) {
+func Serve(rSdpChan chan struct {
+	StreamID          string
+	RemoteDescription webrtc.SessionDescription
+}, lSdpChan chan webrtc.SessionDescription, c *Options) {
 	remoteSdpChan = rSdpChan
 	localSdpChan = lSdpChan
 	cfg = c

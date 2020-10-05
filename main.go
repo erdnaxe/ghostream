@@ -104,7 +104,10 @@ func main() {
 	defer authBackend.Close()
 
 	// WebRTC session description channels
-	remoteSdpChan := make(chan webrtc.SessionDescription)
+	remoteSdpChan := make(chan struct {
+		StreamID          string
+		RemoteDescription webrtc.SessionDescription
+	})
 	localSdpChan := make(chan webrtc.SessionDescription)
 
 	// SRT channel for forwarding and webrtc
