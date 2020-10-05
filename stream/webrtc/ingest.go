@@ -68,7 +68,6 @@ func ingestFrom(inputChannel chan srt.Packet) {
 			// Receive video
 			go func() {
 				for {
-					// Listen for a single RTP Packet, we need this to determine the SSRC
 					inboundRTPPacket := make([]byte, 1500) // UDP MTU
 					n, _, err := videoListener.ReadFromUDP(inboundRTPPacket)
 					if err != nil {
@@ -79,7 +78,12 @@ func ingestFrom(inputChannel chan srt.Packet) {
 						panic(err)
 					}
 					log.Printf("[Video] %s", packet)
+
+					// Write RTP packet to all video tracks
+					// Adapt payload and SSRC to match destination
 					for _, videoTrack := range videoTracks {
+						packet.Header.PayloadType = videoTrack.PayloadType()
+						packet.Header.SSRC = videoTrack.SSRC()
 						if writeErr := videoTrack.WriteRTP(packet); writeErr != nil {
 							panic(err)
 						}
@@ -90,7 +94,6 @@ func ingestFrom(inputChannel chan srt.Packet) {
 			// Receive audio
 			go func() {
 				for {
-					// Listen for a single RTP Packet, we need this to determine the SSRC
 					inboundRTPPacket := make([]byte, 1500) // UDP MTU
 					n, _, err := audioListener.ReadFromUDP(inboundRTPPacket)
 					if err != nil {
@@ -102,6 +105,8 @@ func ingestFrom(inputChannel chan srt.Packet) {
 					}
 					log.Printf("[Audio] %s", packet)
 					for _, audioTrack := range audioTracks {
+						packet.Header.PayloadType = audioTrack.PayloadType()
+						packet.Header.SSRC = audioTrack.SSRC()
 						if writeErr := audioTrack.WriteRTP(packet); writeErr != nil {
 							panic(err)
 						}
