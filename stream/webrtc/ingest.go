@@ -15,6 +15,7 @@ func ingestFrom(inputChannel chan srt.Packet) {
 	// FIXME Clean code
 	var ffmpeg *exec.Cmd
 	var ffmpegInput io.WriteCloser
+
 	for {
 		var err error = nil
 		packet := <-inputChannel
@@ -22,23 +23,23 @@ func ingestFrom(inputChannel chan srt.Packet) {
 		case "register":
 			log.Printf("WebRTC RegisterStream %s", packet.StreamName)
 
-			// From https://github.com/pion/webrtc/blob/master/examples/rtp-to-webrtc/main.go
-
 			// Open a UDP Listener for RTP Packets on port 5004
 			videoListener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1"), Port: 5004})
 			if err != nil {
-				panic(err)
+				log.Printf("Faited to open UDP listener %s", err)
+				return
 			}
 			audioListener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1"), Port: 5005})
 			if err != nil {
-				panic(err)
+				log.Printf("Faited to open UDP listener %s", err)
+				return
 			}
 			defer func() {
 				if err = videoListener.Close(); err != nil {
-					panic(err)
+					log.Printf("Faited to close UDP listener %s", err)
 				}
 				if err = audioListener.Close(); err != nil {
-					panic(err)
+					log.Printf("Faited to close UDP listener %s", err)
 				}
 			}()
 
@@ -68,11 +69,13 @@ func ingestFrom(inputChannel chan srt.Packet) {
 					inboundRTPPacket := make([]byte, 1500) // UDP MTU
 					n, _, err := videoListener.ReadFromUDP(inboundRTPPacket)
 					if err != nil {
-						panic(err)
+						log.Printf("Failed to read from UDP: %s", err)
+						continue
 					}
 					packet := &rtp.Packet{}
 					if err := packet.Unmarshal(inboundRTPPacket[:n]); err != nil {
-						panic(err)
+						log.Printf("Failed to unmarshal RTP packet: %s", err)
+						continue
 					}
 
 					// Write RTP packet to all video tracks
@@ -81,7 +84,8 @@ func ingestFrom(inputChannel chan srt.Packet) {
 						packet.Header.PayloadType = videoTrack.PayloadType()
 						packet.Header.SSRC = videoTrack.SSRC()
 						if writeErr := videoTrack.WriteRTP(packet); writeErr != nil {
-							panic(err)
+							log.Printf("Failed to write to video track: %s", err)
+							continue
 						}
 					}
 				}
@@ -93,11 +97,13 @@ func ingestFrom(inputChannel chan srt.Packet) {
 					inboundRTPPacket := make([]byte, 1500) // UDP MTU
 					n, _, err := audioListener.ReadFromUDP(inboundRTPPacket)
 					if err != nil {
-						panic(err)
+						log.Printf("Failed to read from UDP: %s", err)
+						continue
 					}
 					packet := &rtp.Packet{}
 					if err := packet.Unmarshal(inboundRTPPacket[:n]); err != nil {
-						panic(err)
+						log.Printf("Failed to unmarshal RTP packet: %s", err)
+						continue
 					}
 
 					// Write RTP packet to all audio tracks
@@ -106,7 +112,8 @@ func ingestFrom(inputChannel chan srt.Packet) {
 						packet.Header.PayloadType = audioTrack.PayloadType()
 						packet.Header.SSRC = audioTrack.SSRC()
 						if writeErr := audioTrack.WriteRTP(packet); writeErr != nil {
-							panic(err)
+							log.Printf("Failed to write to audio track: %s", err)
+							continue
 						}
 					}
 				}
@@ -121,9 +128,8 @@ func ingestFrom(inputChannel chan srt.Packet) {
 			break
 		case "sendData":
 			// FIXME send to stream packet.StreamName
-			_, err := ffmpegInput.Write(packet.Data)
-			if err != nil {
-				panic(err)
+			if _, err := ffmpegInput.Write(packet.Data); err != nil {
+				log.Printf("Failed to write data to ffmpeg input: %s", err)
 			}
 			break
 		case "close":

@@ -79,6 +79,9 @@ func loadConfiguration() {
 }
 
 func main() {
+	// Configure logger
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+
 	// Load configuration
 	loadConfiguration()
 	cfg := struct {
