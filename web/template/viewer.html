@@ -6,22 +6,19 @@
       <video id="viewer" poster="/static/img/no_stream.svg" muted controls autoplay></video>
     </div>
 
-    <div class="quality-selector">
-      <form name="quality_form">
-        <input type="radio" id="quality_source" name="quality" value="" checked>
-        <label for="quality_source">Source</label>
-        <input type="radio" id="quality_720p" name="quality" value="@720p">
-        <label for="quality_720p">720p</label>
-        <input type="radio" id="quality_480p" name="quality" value="@480p">
-        <label for="quality_480p">480p</label>
-        <input type="radio" id="quality_240p" name="quality" value="@240p">
-        <label for="quality_240p">240p</label>
-      </form>
-    </div>
-
-    <!-- Links under video -->
+    <!-- Links and settings under video -->
     <p>
-      <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-box-arrow-up-right" fill="#d7d7d7" xmlns="http://www.w3.org/2000/svg">
+      <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-aspect-ratio-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm1 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0V5h2.5a.5.5 0 0 0 0-1h-3zm11 8a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-1 0V11h-2.5a.5.5 0 0 0 0 1h3z"/>
+      </svg>
+      <select id="quality">
+        <option value="">Source</option>
+        <option value="@720p">720p</option>
+        <option value="@480p">480p</option>
+        <option value="@240p">240p</option>
+      </select>
+
+      <svg class="ml-1" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-box-arrow-up-right" fill="#d7d7d7" xmlns="http://www.w3.org/2000/svg">
         <path fill-rule="evenodd"
           d="M1.5 13A1.5 1.5 0 0 0 3 14.5h8a1.5 1.5 0 0 0 1.5-1.5V9a.5.5 0 0 0-1 0v4a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 0 0-1H3A1.5 1.5 0 0 0 1.5 5v8zm7-11a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-1 0V2.5H9a.5.5 0 0 1-.5-.5z" />
         <path fill-rule="evenodd"
