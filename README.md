@@ -106,3 +106,4 @@ The solution is to switch to `libsrt-openssl-dev`.
 -   MDN web docs, *[Signaling and video calling.](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling)*
 -   [WebRTC For The Curious](https://webrtcforthecurious.com/)
 -   OBS Wiki, *[Streaming With SRT Protocol.](https://obsproject.com/wiki/Streaming-With-SRT-Protocol)*
+-   Livepeer media server, *[Evaluate Go-FFmpeg Bindings](https://github.com/livepeer/lpms/issues/24)*
