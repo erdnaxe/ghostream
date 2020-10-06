@@ -31,7 +31,7 @@ func TestViewerPageGET(t *testing.T) {
 	}
 
 	// Test GET request on statistics page
-	r, _ = http.NewRequest("GET", "/", nil)
+	r, _ = http.NewRequest("GET", "/_stats/demo/", nil)
 	w = httptest.NewRecorder()
 	http.HandlerFunc(statisticsHandler).ServeHTTP(w, r)
 	if w.Code != http.StatusOK {

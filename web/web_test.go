@@ -43,7 +43,7 @@ func TestHTTPServe(t *testing.T) {
 		t.Errorf("Viewer page returned %v != %v on GET", resp.StatusCode, http.StatusOK)
 	}
 
-	resp, err = http.Get("http://localhost:8081/_stats")
+	resp, err = http.Get("http://localhost:8081/_stats/demo/")
 	if err != nil {
 		t.Error("Error while getting /_stats:", err)
 	}
