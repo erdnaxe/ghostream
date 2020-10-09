@@ -1,3 +1,4 @@
+// Package basic provides a basic authentification backend
 package basic
 
 import (

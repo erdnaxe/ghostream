@@ -1,3 +1,4 @@
+// Package srt serves a SRT server
 package srt
 
 import (

@@ -1,5 +1,7 @@
 //go:generate pkger
 
+// Package main provides the full-featured server with configuration loading
+// and communication between routines.
 package main
 
 import (

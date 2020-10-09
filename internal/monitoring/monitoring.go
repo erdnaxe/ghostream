@@ -1,3 +1,4 @@
+// Package monitoring serves Prometheus monitoring endpoints
 package monitoring
 
 import (

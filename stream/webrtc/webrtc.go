@@ -1,3 +1,4 @@
+// Package webrtc provides the backend to simulate a WebRTC client to send stream
 package webrtc
 
 import (

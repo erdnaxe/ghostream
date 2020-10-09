@@ -1,14 +1,15 @@
+// Package webrtc provides the backend to simulate a WebRTC client to send stream
 package webrtc
 
 import (
 	"bufio"
-	"github.com/pion/webrtc/v3"
 	"io"
 	"log"
 	"net"
 	"os/exec"
 
 	"github.com/pion/rtp"
+	"github.com/pion/webrtc/v3"
 	"gitlab.crans.org/nounous/ghostream/stream/srt"
 )
 

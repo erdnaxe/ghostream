@@ -1,3 +1,4 @@
+// Package web serves the JavaScript player and WebRTC negociation
 package web
 
 import (

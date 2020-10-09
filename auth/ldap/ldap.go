@@ -1,3 +1,4 @@
+// Package ldap provides a LDAP authentification backend
 package ldap
 
 import (

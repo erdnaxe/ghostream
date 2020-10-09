@@ -1,3 +1,4 @@
+// Package auth manages backends to auth incoming streams
 package auth
 
 import (

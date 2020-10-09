@@ -1,3 +1,4 @@
+// Package forwarding forwards incoming stream to other streaming services
 package forwarding
 
 import (
