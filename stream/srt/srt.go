@@ -33,19 +33,19 @@ type Packet struct {
 }
 
 // Split host and port from listen address
-func splitHostPort(hostport string) (string, uint16) {
+func splitHostPort(hostport string) (string, uint16, error) {
 	host, portS, err := net.SplitHostPort(hostport)
 	if err != nil {
-		log.Fatalf("Failed to split host and port from %s", hostport)
+		return "", 0, err
 	}
 	if host == "" {
 		host = "0.0.0.0"
 	}
 	port64, err := strconv.ParseUint(portS, 10, 16)
 	if err != nil {
-		log.Fatalf("Port is not a integer: %s", err)
+		return "", 0, err
 	}
-	return host, uint16(port64)
+	return host, uint16(port64), nil
 }
 
 // GetNumberConnectedSessions get the number of currently connected clients
@@ -62,7 +62,10 @@ func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel, webrtcChan
 
 	// Start SRT in listening mode
 	log.Printf("SRT server listening on %s", cfg.ListenAddress)
-	host, port := splitHostPort(cfg.ListenAddress)
+	host, port, err := splitHostPort(cfg.ListenAddress)
+	if err != nil {
+		log.Fatalf("Failed to split host and port from %s", cfg.ListenAddress)
+	}
 	sck := srtgo.NewSrtSocket(host, port, nil)
 	if err := sck.Listen(cfg.MaxClients); err != nil {
 		log.Fatal("Unable to listen for SRT clients:", err)

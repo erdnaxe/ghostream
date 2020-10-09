@@ -9,14 +9,34 @@ import (
 
 // TestSplitHostPort Try to split a host like 127.0.0.1:1234 in host, port (127.0.0.1, 1234à
 func TestSplitHostPort(t *testing.T) {
-	host, port := splitHostPort("127.0.0.1:1234")
+	// Split 127.0.0.1:1234
+	host, port, err := splitHostPort("127.0.0.1:1234")
+	if err != nil {
+		t.Errorf("Failed to split host and port, %s", err)
+	}
 	if host != "127.0.0.1" || port != 1234 {
 		t.Errorf("splitHostPort returned %v:%d != 127.0.0.1:1234", host, port)
 	}
 
-	host, port = splitHostPort(":1234")
+	// Split :1234
+	host, port, err = splitHostPort(":1234")
+	if err != nil {
+		t.Errorf("Failed to split host and port, %s", err)
+	}
 	if host != "0.0.0.0" || port != 1234 {
 		t.Errorf("splitHostPort returned %v:%d != 0.0.0.0:1234", host, port)
+	}
+
+	// Split demo, should fail
+	host, port, err = splitHostPort("demo")
+	if err == nil {
+		t.Errorf("splitHostPort managed to split unsplitable hostport")
+	}
+
+	// Split demo:port, should fail
+	host, port, err = splitHostPort("demo:port")
+	if err == nil {
+		t.Errorf("splitHostPort managed to split unsplitable hostport")
 	}
 }
 
