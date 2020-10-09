@@ -15,7 +15,13 @@ func TestBasicLogin(t *testing.T) {
 		t.Error("Error while logging with the basic authentication:", err)
 	}
 
-	// Test bad credentials
+	// Test bad username
+	ok, err = backend.Login("baduser", "demo")
+	if ok {
+		t.Error("Authentification failed to fail:", err)
+	}
+
+	// Test bad password
 	ok, err = backend.Login("demo", "badpass")
 	if ok {
 		t.Error("Authentification failed to fail:", err)
