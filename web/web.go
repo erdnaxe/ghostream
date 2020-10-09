@@ -85,7 +85,7 @@ func Serve(rSdpChan chan struct {
 	cfg = c
 
 	if !cfg.Enabled {
-		// SRT is not enabled, ignore
+		// Web server is not enabled, ignore
 		return
 	}
 
