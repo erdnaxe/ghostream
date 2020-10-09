@@ -36,6 +36,11 @@ docker build . -t ghostream
 docker run -it --rm -p 2112:2112 -p 9710:9710/udp -p 8080:8080 -p 10000-10005:10000-10005/udp ghostream
 ```
 
+## Configuration
+
+Ghostream can be configured by placing [ghostream.yml](docs/ghostream.example.yml) in current directory, in `~/.ghostream/` or in `/etc/ghostream/`.
+You can also override any value using environnement variables, e.g. `GHOSTREAM_AUTH_BACKEND=ldap` will change the authentification backend.
+
 ## Streaming
 
 As stated by OBS wiki, when streaming you should adapt the latency to `2.5 * (the round-trip time with server, in μs)`.

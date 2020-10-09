@@ -1,5 +1,8 @@
 ## Example Ghostream configuration ##
 # Uncomment and edit to change values
+#
+# All settings can also be changed with an environnement variable,
+# e.g. GHOSTREAM_AUTH_BACKEND=ldap will change auth.backend to "ldap"
 
 ## Authentification package ##
 # Manage incoming stream authentification
