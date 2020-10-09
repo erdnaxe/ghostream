@@ -15,7 +15,7 @@ func TestLoadConfiguration(t *testing.T) {
 		Basic:   basic.Options{Credentials: make(map[string]string)},
 	})
 	if err != nil {
-		t.Error("Creating basic authentication backend failed:", err)
+		t.Errorf("Creating basic authentication backend failed: %s", err)
 	}
 
 	// Test to create a LDAP authentification backend
@@ -26,7 +26,7 @@ func TestLoadConfiguration(t *testing.T) {
 		LDAP:    ldap.Options{URI: "ldap://127.0.0.1:389", UserDn: "cn=users,dc=example,dc=com"},
 	})
 	if err == nil {
-		t.Error("Creating ldap authentication backend successed mysteriously:", err)
+		t.Errorf("Creating ldap authentication backend successed mysteriously: %s", err)
 	}
 
 	// Test to bypass authentification backend
@@ -34,6 +34,15 @@ func TestLoadConfiguration(t *testing.T) {
 		Enabled: false,
 	})
 	if backend != nil {
-		t.Error("Failed to bypass authentication backend:", err)
+		t.Errorf("Failed to bypass authentication backend: %s", err)
+	}
+
+	// Test bad authentification backend
+	_, err = New(&Options{
+		Enabled: true,
+		Backend: "idonotexist",
+	})
+	if err == nil {
+		t.Error("Failed to fail authentication backend init:")
 	}
 }
