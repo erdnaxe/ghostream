@@ -53,7 +53,7 @@ func TestForwardStream(t *testing.T) {
 	go Serve(forwardingChannel, forwardingList)
 
 	// Serve SRT Server without authentification backend
-	go srt.Serve(&srt.Options{ListenAddress: ":9712", MaxClients: 2}, nil, forwardingChannel, nil)
+	go srt.Serve(&srt.Options{Enabled: true, ListenAddress: ":9712", MaxClients: 2}, nil, forwardingChannel, nil)
 
 	ffmpeg := exec.Command("ffmpeg", "-hide_banner", "-loglevel", "error",
 		"-re", "-f", "lavfi", "-i", "testsrc=size=640x480:rate=10",
