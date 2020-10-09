@@ -5,11 +5,14 @@
 # e.g. GHOSTREAM_AUTH_BACKEND=ldap will change auth.backend to "ldap"
 
 ## Authentification package ##
-# Manage incoming stream authentification
 auth:
+  # If you disable authentification no more check will be done on incoming
+  # streams.
+  #
+  #enabled: true
+
   # Authentification backend,
   # can be "basic" to use a list of user:password
-  # can be "bypass" to bypass the authentification process
   # can be "ldap" to use a LDAP server
   #
   #backend: basic
@@ -41,6 +44,10 @@ forwarding:
 ## Prometheus monitoring ##
 # Expose a monitoring endpoint for Prometheus
 monitoring:
+  # If you disable monitoring module, no more metrics will be exposed.
+  #
+  #enabled: true
+
   # You should not expose monitoring metrics to the whole world.
   # To limit access to only localhost, use 127.0.0.1:2112
   #listenAddress: :2112
@@ -48,6 +55,11 @@ monitoring:
 ## SRT server ##
 # The SRT server receive incoming stream and can also serve video to clients.
 srt:
+  # If you disable SRT module, it will be no more possible to receive incoming
+  # streams and this whole app will become useless.
+  #
+  #enabled: true
+
   # To limit access to only localhost, use 127.0.0.1:9710
   #listenAddress: :9710
 
@@ -57,6 +69,11 @@ srt:
 ## Web server ##
 # The web server serves a WebRTC player.
 web:
+  # If you disable web module, the stream will be accessible only via SRT or
+  # via forwarding module (see above).
+  #
+  #enabled: true
+
   # Web page favicon, can be .ico, .png or .svg
   #
   #favicon: /static/img/favicon.svg
@@ -94,6 +111,10 @@ web:
 
 ## WebRTC server ##
 webrtc:
+  # If you disable webrtc module, the web client won't be able to play streams.
+  #
+  #enabled: true
+
   # UDP port range used to stream
   # This range must be opened in your firewall.
   #

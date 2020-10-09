@@ -13,9 +13,9 @@ import (
 
 // Options holds web package configuration
 type Options struct {
-	MinPortUDP uint16
-	MaxPortUDP uint16
-
+	Enabled     bool
+	MinPortUDP  uint16
+	MaxPortUDP  uint16
 	STUNServers []string
 }
 
@@ -179,6 +179,11 @@ func Serve(remoteSdpChan chan struct {
 	StreamID          string
 	RemoteDescription webrtc.SessionDescription
 }, localSdpChan chan webrtc.SessionDescription, inputChannel chan srt.Packet, cfg *Options) {
+	if !cfg.Enabled {
+		// SRT is not enabled, ignore
+		return
+	}
+
 	log.Printf("WebRTC server using UDP from port %d to %d", cfg.MinPortUDP, cfg.MaxPortUDP)
 
 	// Allocate memory

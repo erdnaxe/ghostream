@@ -6,12 +6,12 @@ import (
 	"strings"
 
 	"gitlab.crans.org/nounous/ghostream/auth/basic"
-	"gitlab.crans.org/nounous/ghostream/auth/bypass"
 	"gitlab.crans.org/nounous/ghostream/auth/ldap"
 )
 
 // Options holds package configuration
 type Options struct {
+	Enabled bool
 	Backend string
 	Basic   basic.Options
 	LDAP    ldap.Options
@@ -25,14 +25,17 @@ type Backend interface {
 
 // New initialize authentification backend
 func New(cfg *Options) (Backend, error) {
-	var backend Backend
+	var backend Backend = nil
 	var err error
+
+	if !cfg.Enabled {
+		// Authentification is disabled
+		return nil, nil
+	}
 
 	switch strings.ToLower(cfg.Backend) {
 	case "basic":
 		backend, err = basic.New(&cfg.Basic)
-	case "bypass":
-		backend, err = bypass.New()
 	case "ldap":
 		backend, err = ldap.New(&cfg.LDAP)
 	default:

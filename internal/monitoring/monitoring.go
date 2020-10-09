@@ -11,6 +11,7 @@ import (
 
 // Options holds web package configuration
 type Options struct {
+	Enabled       bool
 	ListenAddress string
 }
 
@@ -36,6 +37,11 @@ var (
 
 // Serve monitoring server that expose prometheus metrics
 func Serve(cfg *Options) {
+	if !cfg.Enabled {
+		// Monitoring is not enabled, ignore
+		return
+	}
+
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
 	log.Printf("Monitoring HTTP server listening on %s", cfg.ListenAddress)

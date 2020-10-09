@@ -15,6 +15,7 @@ import (
 
 // Options holds web package configuration
 type Options struct {
+	Enabled                     bool
 	Favicon                     string
 	Hostname                    string
 	ListenAddress               string
@@ -81,6 +82,11 @@ func Serve(rSdpChan chan struct {
 	remoteSdpChan = rSdpChan
 	localSdpChan = lSdpChan
 	cfg = c
+
+	if !cfg.Enabled {
+		// SRT is not enabled, ignore
+		return
+	}
 
 	// Load templates
 	if err := loadTemplates(); err != nil {

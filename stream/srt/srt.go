@@ -19,6 +19,7 @@ var (
 
 // Options holds web package configuration
 type Options struct {
+	Enabled       bool
 	ListenAddress string
 	MaxClients    int
 }
@@ -53,6 +54,11 @@ func GetNumberConnectedSessions(streamID string) int {
 
 // Serve SRT server
 func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel, webrtcChannel chan Packet) {
+	if !cfg.Enabled {
+		// SRT is not enabled, ignore
+		return
+	}
+
 	// Start SRT in listening mode
 	log.Printf("SRT server listening on %s", cfg.ListenAddress)
 	host, port := splitHostPort(cfg.ListenAddress)

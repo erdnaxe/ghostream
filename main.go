@@ -45,6 +45,7 @@ func loadConfiguration() {
 	}
 
 	// Define configuration default values
+	viper.SetDefault("Auth.Enabled", true)
 	viper.SetDefault("Auth.Backend", "Basic")
 	viper.SetDefault("Auth.Basic.Credentials", map[string]string{
 		// Demo user with password "demo"
@@ -53,15 +54,19 @@ func loadConfiguration() {
 	viper.SetDefault("Auth.LDAP.URI", "ldap://127.0.0.1:389")
 	viper.SetDefault("Auth.LDAP.UserDn", "cn=users,dc=example,dc=com")
 	viper.SetDefault("Forwarding", make(map[string][]string))
+	viper.SetDefault("Monitoring.Enabled", true)
 	viper.SetDefault("Monitoring.ListenAddress", ":2112")
+	viper.SetDefault("Srt.Enabled", true)
 	viper.SetDefault("Srt.ListenAddress", ":9710")
 	viper.SetDefault("Srt.MaxClients", 64)
+	viper.SetDefault("Web.Enabled", true)
 	viper.SetDefault("Web.Favicon", "/static/img/favicon.svg")
 	viper.SetDefault("Web.Hostname", "localhost")
 	viper.SetDefault("Web.ListenAddress", ":8080")
 	viper.SetDefault("Web.Name", "Ghostream")
 	viper.SetDefault("Web.OneStreamPerDomain", false)
 	viper.SetDefault("Web.ViewersCounterRefreshPeriod", 20000)
+	viper.SetDefault("WebRTC.Enabled", true)
 	viper.SetDefault("WebRTC.MaxPortUDP", 10005)
 	viper.SetDefault("WebRTC.MinPortUDP", 10000)
 	viper.SetDefault("WebRTC.STUNServers", []string{"stun:stun.l.google.com:19302"})
@@ -101,7 +106,9 @@ func main() {
 	if err != nil {
 		log.Fatalln("Failed to load authentification backend:", err)
 	}
-	defer authBackend.Close()
+	if authBackend != nil {
+		defer authBackend.Close()
+	}
 
 	// WebRTC session description channels
 	remoteSdpChan := make(chan struct {
