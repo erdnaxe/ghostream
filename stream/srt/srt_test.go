@@ -35,7 +35,7 @@ func TestServeSRT(t *testing.T) {
 		t.Skip("WARNING: FFMPEG is not installed. Skipping stream test")
 	}
 
-	go Serve(&Options{ListenAddress: ":9711", MaxClients: 2}, nil, nil, nil)
+	go Serve(&Options{Enabled: true, ListenAddress: ":9711", MaxClients: 2}, nil, nil, nil)
 
 	ffmpeg := exec.Command("ffmpeg", "-hide_banner", "-loglevel", "error",
 		"-f", "lavfi", "-i", "testsrc=size=640x480:rate=10",
