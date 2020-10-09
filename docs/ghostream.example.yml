@@ -1,60 +1,103 @@
-# Example configuration
+## Example Ghostream configuration ##
+# Uncomment and edit to change values
 
-# Authentification
+## Authentification package ##
+# Manage incoming stream authentification
 auth:
-  backend: basic
-  basic:
-    credentials:
-      # Demo user with password "demo"
-      demo: $2b$15$LRnG3eIHFlYIguTxZOLH7eHwbQC/vqjnLq6nDFiHSUDKIU.f5/1H6
-
-  # Example to bypass login, dangerous!
-  #backend: bypass
+  # Authentification backend,
+  # can be "basic" to use a list of user:password
+  # can be "bypass" to bypass the authentification process
+  # can be "ldap" to use a LDAP server
   #
-  # Example of LDAP server login
-  #backend: ldap
+  #backend: basic
+
+  # Basic backend configuration
+  #
+  #basic:
+  #  credentials:
+  #    # Demo user with password "demo"
+  #    demo: $2b$15$LRnG3eIHFlYIguTxZOLH7eHwbQC/vqjnLq6nDFiHSUDKIU.f5/1H6
+
+  # LDAP backend configuration
+  #
   #ldap:
   #  uri: ldap://127.0.0.1:389
   #  userdn: cn=users,dc=example,dc=com
 
-# Configure stream forwarding
+## Stream forwarding ##
+# Forward an incoming stream to other servers
+# The URL can be anything FFMpeg can accept as an stream output
 forwarding:
-  # Example to forward a stream named "demo" to Twitch and YouTube
+  # By default nothing is forwarded.
+  #
+  # This example forwards a stream named "demo" to Twitch and YouTube,
   #demo:
   #  - rtmp://live-cdg.twitch.tv/app/STREAM_KEY
   #  - rtmp://a.rtmp.youtube.com/live2/STREAM_KEY
 
-# Prometheus monitoring endpoint
+## Prometheus monitoring ##
+# Expose a monitoring endpoint for Prometheus
 monitoring:
-  listenAddress: 127.0.0.1:2112
+  # You should not expose monitoring metrics to the whole world.
+  # To limit access to only localhost, use 127.0.0.1:2112
+  #listenAddress: :2112
 
-# Configure SRT server
+## SRT server ##
+# The SRT server receive incoming stream and can also serve video to clients.
 srt:
-  listenAddress: 127.0.0.1:9710
+  # To limit access to only localhost, use 127.0.0.1:9710
+  #listenAddress: :9710
 
   # Max number of active SRT connections
-  maxClients: 64
+  #maxClients: 64
 
-# Configure web server
+## Web server ##
+# The web server serves a WebRTC player.
 web:
-  listenAddress: 127.0.0.1:8080
-  name: Demo
-  hostname: localhost
-  favicon: https://www.crans.org/images/favicon.ico
-  # You can optionally use {{.Path}} to customize your widget URL
-  widgetURL: https://example.com/stream_{{.Path}}
-  viewersCounterRefreshPeriod: 20000
+  # Web page favicon, can be .ico, .png or .svg
+  #
+  #favicon: /static/img/favicon.svg
 
-  # When oneStreamPerDomain is enabled, the stream name will be the domain name.
-  # For example, on http://example.com:8080/ the stream will always be "example.com"
-  oneStreamPerDomain: false
+  # Server name seen by users
+  # If example.com reverses to this server, then change to example.com
+  #
+  #hostname: localhost
 
-# Configure WebRTC server
+  # To limit access to only localhost, use 127.0.0.1:8080
+  #
+  #listenAddress: :8080
+
+  # Web site name
+  # Put something cool here, such as "Cr@ns Stream"
+  #
+  #name: Ghostream
+
+  # Use the domain name as the stream name
+  # e.g., on http://example.com:8080/ the stream served will be "example.com"
+  # This implies that your domain will be able to serve only one stream.
+  #
+  #oneStreamPerDomain: false
+
+  # Refresh period for viewer stats (below the player)
+  #
+  #viewersCounterRefreshPeriod: 20000
+
+  # Add a web page as a side widget
+  # This can be a public TheLounge or Element instance to make a chat.
+  # You can use {{.Path}} to include current stream name,
+  # e.g. https://example.com/stream_{{.Path}}
+  #
+  #widgetURL: ""
+
+## WebRTC server ##
 webrtc:
   # UDP port range used to stream
-  minPortUDP: 10000
-  maxPortUDP: 10005
+  # This range must be opened in your firewall.
+  #
+  #minPortUDP: 10000
+  #maxPortUDP: 10005
 
   # STUN servers, you should host your own Coturn instance
-  STUNServers:
-    - stun:stun.l.google.com:19302
+  #
+  #STUNServers:
+  #  - stun:stun.l.google.com:19302
