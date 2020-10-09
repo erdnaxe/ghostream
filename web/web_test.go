@@ -13,7 +13,7 @@ func TestHTTPServe(t *testing.T) {
 		t.Errorf("Failed to load templates: %v", err)
 	}
 
-	go Serve(nil, nil, &Options{ListenAddress: "127.0.0.1:8081"})
+	go Serve(nil, nil, &Options{Enabled: true, ListenAddress: "127.0.0.1:8081"})
 
 	// Sleep 1 second to ensure that the web server is running, to avoid fails because the request came too early
 	time.Sleep(1000000000)
