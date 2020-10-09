@@ -10,6 +10,11 @@ unit_tests:
   script:
     - go test -v -covermode=count -coverprofile cover.cov ./...
     - go tool cover -func=cover.cov
+    - go tool cover -html=cover.cov -o coverage.html
+  artifacts:
+    paths:
+      - coverage.html
+    expire_in: 1 week
 
 linters:
   image: golang:1.15-alpine
