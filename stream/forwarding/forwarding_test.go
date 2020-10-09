@@ -77,5 +77,15 @@ func TestForwardStream(t *testing.T) {
 
 	time.Sleep(5 * time.Second) // Delay is in nanoseconds, here 5s
 
+	err = ffmpeg.Process.Kill()
+	if err != nil {
+		t.Fatalf("Error while killing ffmpeg: already died?")
+	}
+
+	err = forwardedFfmpeg.Process.Kill()
+	if err != nil {
+		t.Fatalf("Error while killing ffmpeg: already died?")
+	}
+
 	// TODO Kill SRT server
 }
