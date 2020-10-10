@@ -66,7 +66,11 @@ func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel, webrtcChan
 	if err != nil {
 		log.Fatalf("Failed to split host and port from %s", cfg.ListenAddress)
 	}
-	sck := srtgo.NewSrtSocket(host, port, nil)
+
+	options := make(map[string]string)
+	options["blocking"] = "0"
+	options["transtype"] = "live"
+	sck := srtgo.NewSrtSocket(host, port, options)
 	if err := sck.Listen(cfg.MaxClients); err != nil {
 		log.Fatal("Unable to listen for SRT clients:", err)
 	}
@@ -77,7 +81,8 @@ func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel, webrtcChan
 		// Wait for new connection
 		s, err := sck.Accept()
 		if err != nil {
-			// Something wrong happenned
+			// Something wrong happened
+			log.Println(err)
 			continue
 		}
 
