@@ -46,9 +46,9 @@ func ingestFrom(inputChannel chan srt.Packet) {
 			}()
 
 			ffmpeg = exec.Command("ffmpeg", "-hide_banner", "-loglevel", "error", "-re", "-i", "pipe:0",
-				"-an", "-vcodec", "libvpx", //"-cpu-used", "5", "-deadline", "1", "-g", "10", "-error-resilient", "1", "-auto-alt-ref", "1",
+				"-an", "-vcodec", "libvpx", "-cpu-used", "5", "-deadline", "1", "-g", "10", "-error-resilient", "1", "-auto-alt-ref", "1",
 				"-f", "rtp", "rtp://127.0.0.1:5004",
-				"-vn", "-acodec", "libopus", //"-cpu-used", "5", "-deadline", "1", "-g", "10", "-error-resilient", "1", "-auto-alt-ref", "1",
+				"-vn", "-acodec", "libopus", "-cpu-used", "5", "-deadline", "1", "-g", "10", "-error-resilient", "1", "-auto-alt-ref", "1",
 				"-f", "rtp", "rtp://127.0.0.1:5005")
 
 			input, err := ffmpeg.StdinPipe()
