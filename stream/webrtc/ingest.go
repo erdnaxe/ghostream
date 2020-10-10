@@ -45,10 +45,13 @@ func ingestFrom(inputChannel chan srt.Packet) {
 				}
 			}()
 
+			// TODO -quality good is implicit and not adapted
 			ffmpeg = exec.Command("ffmpeg", "-hide_banner", "-loglevel", "error", "-re", "-i", "pipe:0",
-				"-an", "-vcodec", "libvpx", "-cpu-used", "5", "-deadline", "1", "-g", "10", "-error-resilient", "1", "-auto-alt-ref", "1",
+				"-an", "-vcodec", "libvpx", "-quality", "good", "-cpu-used", "5", "-b:v", "2000k", "-maxrate", "2000k", "-bufsize", "4000k", // TODO Change bitrate when changing quality
+				"-qmin", "10", "-qmax", "42", "-threads", "4", "-deadline", "1", "-error-resilient", "1",
+				"-auto-alt-ref", "1",
 				"-f", "rtp", "rtp://127.0.0.1:5004",
-				"-vn", "-acodec", "libopus", "-cpu-used", "5", "-deadline", "1", "-g", "10", "-error-resilient", "1", "-auto-alt-ref", "1",
+				"-vn", "-acodec", "libopus", "-cpu-used", "5", "-deadline", "1", "-qmin", "10", "-qmax", "42", "-error-resilient", "1", "-auto-alt-ref", "1",
 				"-f", "rtp", "rtp://127.0.0.1:5005")
 
 			input, err := ffmpeg.StdinPipe()
