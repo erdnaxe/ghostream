@@ -28,7 +28,7 @@ sudo apt install git golang ffmpeg libsrt1-openssl
 go get gitlab.crans.org/nounous/ghostream
 ```
 
-On Ubuntu 20.04 or Debian Buster, you may manually install libsrt 1.4.1: install [libsrt-openssl-dev](http://ftp.fr.debian.org/debian/pool/main/s/srt/libsrt1-openssl_1.4.1-5+b1_amd64.deb) then [libsrt-openssl-dev](http://ftp.fr.debian.org/debian/pool/main/s/srt/libsrt-openssl-dev_1.4.1-5+b1_amd64.deb).
+On Ubuntu 20.04 or Debian Buster, you may manually install libsrt 1.4.1: install [libsrt1-openssl 1.4.1](http://ftp.fr.debian.org/debian/pool/main/s/srt/libsrt1-openssl_1.4.1-5+b1_amd64.deb) then [libsrt-openssl-dev 1.4.1](http://ftp.fr.debian.org/debian/pool/main/s/srt/libsrt-openssl-dev_1.4.1-5+b1_amd64.deb).
 
 For development, you may clone this repository, then `go run main.go`.
 
