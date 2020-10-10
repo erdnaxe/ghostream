@@ -20,9 +20,17 @@ Features:
 
 ## Installation on Debian/Ubuntu
 
-You need at least libsrt 1.4.1. On Ubuntu 20.04 or Debian Buster, you may manually install [libsrt-openssl-dev](http://ftp.fr.debian.org/debian/pool/main/s/srt/libsrt1-openssl_1.4.1-5+b1_amd64.deb) then [libsrt-openssl-dev](http://ftp.fr.debian.org/debian/pool/main/s/srt/libsrt-openssl-dev_1.4.1-5+b1_amd64.deb).
 
-You may clone this repository, then `go run main.go` for debugging, or `go get gitlab.crans.org/nounous/ghostream`.
+On Ubuntu 20.10+ or Debian 11+, you can install directly ghostream,
+
+```bash
+sudo apt install git golang ffmpeg libsrt1-openssl
+go get gitlab.crans.org/nounous/ghostream
+```
+
+On Ubuntu 20.04 or Debian Buster, you may manually install libsrt 1.4.1: install [libsrt-openssl-dev](http://ftp.fr.debian.org/debian/pool/main/s/srt/libsrt1-openssl_1.4.1-5+b1_amd64.deb) then [libsrt-openssl-dev](http://ftp.fr.debian.org/debian/pool/main/s/srt/libsrt-openssl-dev_1.4.1-5+b1_amd64.deb).
+
+For development, you may clone this repository, then `go run main.go`.
 
 ## Installation with Docker
 
