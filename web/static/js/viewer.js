@@ -10,9 +10,9 @@ startPeerConnection = () => {
     // On connection change, change indicator color
     // if connection failed, restart peer connection
     peerConnection.oniceconnectionstatechange = e => {
+        console.log("ICE connection state changed, " + peerConnection.iceConnectionState)
         switch (peerConnection.iceConnectionState) {
             case "disconnected":
-                console.log(peerConnection.iceConnectionState)
                 document.getElementById("connectionIndicator").style.fill = "#dc3545"
                 break
             case "checking":
@@ -27,9 +27,6 @@ startPeerConnection = () => {
                 peerConnection.close()
                 peerConnection = null
                 setTimeout(startPeerConnection, 1000)
-                break
-            default:
-                console.log(peerConnection.iceConnectionState)
                 break
         }
     }
