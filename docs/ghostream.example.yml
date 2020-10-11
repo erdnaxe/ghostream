@@ -18,6 +18,8 @@ auth:
   #backend: basic
 
   # Basic backend configuration
+  # To generate bcrypt hashed password from Python, use:
+  # python3 -c 'import bcrypt; print(bcrypt.hashpw(b"PASSWORD", bcrypt.gensalt(rounds=15)).decode("ascii"))'
   #
   #basic:
   #  credentials:
