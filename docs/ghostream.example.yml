@@ -74,6 +74,10 @@ web:
   #
   #enabled: true
 
+  # Custom CSS stylesheet to change theme
+  #
+  #customCss: ""
+
   # Web page favicon, can be .ico, .png or .svg
   #
   #favicon: /static/img/favicon.svg

@@ -17,6 +17,7 @@ import (
 // Options holds web package configuration
 type Options struct {
 	Enabled                     bool
+	CustomCSS                   string
 	Favicon                     string
 	Hostname                    string
 	ListenAddress               string
