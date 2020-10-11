@@ -1,0 +1,56 @@
+{{define "player"}}
+<div class="container">
+  <div class="col-video">
+    <!-- Video -->
+    <div class="video-responsive">
+      <video id="viewer" poster="/static/img/no_stream.svg" muted controls autoplay></video>
+    </div>
+
+    <!-- Links and settings under video -->
+    <div class="controls">
+      <span class="control-quality">
+        <select id="quality">
+          <option value="">Source</option>
+          <option value="@720p">720p</option>
+          <option value="@480p">480p</option>
+          <option value="@240p">240p</option>
+        </select>  
+      </span>
+      <code class="control-srt-link">srt://{{.Cfg.Hostname}}:{{.Cfg.SRTServerPort}}?streamid={{.Path}}</code>
+      <span class="control-viewers" id="connected-people">0</span>
+      <svg class="control-indicator" id="connectionIndicator" fill="#dc3545" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+        <rect width="4" height="5" x="1" y="10" rx="1"/>
+        <rect width="4" height="9" x="6" y="6" rx="1"/>
+        <rect width="4" height="14" x="11" y="1" rx="1"/>
+      </svg>
+      {{if .WidgetURL}}<a class="control-chat" id="sideWidgetToggle" href="#" title="Cacher/Afficher le chat">»</a>{{end}}
+    </div>
+  </div>
+
+  {{if .WidgetURL}}
+  <!-- Chat -->
+  <div class="col-chat" id="sideWidget">
+    <iframe src="{{.WidgetURL}}"
+      title="Chat" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
+  </div>
+  {{end}}
+</div>
+
+{{if .WidgetURL}}<script src="/static/js/sideWidget.js"></script>{{end}}
+<script src="/static/js/videoQuality.js"></script>
+<script src="/static/js/viewer.js"></script>
+<script src="/static/js/viewersCounter.js"></script>
+<script>
+  const stunServers = [
+    {{range $id, $value := .Cfg.STUNServers}}
+    '{{$value}}',
+    {{end}}
+  ]
+  startPeerConnection()
+
+  // Wait a bit before pulling viewers counter for the first time
+  setTimeout(() => {
+      refreshViewersCounter({{.Cfg.ViewersCounterRefreshPeriod}})
+  }, 1000)
+</script>
+{{end}}

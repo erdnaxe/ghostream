@@ -1,0 +1,84 @@
+/* Player */
+.video-responsive {
+  position: relative;
+  padding-top: 56.25%; /* 16/9 */
+}
+
+.video-responsive video {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  max-height: 90vh;
+
+  /* Black borders when video is not 16/9 */
+  background-color: #000;
+}
+
+/* Controls under the player */
+.controls {
+  background: #0A1A28;
+  padding: 0.2rem 0.5rem;
+  color: rgb(187, 187, 187);
+  user-select: none;
+}
+
+.control-quality,
+.control-srt-link,
+.control-viewers,
+.control-indicator,
+.control-chat {
+  white-space: nowrap;
+  margin-left: 0.5rem;
+}
+
+/* Control icons */
+.control-quality::before,
+.control-srt-link::before,
+.control-viewers::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 0.2rem;
+  vertical-align: middle;
+}
+
+.control-quality::before {
+  background: transparent url("data:image/svg+xml;utf8,<svg fill='rgb(187, 187, 187)' width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'><path fill-rule='evenodd' d='M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm1 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0V5h2.5a.5.5 0 0 0 0-1h-3zm11 8a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-1 0V11h-2.5a.5.5 0 0 0 0 1h3z'/></svg>") no-repeat;
+}
+
+.control-srt-link::before {
+  background: transparent url("data:image/svg+xml;utf8,<svg fill='rgb(187, 187, 187)' width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'><path d='M1.5 13A1.5 1.5 0 0 0 3 14.5h8a1.5 1.5 0 0 0 1.5-1.5V9a.5.5 0 0 0-1 0v4a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 0 0-1H3A1.5 1.5 0 0 0 1.5 5v8zm7-11a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-1 0V2.5H9a.5.5 0 0 1-.5-.5z' /><path d='M14.354 1.646a.5.5 0 0 1 0 .708l-8 8a.5.5 0 0 1-.708-.708l8-8a.5.5 0 0 1 .708 0z'/></svg>") no-repeat;
+}
+
+.control-viewers::before {
+  background: transparent url("data:image/svg+xml;utf8,<svg fill='rgb(187, 187, 187)' width='16' height='16' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'><path d='M10 11c-5.92 0-8 3-8 5v3h16v-3c0-2-2.08-5-8-5z'/><circle cx='10' cy='5.5' r='4.5'/></svg>") no-repeat;
+}
+
+.control-indicator {
+  vertical-align: middle;
+}
+
+/* Custom select */
+.control-quality select {
+  border: none;
+  color: inherit;
+  appearance: none;
+
+  /* Custom caret */
+  background: transparent url("data:image/svg+xml;utf8,<svg fill='rgb(187, 187, 187)' width='10' height='5' viewBox='0 0 10 5' xmlns='http://www.w3.org/2000/svg'><path d='m0 0 5 5 5-5z'/></svg>") no-repeat right;
+  padding-right: 0.8rem;
+}
+
+/* Hide chat toggler on small screen */
+.control-chat {
+  display: none;
+}
+@media(min-width:1000px){
+  .control-chat {
+    display: inline;
+  }
+}
