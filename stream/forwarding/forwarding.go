@@ -16,6 +16,11 @@ type Options map[string][]string
 
 // Serve handles incoming packets from SRT and forward them to other external services
 func Serve(inputChannel chan srt.Packet, cfg Options) {
+	if len(cfg) < 1 {
+		// No forwarding, ignore
+		return
+	}
+
 	log.Printf("Stream forwarding initialized")
 	ffmpegInstances := make(map[string]*exec.Cmd)
 	ffmpegInputStreams := make(map[string]*io.WriteCloser)
