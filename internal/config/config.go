@@ -1,3 +1,4 @@
+// Package config loads application settings
 package config
 
 import (
