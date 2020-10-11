@@ -73,6 +73,10 @@
   padding-right: 0.8rem;
 }
 
+.control-quality select option {
+  color: #000;
+}
+
 /* Hide chat toggler on small screen */
 .control-chat {
   display: none;
