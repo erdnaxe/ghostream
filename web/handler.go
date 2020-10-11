@@ -82,7 +82,11 @@ func viewerGetHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			host = realHost
 		}
-		path = host
+		if path == "about" {
+			path = ""
+		} else {
+			path = host
+		}
 	}
 
 	// Render template
