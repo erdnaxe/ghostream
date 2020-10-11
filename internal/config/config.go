@@ -63,6 +63,7 @@ func New() *Config {
 			ListenAddress:               ":8080",
 			Name:                        "Ghostream",
 			OneStreamPerDomain:          false,
+			PlayerPoster:                "/static/img/no_stream.svg",
 			ViewersCounterRefreshPeriod: 20000,
 		},
 		WebRTC: webrtc.Options{

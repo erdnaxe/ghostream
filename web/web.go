@@ -23,6 +23,7 @@ type Options struct {
 	ListenAddress               string
 	Name                        string
 	OneStreamPerDomain          bool
+	PlayerPoster                string
 	SRTServerPort               string
 	STUNServers                 []string
 	ViewersCounterRefreshPeriod int

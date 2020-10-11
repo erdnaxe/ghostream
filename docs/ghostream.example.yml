@@ -102,6 +102,11 @@ web:
   #
   #oneStreamPerDomain: false
 
+  # Stream player poster
+  # Shown when stream is loading or inactive.
+  #
+  #playerPoster: /static/img/no_stream.svg
+
   # Refresh period for viewer stats (below the player)
   #
   #viewersCounterRefreshPeriod: 20000
