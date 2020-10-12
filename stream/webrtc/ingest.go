@@ -3,7 +3,7 @@ package webrtc
 
 import (
 	"bufio"
-	"fmt"
+	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"io"
 	"log"
 	"net"
@@ -106,7 +106,7 @@ func ingestFrom(inputChannel chan srt.Packet) {
 			}()
 
 			// Receive ascii
-			go asciiArt(output, videoTracks[srtPacket.StreamName])
+			go telnet.ServeAsciiArt(output)
 
 			// Receive audio
 			go func() {
@@ -163,29 +163,5 @@ func ingestFrom(inputChannel chan srt.Packet) {
 		if err != nil {
 			log.Printf("Error occured while receiving SRT srtPacket of type %s: %s", srtPacket.PacketType, err)
 		}
-	}
-}
-
-func asciiChar(pixel byte) string {
-	asciiChars := []string{"@", "#", "$", "%", "?", "*", "+", ";", ":", ",", "."}
-	return asciiChars[pixel/25]
-}
-
-func asciiArt(reader io.Reader, videoTracks []*webrtc.Track) {
-
-	buff := make([]byte, 2048)
-	for {
-		n, _ := reader.Read(buff)
-		if n == 0 {
-			break
-		}
-		for j := 0; j < 18; j++ {
-			for i := 0; i < 32; i++ {
-				pixel := buff[32*j+i]
-				fmt.Print(asciiChar(pixel))
-			}
-			fmt.Println()
-		}
-		fmt.Println()
 	}
 }
