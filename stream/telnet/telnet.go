@@ -9,6 +9,8 @@ import (
 )
 
 var (
+	// TODO Config should not be exported
+	// Cfg contains the different options of the telnet package, see below
 	Cfg            *Options
 	currentMessage *string
 )
@@ -22,6 +24,7 @@ type Options struct {
 	Delay         int
 }
 
+// Serve starts the telnet server and listen to clients
 func Serve(config *Options) {
 	Cfg = config
 
@@ -70,7 +73,7 @@ func asciiChar(pixel byte) string {
 	return asciiChars[(255-pixel)/23]
 }
 
-// ServeAsciiArt starts a telnet server that send all packets as ASCII Art
+// ServeAsciiArt send all packets received by ffmpeg as ASCII Art to telnet clients
 func ServeAsciiArt(reader io.ReadCloser) {
 	if !Cfg.Enabled {
 		_ = reader.Close()
