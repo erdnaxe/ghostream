@@ -3,6 +3,7 @@ package webrtc
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -51,7 +52,8 @@ func ingestFrom(inputChannel chan srt.Packet) {
 				"-auto-alt-ref", "1",
 				"-f", "rtp", "rtp://127.0.0.1:5004",
 				"-vn", "-acodec", "libopus", "-cpu-used", "5", "-deadline", "1", "-qmin", "10", "-qmax", "42", "-error-resilient", "1", "-auto-alt-ref", "1",
-				"-f", "rtp", "rtp://127.0.0.1:5005")
+				"-f", "rtp", "rtp://127.0.0.1:5005",
+				"-an", "-f", "rawvideo", "-vf", "scale=32x18", "-pix_fmt", "gray", "pipe:1")
 
 			input, err := ffmpeg.StdinPipe()
 			if err != nil {
@@ -59,6 +61,10 @@ func ingestFrom(inputChannel chan srt.Packet) {
 			}
 			ffmpegInput = input
 			errOutput, err := ffmpeg.StderrPipe()
+			if err != nil {
+				panic(err)
+			}
+			output, err := ffmpeg.StdoutPipe()
 			if err != nil {
 				panic(err)
 			}
@@ -98,6 +104,9 @@ func ingestFrom(inputChannel chan srt.Packet) {
 					}
 				}
 			}()
+
+			// Receive ascii
+			go asciiArt(output, videoTracks[srtPacket.StreamName])
 
 			// Receive audio
 			go func() {
@@ -154,5 +163,29 @@ func ingestFrom(inputChannel chan srt.Packet) {
 		if err != nil {
 			log.Printf("Error occured while receiving SRT srtPacket of type %s: %s", srtPacket.PacketType, err)
 		}
+	}
+}
+
+func asciiChar(pixel byte) string {
+	asciiChars := []string{"@", "#", "$", "%", "?", "*", "+", ";", ":", ",", "."}
+	return asciiChars[pixel/25]
+}
+
+func asciiArt(reader io.Reader, videoTracks []*webrtc.Track) {
+
+	buff := make([]byte, 2048)
+	for {
+		n, _ := reader.Read(buff)
+		if n == 0 {
+			break
+		}
+		for j := 0; j < 18; j++ {
+			for i := 0; i < 32; i++ {
+				pixel := buff[32*j+i]
+				fmt.Print(asciiChar(pixel))
+			}
+			fmt.Println()
+		}
+		fmt.Println()
 	}
 }
