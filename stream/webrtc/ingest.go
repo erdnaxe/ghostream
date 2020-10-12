@@ -79,7 +79,7 @@ func ingestFrom(inputChannel chan srt.Packet) {
 				if err != nil {
 					panic(err)
 				}
-				go telnet.ServeAsciiArt(srtPacket.StreamName, output)
+				go telnet.StartASCIIArtStream(srtPacket.StreamName, output)
 			}
 
 			if err := ffmpeg.Start(); err != nil {

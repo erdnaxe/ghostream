@@ -116,8 +116,8 @@ func asciiChar(pixel byte) string {
 	return asciiChars[(255-pixel)/22]
 }
 
-// ServeAsciiArt send all packets received by ffmpeg as ASCII Art to telnet clients
-func ServeAsciiArt(streamID string, reader io.ReadCloser) {
+// StartASCIIArtStream send all packets received by ffmpeg as ASCII Art to telnet clients
+func StartASCIIArtStream(streamID string, reader io.ReadCloser) {
 	if !Cfg.Enabled {
 		_ = reader.Close()
 		return
