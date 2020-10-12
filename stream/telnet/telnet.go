@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	// TODO Config should not be exported
 	// Cfg contains the different options of the telnet package, see below
+	// TODO Config should not be exported
 	Cfg            *Options
 	currentMessage map[string]string
 )
