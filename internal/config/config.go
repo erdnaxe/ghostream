@@ -73,7 +73,7 @@ func Load() (*Config, error) {
 	// Create Configuro
 	config, err := configuro.NewConfig(
 		configuro.WithLoadFromEnvVars("GHOSTREAM"),
-		configuro.WithLoadFromConfigFile("./ghostream.yml", false),
+		configuro.WithLoadFromConfigFile("/etc/ghostream/ghostream.yml", false),
 		configuro.WithEnvConfigPathOverload("GHOSTREAM_CONFIG"),
 	)
 
