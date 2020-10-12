@@ -3,6 +3,7 @@ package webrtc
 
 import (
 	"bufio"
+	"fmt"
 	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"io"
 	"log"
@@ -53,7 +54,7 @@ func ingestFrom(inputChannel chan srt.Packet) {
 				"-f", "rtp", "rtp://127.0.0.1:5004",
 				"-vn", "-acodec", "libopus", "-cpu-used", "5", "-deadline", "1", "-qmin", "10", "-qmax", "42", "-error-resilient", "1", "-auto-alt-ref", "1",
 				"-f", "rtp", "rtp://127.0.0.1:5005",
-				"-an", "-f", "rawvideo", "-vf", "scale=32x18", "-pix_fmt", "gray", "pipe:1")
+				"-an", "-f", "rawvideo", "-vf", fmt.Sprintf("scale=%dx%d", telnet.Cfg.Width, telnet.Cfg.Height), "-pix_fmt", "gray", "pipe:1")
 
 			input, err := ffmpeg.StdinPipe()
 			if err != nil {

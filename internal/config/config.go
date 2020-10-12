@@ -3,6 +3,7 @@ package config
 
 import (
 	"bytes"
+	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"log"
 	"net"
 	"strings"
@@ -25,6 +26,7 @@ type Config struct {
 	Forwarding forwarding.Options
 	Monitoring monitoring.Options
 	Srt        srt.Options
+	Telnet     telnet.Options
 	Web        web.Options
 	WebRTC     webrtc.Options
 }
@@ -55,6 +57,13 @@ func New() *Config {
 			Enabled:       true,
 			ListenAddress: ":9710",
 			MaxClients:    64,
+		},
+		Telnet: telnet.Options{
+			Enabled:       false,
+			ListenAddress: ":4242",
+			Width:         80,
+			Height:        45,
+			Delay:         50,
 		},
 		Web: web.Options{
 			Enabled:                     true,

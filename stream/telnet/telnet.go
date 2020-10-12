@@ -8,20 +8,34 @@ import (
 	"time"
 )
 
-func asciiChar(pixel byte) string {
-	asciiChars := []string{"@", "#", "$", "%", "?", "*", "+", ";", ":", ",", "."}
-	return asciiChars[pixel/25]
+var (
+	Cfg            *Options
+	currentMessage *string
+)
+
+// Options holds telnet package configuration
+type Options struct {
+	Enabled       bool
+	ListenAddress string
+	Width         int
+	Height        int
+	Delay         int
 }
 
-// ServeAsciiArt starts a telnet server that send all packets as ASCII Art
-func ServeAsciiArt(reader io.Reader) {
-	listener, err := net.Listen("tcp", ":4242")
-	if err != nil {
-		log.Printf("Error while listening to the port 4242: %s", err)
+func Serve(config *Options) {
+	Cfg = config
+
+	if !Cfg.Enabled {
 		return
 	}
 
-	currentMessage := ""
+	listener, err := net.Listen("tcp", Cfg.ListenAddress)
+	if err != nil {
+		log.Printf("Error while listening to the address %s: %s", Cfg.ListenAddress, err)
+		return
+	}
+
+	currentMessage = new(string)
 
 	go func() {
 		for {
@@ -32,7 +46,7 @@ func ServeAsciiArt(reader io.Reader) {
 			}
 			go func(s net.Conn) {
 				for {
-					n, err := s.Write([]byte(currentMessage))
+					n, err := s.Write([]byte(*currentMessage))
 					if err != nil {
 						log.Printf("Error while sending TCP data: %s", err)
 						_ = s.Close()
@@ -42,13 +56,28 @@ func ServeAsciiArt(reader io.Reader) {
 						_ = s.Close()
 						break
 					}
-					time.Sleep(50 * time.Millisecond)
+					time.Sleep(time.Duration(Cfg.Delay) * time.Millisecond)
 				}
 			}(s)
 		}
 	}()
 
-	buff := make([]byte, 2048)
+	log.Println("Telnet server initialized")
+}
+
+func asciiChar(pixel byte) string {
+	asciiChars := []string{"@", "#", "$", "%", "?", "*", "+", ";", ":", ",", ".", " "}
+	return asciiChars[(255-pixel)/23]
+}
+
+// ServeAsciiArt starts a telnet server that send all packets as ASCII Art
+func ServeAsciiArt(reader io.ReadCloser) {
+	if !Cfg.Enabled {
+		_ = reader.Close()
+		return
+	}
+
+	buff := make([]byte, Cfg.Width*Cfg.Height)
 	header := "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 	for {
 		n, _ := reader.Read(buff)
@@ -56,13 +85,13 @@ func ServeAsciiArt(reader io.Reader) {
 			break
 		}
 		imageStr := ""
-		for j := 0; j < 18; j++ {
-			for i := 0; i < 32; i++ {
-				pixel := buff[32*j+i]
+		for j := 0; j < Cfg.Height; j++ {
+			for i := 0; i < Cfg.Width; i++ {
+				pixel := buff[Cfg.Width*j+i]
 				imageStr += asciiChar(pixel) + asciiChar(pixel)
 			}
 			imageStr += "\n"
 		}
-		currentMessage = header + imageStr
+		*currentMessage = header + imageStr
 	}
 }

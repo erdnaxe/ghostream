@@ -5,6 +5,7 @@
 package main
 
 import (
+	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"log"
 
 	"gitlab.crans.org/nounous/ghostream/auth"
@@ -50,6 +51,7 @@ func main() {
 	go forwarding.Serve(forwardingChannel, cfg.Forwarding)
 	go monitoring.Serve(&cfg.Monitoring)
 	go srt.Serve(&cfg.Srt, authBackend, forwardingChannel, webrtcChannel)
+	go telnet.Serve(&cfg.Telnet)
 	go web.Serve(remoteSdpChan, localSdpChan, &cfg.Web)
 	go webrtc.Serve(remoteSdpChan, localSdpChan, webrtcChannel, &cfg.WebRTC)
 
