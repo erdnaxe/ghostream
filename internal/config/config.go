@@ -2,12 +2,9 @@
 package config
 
 import (
-	"bytes"
-	"log"
 	"net"
-	"strings"
 
-	"github.com/spf13/viper"
+	"github.com/sherifabdlnaby/configuro"
 	"gitlab.crans.org/nounous/ghostream/auth"
 	"gitlab.crans.org/nounous/ghostream/auth/basic"
 	"gitlab.crans.org/nounous/ghostream/auth/ldap"
@@ -16,7 +13,6 @@ import (
 	"gitlab.crans.org/nounous/ghostream/stream/srt"
 	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
 	"gitlab.crans.org/nounous/ghostream/web"
-	"gopkg.in/yaml.v2"
 )
 
 // Config holds application configuration
@@ -36,10 +32,7 @@ func New() *Config {
 			Enabled: true,
 			Backend: "Basic",
 			Basic: basic.Options{
-				Credentials: map[string]string{
-					// Demo user with password "demo"
-					"demo": "$2b$15$LRnG3eIHFlYIguTxZOLH7eHwbQC/vqjnLq6nDFiHSUDKIU.f5/1H6",
-				},
+				Credentials: make(map[string]string),
 			},
 			LDAP: ldap.Options{
 				URI:    "ldap://127.0.0.1:389",
@@ -77,47 +70,18 @@ func New() *Config {
 
 // Load global configuration as a struct
 func Load() (*Config, error) {
-	// Viper needs to know if a key exists in order to override it.
-	// See https://github.com/spf13/viper/issues/188
-	b, err := yaml.Marshal(New())
-	if err != nil {
-		return nil, err
-	}
-	defaultConfig := bytes.NewReader(b)
-	viper.SetConfigType("yaml")
-	if err := viper.MergeConfig(defaultConfig); err != nil {
-		return nil, err
-	}
+	// Create Configuro
+	config, err := configuro.NewConfig(
+		configuro.WithLoadFromEnvVars("GHOSTREAM"),
+		configuro.WithLoadFromConfigFile("./ghostream.yml", false),
+		configuro.WithEnvConfigPathOverload("GHOSTREAM_CONFIG"),
+	)
 
-	// Overwrite configuration from file if exists
-	viper.SetConfigName("ghostream.yml")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath("$HOME/.ghostream")
-	viper.AddConfigPath("/etc/ghostream")
-	viper.AddConfigPath(".")
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Config file not found, ignore and use defaults
-			log.Print(err)
-		} else {
-			// Config file was found but another error was produced
-			return nil, err
-		}
-	} else {
-		// Config loaded
-		log.Printf("Using config file: %s", viper.ConfigFileUsed())
-	}
+	// Load default configuration
+	cfg := New()
 
-	// Overwrite configuration from environnement variables
-	// Replace "." to "_" for nested structs
-	// e.g. GHOSTREAM_LDAP_URI will apply to Config.LDAP.URI
-	viper.AutomaticEnv()
-	viper.SetEnvPrefix("ghostream")
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-
-	// Load onto struct
-	cfg := &Config{}
-	if err := viper.UnmarshalExact(cfg); err != nil {
+	// Load values in configuration struct
+	if err := config.Load(cfg); err != nil {
 		return nil, err
 	}
 
@@ -130,6 +94,11 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 	cfg.Web.SRTServerPort = srtPort
+
+	// If no credentials register, add demo account with password "demo"
+	if len(cfg.Auth.Basic.Credentials) < 1 {
+		cfg.Auth.Basic.Credentials["demo"] = "$2b$15$LRnG3eIHFlYIguTxZOLH7eHwbQC/vqjnLq6nDFiHSUDKIU.f5/1H6"
+	}
 
 	return cfg, nil
 }

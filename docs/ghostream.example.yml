@@ -3,6 +3,9 @@
 #
 # All settings can also be changed with an environnement variable,
 # e.g. GHOSTREAM_AUTH_BACKEND=ldap will change auth.backend to "ldap"
+#
+# You may also use GHOSTREAM_CONFIG environnement variable to change the
+# loading path of the configuration.
 
 ## Authentification package ##
 auth:
@@ -20,6 +23,8 @@ auth:
   # Basic backend configuration
   # To generate bcrypt hashed password from Python, use:
   # python3 -c 'import bcrypt; print(bcrypt.hashpw(b"PASSWORD", bcrypt.gensalt(rounds=15)).decode("ascii"))'
+  #
+  # Please replace "." by "_" in keys.
   #
   #basic:
   #  credentials:
