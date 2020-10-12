@@ -73,6 +73,15 @@ func ingestFrom(inputChannel chan srt.Packet) {
 				panic(err)
 			}
 
+			// Receive raw video output and convert it to ASCII art, then forward it TCP
+			if telnet.Cfg.Enabled {
+				output, err := ffmpeg.StdoutPipe()
+				if err != nil {
+					panic(err)
+				}
+				go telnet.ServeAsciiArt(srtPacket.StreamName, output)
+			}
+
 			if err := ffmpeg.Start(); err != nil {
 				panic(err)
 			}
@@ -108,15 +117,6 @@ func ingestFrom(inputChannel chan srt.Packet) {
 					}
 				}
 			}()
-
-			// Receive raw video output and convert it to ASCII art, then forward it TCP
-			if telnet.Cfg.Enabled {
-				output, err := ffmpeg.StdoutPipe()
-				if err != nil {
-					panic(err)
-				}
-				go telnet.ServeAsciiArt(output)
-			}
 
 			// Receive audio
 			go func() {
