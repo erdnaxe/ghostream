@@ -47,14 +47,21 @@ func ingestFrom(inputChannel chan srt.Packet) {
 				}
 			}()
 
-			ffmpeg = exec.Command("ffmpeg", "-hide_banner", "-loglevel", "error", "-re", "-i", "pipe:0",
+			ffmpegArgs := []string{"-hide_banner", "-loglevel", "error", "-re", "-i", "pipe:0",
 				"-an", "-vcodec", "libvpx", "-crf", "10", "-cpu-used", "5", "-b:v", "6000k", "-maxrate", "8000k", "-bufsize", "12000k", // TODO Change bitrate when changing quality
 				"-qmin", "10", "-qmax", "42", "-threads", "4", "-deadline", "1", "-error-resilient", "1",
 				"-auto-alt-ref", "1",
 				"-f", "rtp", "rtp://127.0.0.1:5004",
 				"-vn", "-acodec", "libopus", "-cpu-used", "5", "-deadline", "1", "-qmin", "10", "-qmax", "42", "-error-resilient", "1", "-auto-alt-ref", "1",
-				"-f", "rtp", "rtp://127.0.0.1:5005",
-				"-an", "-f", "rawvideo", "-vf", fmt.Sprintf("scale=%dx%d", telnet.Cfg.Width, telnet.Cfg.Height), "-pix_fmt", "gray", "pipe:1")
+				"-f", "rtp", "rtp://127.0.0.1:5005"}
+
+			// Export stream to ascii art
+			if telnet.Cfg.Enabled {
+				ffmpegArgs = append(ffmpegArgs,
+					"-an", "-f", "rawvideo", "-vf", fmt.Sprintf("scale=%dx%d", telnet.Cfg.Width, telnet.Cfg.Height), "-pix_fmt", "gray", "pipe:1")
+			}
+
+			ffmpeg = exec.Command("ffmpeg", ffmpegArgs...)
 
 			input, err := ffmpeg.StdinPipe()
 			if err != nil {
@@ -62,10 +69,6 @@ func ingestFrom(inputChannel chan srt.Packet) {
 			}
 			ffmpegInput = input
 			errOutput, err := ffmpeg.StderrPipe()
-			if err != nil {
-				panic(err)
-			}
-			output, err := ffmpeg.StdoutPipe()
 			if err != nil {
 				panic(err)
 			}
@@ -106,8 +109,14 @@ func ingestFrom(inputChannel chan srt.Packet) {
 				}
 			}()
 
-			// Receive ascii
-			go telnet.ServeAsciiArt(output)
+			// Receive raw video output and convert it to ASCII art, then forward it TCP
+			if telnet.Cfg.Enabled {
+				output, err := ffmpeg.StdoutPipe()
+				if err != nil {
+					panic(err)
+				}
+				go telnet.ServeAsciiArt(output)
+			}
 
 			// Receive audio
 			go func() {
