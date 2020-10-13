@@ -13,7 +13,7 @@ var (
 	// Cfg contains the different options of the telnet package, see below
 	// TODO Config should not be exported
 	Cfg            *Options
-	currentMessage map[string]string
+	currentMessage map[string]*string
 )
 
 // Options holds telnet package configuration
@@ -33,7 +33,7 @@ func Serve(config *Options) {
 		return
 	}
 
-	currentMessage = make(map[string]string)
+	currentMessage = make(map[string]*string)
 
 	listener, err := net.Listen("tcp", Cfg.ListenAddress)
 	if err != nil {
@@ -92,7 +92,7 @@ func Serve(config *Options) {
 				}
 
 				for {
-					n, err := s.Write([]byte(currentMessage[streamID]))
+					n, err := s.Write([]byte(*currentMessage[streamID]))
 					if err != nil {
 						log.Printf("Error while sending TCP data: %s", err)
 						_ = s.Close()
@@ -123,6 +123,7 @@ func StartASCIIArtStream(streamID string, reader io.ReadCloser) {
 		return
 	}
 
+	currentMessage[streamID] = new(string)
 	buff := make([]byte, Cfg.Width*Cfg.Height)
 	header := "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 	for {
@@ -138,6 +139,6 @@ func StartASCIIArtStream(streamID string, reader io.ReadCloser) {
 			}
 			imageStr += "\n"
 		}
-		currentMessage[streamID] = header + imageStr
+		*(currentMessage[streamID]) = header + imageStr
 	}
 }
