@@ -82,6 +82,16 @@ By opening this in a browser, you will be able to get instructions on how to str
 
 The web player also integrates a side widget that is configurable.
 
+#### Integrate the player in an iframe
+
+To integrate the player without the side widget, you can append `?nowidget` to the URL.
+
+```HTML
+<iframe src="https://example.com/stream_name?nowidget" scrolling="no" allowfullscreen="true" width="1280" height="750.4" frameborder="0"></iframe>
+```
+
+The iframe size should be a 16/9 ratio, with additionnal 30.4px for the control bar.
+
 ### With ffplay
 
 You may directly open the SRT stream with ffplay:
