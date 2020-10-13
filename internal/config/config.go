@@ -60,7 +60,7 @@ func New() *Config {
 		},
 		Telnet: telnet.Options{
 			Enabled:       false,
-			ListenAddress: ":4242",
+			ListenAddress: ":23",
 			Width:         80,
 			Height:        45,
 			Delay:         50,

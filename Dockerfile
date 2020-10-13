@@ -13,5 +13,5 @@ RUN apk add --no-cache -X https://dl-cdn.alpinelinux.org/alpine/edge/community/ 
 COPY --from=build_base /code/out/ghostream /app/ghostream
 WORKDIR /app
 # 9710 for SRT, 8080 for Web, 2112 for monitoring and 10000-10005 (UDP) for WebRTC
-EXPOSE 9710/udp 8080 2112 10000-10005/udp
+EXPOSE 23 9710/udp 8080 2112 10000-10005/udp
 CMD ["/app/ghostream"]
