@@ -68,6 +68,9 @@ func Serve(config *Options) {
 						return
 					}
 
+					// Avoid bruteforce
+					time.Sleep(3 * time.Second)
+
 					streamID = string(buff[:n])
 					streamID = strings.Replace(streamID, "\r", "", -1)
 					streamID = strings.Replace(streamID, "\n", "", -1)
