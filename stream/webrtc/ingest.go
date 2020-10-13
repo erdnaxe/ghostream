@@ -4,14 +4,15 @@ package webrtc
 import (
 	"bufio"
 	"fmt"
-	"github.com/pion/rtp"
-	"github.com/pion/webrtc/v3"
-	"gitlab.crans.org/nounous/ghostream/stream/srt"
-	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"io"
 	"log"
 	"net"
 	"os/exec"
+
+	"github.com/pion/rtp"
+	"github.com/pion/webrtc/v3"
+	"gitlab.crans.org/nounous/ghostream/stream/srt"
+	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 )
 
 var (
