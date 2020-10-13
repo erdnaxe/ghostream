@@ -119,9 +119,10 @@ web:
   # e.g., on http://stream.example.com:8080/, if the domain stream.example.com is mapped to "example",
   # the stream served will be "example".
   # This implies that your domain will be able to serve only one stream.
+  # Dots in the domain name must be remplaced by underscores to avoid yaml issues.
   #
   #mapDomainToStream:
-  #  stream.example.com: example
+  #  stream_example_com: example
 
   # Stream player poster
   # Shown when stream is loading or inactive.
