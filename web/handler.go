@@ -4,6 +4,7 @@ package web
 import (
 	"bytes"
 	"encoding/json"
+	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"html/template"
 	"log"
 	"net"
@@ -144,7 +145,9 @@ func statisticsHandler(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	err := enc.Encode(struct {
 		ConnectedViewers int
-	}{webrtc.GetNumberConnectedSessions(streamID) + srt.GetNumberConnectedSessions(streamID)})
+	}{webrtc.GetNumberConnectedSessions(streamID) +
+		srt.GetNumberConnectedSessions(streamID) +
+		telnet.GetNumberConnectedSessions(streamID)})
 	if err != nil {
 		http.Error(w, "Failed to generate JSON.", http.StatusInternalServerError)
 		log.Printf("Failed to generate JSON: %s", err)

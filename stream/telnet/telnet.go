@@ -14,6 +14,7 @@ var (
 	// TODO Config should not be exported
 	Cfg            *Options
 	currentMessage map[string]*string
+	clientCount    map[string]int
 )
 
 // Options holds telnet package configuration
@@ -34,6 +35,7 @@ func Serve(config *Options) {
 	}
 
 	currentMessage = make(map[string]*string)
+	clientCount = make(map[string]int)
 
 	listener, err := net.Listen("tcp", Cfg.ListenAddress)
 	if err != nil {
@@ -94,15 +96,19 @@ func Serve(config *Options) {
 					}
 				}
 
+				clientCount[streamID]++
+
 				for {
 					n, err := s.Write([]byte(*currentMessage[streamID]))
 					if err != nil {
 						log.Printf("Error while sending TCP data: %s", err)
 						_ = s.Close()
+						clientCount[streamID]--
 						break
 					}
 					if n == 0 {
 						_ = s.Close()
+						clientCount[streamID]--
 						break
 					}
 					time.Sleep(time.Duration(Cfg.Delay) * time.Millisecond)
@@ -112,6 +118,14 @@ func Serve(config *Options) {
 	}()
 
 	log.Println("Telnet server initialized")
+}
+
+// GetNumberConnectedSessions returns the numbers of clients that are viewing the stream through a telnet shell
+func GetNumberConnectedSessions(streamID string) int {
+	if !Cfg.Enabled {
+		return 0
+	}
+	return clientCount[streamID]
 }
 
 func asciiChar(pixel byte) string {
