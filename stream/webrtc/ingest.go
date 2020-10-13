@@ -4,15 +4,14 @@ package webrtc
 import (
 	"bufio"
 	"fmt"
+	"github.com/pion/rtp"
+	"github.com/pion/webrtc/v3"
+	"gitlab.crans.org/nounous/ghostream/stream/srt"
 	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"io"
 	"log"
 	"net"
 	"os/exec"
-
-	"github.com/pion/rtp"
-	"github.com/pion/webrtc/v3"
-	"gitlab.crans.org/nounous/ghostream/stream/srt"
 )
 
 var (
@@ -124,8 +123,8 @@ func registerStream(srtPacket *srt.Packet) {
 
 	// Receive video
 	go func() {
+		inboundRTPPacket := make([]byte, 1500) // UDP MTU
 		for {
-			inboundRTPPacket := make([]byte, 1500) // UDP MTU
 			n, _, err := videoListener.ReadFromUDP(inboundRTPPacket)
 			if err != nil {
 				log.Printf("Failed to read from UDP: %s", err)
@@ -156,8 +155,8 @@ func registerStream(srtPacket *srt.Packet) {
 
 	// Receive audio
 	go func() {
+		inboundRTPPacket := make([]byte, 1500) // UDP MTU
 		for {
-			inboundRTPPacket := make([]byte, 1500) // UDP MTU
 			n, _, err := audioListener.ReadFromUDP(inboundRTPPacket)
 			if err != nil {
 				log.Printf("Failed to read from UDP: %s", err)
