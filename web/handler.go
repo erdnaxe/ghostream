@@ -32,8 +32,8 @@ func viewerPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		host = realHost
-		host = strings.Replace(host, ".", "_", -1)
 	}
+	host = strings.Replace(host, ".", "-", -1)
 	if streamID, ok := cfg.MapDomainToStream[host]; ok {
 		path = streamID
 	}
@@ -82,8 +82,8 @@ func viewerGetHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		host = realHost
-		host = strings.Replace(host, ".", "_", -1)
 	}
+	host = strings.Replace(host, ".", "-", -1)
 	if streamID, ok := cfg.MapDomainToStream[host]; ok {
 		if path == "about" {
 			path = ""
