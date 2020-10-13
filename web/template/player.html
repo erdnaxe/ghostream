@@ -50,7 +50,7 @@
 
   // Wait a bit before pulling viewers counter for the first time
   setTimeout(() => {
-      refreshViewersCounter({{.Cfg.ViewersCounterRefreshPeriod}})
+      refreshViewersCounter({{.Path}}, {{.Cfg.ViewersCounterRefreshPeriod}})
   }, 1000)
 </script>
 {{end}}
