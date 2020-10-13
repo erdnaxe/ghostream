@@ -85,6 +85,7 @@ func viewerGetHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	host = strings.Replace(host, ".", "-", -1)
 	if streamID, ok := cfg.MapDomainToStream[host]; ok {
+		// Move home page to /about
 		if path == "about" {
 			path = ""
 		} else {
@@ -97,12 +98,15 @@ func viewerGetHandler(w http.ResponseWriter, r *http.Request) {
 		Cfg       *Options
 		Path      string
 		WidgetURL string
-	}{Path: path, Cfg: cfg}
+	}{Path: path, Cfg: cfg, WidgetURL: ""}
 
-	// Compute the WidgetURL with the stream path
-	b := &bytes.Buffer{}
-	_ = template.Must(template.New("").Parse(cfg.WidgetURL)).Execute(b, data)
-	data.WidgetURL = b.String()
+	// Load widget is user does not disable it with ?nowidget
+	if _, ok := r.URL.Query()["nowidget"]; !ok {
+		// Compute the WidgetURL with the stream path
+		b := &bytes.Buffer{}
+		_ = template.Must(template.New("").Parse(cfg.WidgetURL)).Execute(b, data)
+		data.WidgetURL = b.String()
+	}
 
 	if err := templates.ExecuteTemplate(w, "base", data); err != nil {
 		log.Println(err.Error())
