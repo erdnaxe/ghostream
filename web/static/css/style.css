@@ -50,7 +50,6 @@ h1, h2, h3, h4 {
 }
 
 .col-video {
-  padding: 1rem;
   flex-basis: 0;
   flex-grow: 1;
   text-align: right;
