@@ -25,7 +25,6 @@ func ingestFrom(inputChannel chan srt.Packet) {
 	for {
 		var err error = nil
 		srtPacket := <-inputChannel
-		log.Println(len(inputChannel))
 		switch srtPacket.PacketType {
 		case "register":
 			go registerStream(&srtPacket)
@@ -80,7 +79,7 @@ func registerStream(srtPacket *srt.Packet) {
 		}
 	}() */
 
-	ffmpegArgs := []string{"-re", "-i", "pipe:0",
+	ffmpegArgs := []string{"-hide_banner", "-loglevel", "error", "-i", "pipe:0",
 		"-an", "-vcodec", "libvpx", "-crf", "10", "-cpu-used", "5", "-b:v", "6000k", "-maxrate", "8000k", "-bufsize", "12000k", // TODO Change bitrate when changing quality
 		"-qmin", "10", "-qmax", "42", "-threads", "4", "-deadline", "1", "-error-resilient", "1",
 		"-auto-alt-ref", "1",
