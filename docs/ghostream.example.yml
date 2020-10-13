@@ -75,7 +75,7 @@ telnet:
   # You must enable it to use it.
   #enable: false
 
-  #listenAddress: :23
+  #listenAddress: :8023
 
   # Size is in characters. It is recommended to keep a 16x9 format.
   #width: 80
