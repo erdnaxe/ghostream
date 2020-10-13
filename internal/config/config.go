@@ -3,7 +3,6 @@ package config
 
 import (
 	"bytes"
-	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"log"
 	"net"
 	"strings"
@@ -15,6 +14,7 @@ import (
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
 	"gitlab.crans.org/nounous/ghostream/stream/forwarding"
 	"gitlab.crans.org/nounous/ghostream/stream/srt"
+	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
 	"gitlab.crans.org/nounous/ghostream/web"
 	"gopkg.in/yaml.v2"

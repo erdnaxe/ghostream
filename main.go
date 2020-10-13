@@ -5,7 +5,6 @@
 package main
 
 import (
-	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"log"
 
 	"gitlab.crans.org/nounous/ghostream/auth"
@@ -13,6 +12,7 @@ import (
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
 	"gitlab.crans.org/nounous/ghostream/stream/forwarding"
 	"gitlab.crans.org/nounous/ghostream/stream/srt"
+	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
 	"gitlab.crans.org/nounous/ghostream/web"
 )

@@ -4,7 +4,6 @@ package web
 import (
 	"bytes"
 	"encoding/json"
-	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"html/template"
 	"log"
 	"net"
@@ -14,6 +13,7 @@ import (
 	"github.com/markbates/pkger"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
 	"gitlab.crans.org/nounous/ghostream/stream/srt"
+	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
 )
 
