@@ -7,6 +7,6 @@ function refreshViewersCounter(streamID, period) {
         .catch(console.log)
 
     setTimeout(() => {
-        refreshViewersCounter(period)
+        refreshViewersCounter(streamID, period)
     }, period)
 }
