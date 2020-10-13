@@ -22,7 +22,7 @@ type Options struct {
 	Hostname                    string
 	ListenAddress               string
 	Name                        string
-	OneStreamPerDomain          bool
+	MapDomainToStream           map[string]string
 	PlayerPoster                string
 	SRTServerPort               string
 	STUNServers                 []string

@@ -12,6 +12,7 @@ import (
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
 	"gitlab.crans.org/nounous/ghostream/stream/forwarding"
 	"gitlab.crans.org/nounous/ghostream/stream/srt"
+	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
 	"gitlab.crans.org/nounous/ghostream/web"
 )
@@ -50,6 +51,7 @@ func main() {
 	go forwarding.Serve(forwardingChannel, cfg.Forwarding)
 	go monitoring.Serve(&cfg.Monitoring)
 	go srt.Serve(&cfg.Srt, authBackend, forwardingChannel, webrtcChannel)
+	go telnet.Serve(&cfg.Telnet)
 	go web.Serve(remoteSdpChan, localSdpChan, &cfg.Web)
 	go webrtc.Serve(remoteSdpChan, localSdpChan, webrtcChannel, &cfg.WebRTC)
 

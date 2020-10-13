@@ -18,7 +18,9 @@ type Options map[string][]string
 func Serve(inputChannel chan srt.Packet, cfg Options) {
 	if len(cfg) < 1 {
 		// No forwarding, ignore
-		return
+		for {
+			<-inputChannel // Clear input channel
+		}
 	}
 
 	log.Printf("Stream forwarding initialized")

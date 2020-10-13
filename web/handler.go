@@ -13,6 +13,7 @@ import (
 	"github.com/markbates/pkger"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
 	"gitlab.crans.org/nounous/ghostream/stream/srt"
+	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
 )
 
@@ -23,17 +24,18 @@ func viewerPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Get stream ID from URL, or from domain name
 	path := r.URL.Path[1:]
-	if cfg.OneStreamPerDomain {
-		host := r.Host
-		if strings.Contains(host, ":") {
-			realHost, _, err := net.SplitHostPort(r.Host)
-			if err != nil {
-				log.Printf("Failed to split host and port from %s", r.Host)
-				return
-			}
-			host = realHost
+	host := r.Host
+	if strings.Contains(host, ":") {
+		realHost, _, err := net.SplitHostPort(r.Host)
+		if err != nil {
+			log.Printf("Failed to split host and port from %s", r.Host)
+			return
 		}
-		path = host
+		host = realHost
+	}
+	host = strings.Replace(host, ".", "-", -1)
+	if streamID, ok := cfg.MapDomainToStream[host]; ok {
+		path = streamID
 	}
 
 	// Decode client description
@@ -72,20 +74,21 @@ func viewerPostHandler(w http.ResponseWriter, r *http.Request) {
 func viewerGetHandler(w http.ResponseWriter, r *http.Request) {
 	// Get stream ID from URL, or from domain name
 	path := r.URL.Path[1:]
-	if cfg.OneStreamPerDomain {
-		host := r.Host
-		if strings.Contains(host, ":") {
-			realHost, _, err := net.SplitHostPort(r.Host)
-			if err != nil {
-				log.Printf("Failed to split host and port from %s", r.Host)
-				return
-			}
-			host = realHost
+	host := r.Host
+	if strings.Contains(host, ":") {
+		realHost, _, err := net.SplitHostPort(r.Host)
+		if err != nil {
+			log.Printf("Failed to split host and port from %s", r.Host)
+			return
 		}
+		host = realHost
+	}
+	host = strings.Replace(host, ".", "-", -1)
+	if streamID, ok := cfg.MapDomainToStream[host]; ok {
 		if path == "about" {
 			path = ""
 		} else {
-			path = host
+			path = streamID
 		}
 	}
 
@@ -144,7 +147,9 @@ func statisticsHandler(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	err := enc.Encode(struct {
 		ConnectedViewers int
-	}{webrtc.GetNumberConnectedSessions(streamID) + srt.GetNumberConnectedSessions(streamID)})
+	}{webrtc.GetNumberConnectedSessions(streamID) +
+		srt.GetNumberConnectedSessions(streamID) +
+		telnet.GetNumberConnectedSessions(streamID)})
 	if err != nil {
 		http.Error(w, "Failed to generate JSON.", http.StatusInternalServerError)
 		log.Printf("Failed to generate JSON: %s", err)

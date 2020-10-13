@@ -11,6 +11,7 @@ import (
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
 	"gitlab.crans.org/nounous/ghostream/stream/forwarding"
 	"gitlab.crans.org/nounous/ghostream/stream/srt"
+	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
 	"gitlab.crans.org/nounous/ghostream/web"
 )
@@ -21,6 +22,7 @@ type Config struct {
 	Forwarding forwarding.Options
 	Monitoring monitoring.Options
 	Srt        srt.Options
+	Telnet     telnet.Options
 	Web        web.Options
 	WebRTC     webrtc.Options
 }
@@ -49,13 +51,20 @@ func New() *Config {
 			ListenAddress: ":9710",
 			MaxClients:    64,
 		},
+		Telnet: telnet.Options{
+			Enabled:       false,
+			ListenAddress: ":8023",
+			Width:         80,
+			Height:        45,
+			Delay:         50,
+		},
 		Web: web.Options{
 			Enabled:                     true,
 			Favicon:                     "/static/img/favicon.svg",
 			Hostname:                    "localhost",
 			ListenAddress:               ":8080",
 			Name:                        "Ghostream",
-			OneStreamPerDomain:          false,
+			MapDomainToStream:           make(map[string]string),
 			PlayerPoster:                "/static/img/no_stream.svg",
 			ViewersCounterRefreshPeriod: 20000,
 		},

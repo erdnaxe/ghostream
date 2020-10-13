@@ -73,6 +73,27 @@ srt:
   # Max number of active SRT connections
   #maxClients: 64
 
+## Telnet server ##
+# The telnet server receive the stream and emit the stream as ASCII-art.
+telnet:
+  # By default, this easter egg is disabled.
+  # You must enable it to use it.
+  #
+  #enabled: false
+
+  #listenAddress: :8023
+
+  # Size is in characters. It is recommended to keep a 16x9 format.
+  #
+  #width: 80
+  #height: 45
+
+  # Time in milliseconds that we should sleep between two images.
+  # By default, 20 FPS. Displaying text takes time...
+  #
+  #delay: 50
+
+
 ## Web server ##
 # The web server serves a WebRTC player.
 web:
@@ -103,11 +124,14 @@ web:
   #
   #name: Ghostream
 
-  # Use the domain name as the stream name
-  # e.g., on http://example.com:8080/ the stream served will be "example.com"
+  # Use the domain name as the stream name for some hosts
+  # e.g., on http://stream.example.com:8080/, if the domain stream.example.com is mapped to "example",
+  # the stream served will be "example".
   # This implies that your domain will be able to serve only one stream.
+  # Dots in the domain name must be remplaced by dashes to avoid yaml issues.
   #
-  #oneStreamPerDomain: false
+  #mapDomainToStream:
+  #  stream-example-com: example
 
   # Stream player poster
   # Shown when stream is loading or inactive.
