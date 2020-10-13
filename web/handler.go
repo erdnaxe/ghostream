@@ -24,17 +24,17 @@ func viewerPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Get stream ID from URL, or from domain name
 	path := r.URL.Path[1:]
-	if cfg.OneStreamPerDomain {
-		host := r.Host
-		if strings.Contains(host, ":") {
-			realHost, _, err := net.SplitHostPort(r.Host)
-			if err != nil {
-				log.Printf("Failed to split host and port from %s", r.Host)
-				return
-			}
-			host = realHost
+	host := r.Host
+	if strings.Contains(host, ":") {
+		realHost, _, err := net.SplitHostPort(r.Host)
+		if err != nil {
+			log.Printf("Failed to split host and port from %s", r.Host)
+			return
 		}
-		path = host
+		host = realHost
+	}
+	if streamID, ok := cfg.MapDomainToStream[host]; ok {
+		path = streamID
 	}
 
 	// Decode client description
@@ -73,20 +73,20 @@ func viewerPostHandler(w http.ResponseWriter, r *http.Request) {
 func viewerGetHandler(w http.ResponseWriter, r *http.Request) {
 	// Get stream ID from URL, or from domain name
 	path := r.URL.Path[1:]
-	if cfg.OneStreamPerDomain {
-		host := r.Host
-		if strings.Contains(host, ":") {
-			realHost, _, err := net.SplitHostPort(r.Host)
-			if err != nil {
-				log.Printf("Failed to split host and port from %s", r.Host)
-				return
-			}
-			host = realHost
+	host := r.Host
+	if strings.Contains(host, ":") {
+		realHost, _, err := net.SplitHostPort(r.Host)
+		if err != nil {
+			log.Printf("Failed to split host and port from %s", r.Host)
+			return
 		}
+		host = realHost
+	}
+	if streamID, ok := cfg.MapDomainToStream[host]; ok {
 		if path == "about" {
 			path = ""
 		} else {
-			path = host
+			path = streamID
 		}
 	}
 

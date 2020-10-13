@@ -4,7 +4,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>{{if .Path}}{{if not .Cfg.OneStreamPerDomain}}{{.Path}} - {{end}}{{end}}{{.Cfg.Name}}</title>
+  <title>{{if .Path}}{{.Path}} - {{end}}{{.Cfg.Name}}</title>
   <link rel="stylesheet" href="static/css/style.css">
   <link rel="stylesheet" href="static/css/player.css">
   {{if .Cfg.CustomCSS}}<link rel="stylesheet" href="{{.Cfg.CustomCSS}}">{{end}}

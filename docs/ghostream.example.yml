@@ -73,7 +73,7 @@ srt:
 telnet:
   # By default, this easter egg is disabled.
   # You must enable it to use it.
-  #enable: false
+  #enabled: false
 
   #listenAddress: :8023
 
@@ -115,11 +115,13 @@ web:
   #
   #name: Ghostream
 
-  # Use the domain name as the stream name
-  # e.g., on http://example.com:8080/ the stream served will be "example.com"
+  # Use the domain name as the stream name for some hosts
+  # e.g., on http://stream.example.com:8080/, if the domain stream.example.com is mapped to "example",
+  # the stream served will be "example".
   # This implies that your domain will be able to serve only one stream.
   #
-  #oneStreamPerDomain: false
+  #mapDomainToStream:
+  #  stream.example.com: example
 
   # Stream player poster
   # Shown when stream is loading or inactive.

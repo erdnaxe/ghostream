@@ -71,7 +71,7 @@ func New() *Config {
 			Hostname:                    "localhost",
 			ListenAddress:               ":8080",
 			Name:                        "Ghostream",
-			OneStreamPerDomain:          false,
+			MapDomainToStream:           make(map[string]string),
 			PlayerPoster:                "/static/img/no_stream.svg",
 			ViewersCounterRefreshPeriod: 20000,
 		},
