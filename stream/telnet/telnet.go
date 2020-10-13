@@ -122,7 +122,7 @@ func Serve(config *Options) {
 
 // GetNumberConnectedSessions returns the numbers of clients that are viewing the stream through a telnet shell
 func GetNumberConnectedSessions(streamID string) int {
-	if !Cfg.Enabled {
+	if Cfg == nil || !Cfg.Enabled {
 		return 0
 	}
 	return clientCount[streamID]
