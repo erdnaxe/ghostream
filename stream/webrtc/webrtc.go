@@ -46,22 +46,24 @@ func GetNumberConnectedSessions(streamID string) int {
 
 // newPeerHandler is called when server receive a new session description
 // this initiates a WebRTC connection and return server description
-func newPeerHandler(remoteSdp struct {
+func newPeerHandler(localSdpChan chan webrtc.SessionDescription, remoteSdp struct {
 	StreamID          string
 	RemoteDescription webrtc.SessionDescription
-}, cfg *Options) webrtc.SessionDescription {
+}, cfg *Options) {
 	// Create media engine using client SDP
 	mediaEngine := webrtc.MediaEngine{}
 	if err := mediaEngine.PopulateFromSDP(remoteSdp.RemoteDescription); err != nil {
 		log.Println("Failed to create new media engine", err)
-		return webrtc.SessionDescription{}
+		localSdpChan <- webrtc.SessionDescription{}
+		return
 	}
 
 	// Create a new PeerConnection
 	settingsEngine := webrtc.SettingEngine{}
 	if err := settingsEngine.SetEphemeralUDPPortRange(cfg.MinPortUDP, cfg.MaxPortUDP); err != nil {
 		log.Println("Failed to set min/max UDP ports", err)
-		return webrtc.SessionDescription{}
+		localSdpChan <- webrtc.SessionDescription{}
+		return
 	}
 	api := webrtc.NewAPI(
 		webrtc.WithMediaEngine(mediaEngine),
@@ -72,7 +74,8 @@ func newPeerHandler(remoteSdp struct {
 	})
 	if err != nil {
 		log.Println("Failed to initiate peer connection", err)
-		return webrtc.SessionDescription{}
+		localSdpChan <- webrtc.SessionDescription{}
+		return
 	}
 
 	// Create video track
@@ -80,11 +83,13 @@ func newPeerHandler(remoteSdp struct {
 	videoTrack, err := webrtc.NewTrack(payloadType, rand.Uint32(), "video", "pion", codec)
 	if err != nil {
 		log.Println("Failed to create new video track", err)
-		return webrtc.SessionDescription{}
+		localSdpChan <- webrtc.SessionDescription{}
+		return
 	}
 	if _, err = peerConnection.AddTrack(videoTrack); err != nil {
 		log.Println("Failed to add video track", err)
-		return webrtc.SessionDescription{}
+		localSdpChan <- webrtc.SessionDescription{}
+		return
 	}
 
 	// Create audio track
@@ -92,33 +97,20 @@ func newPeerHandler(remoteSdp struct {
 	audioTrack, err := webrtc.NewTrack(payloadType, rand.Uint32(), "audio", "pion", codec)
 	if err != nil {
 		log.Println("Failed to create new audio track", err)
-		return webrtc.SessionDescription{}
+		localSdpChan <- webrtc.SessionDescription{}
+		return
 	}
 	if _, err = peerConnection.AddTrack(audioTrack); err != nil {
 		log.Println("Failed to add audio track", err)
-		return webrtc.SessionDescription{}
+		localSdpChan <- webrtc.SessionDescription{}
+		return
 	}
 
 	// Set the remote SessionDescription
 	if err = peerConnection.SetRemoteDescription(remoteSdp.RemoteDescription); err != nil {
 		log.Println("Failed to set remote description", err)
-		return webrtc.SessionDescription{}
-	}
-
-	// Create answer
-	answer, err := peerConnection.CreateAnswer(nil)
-	if err != nil {
-		log.Println("Failed to create answer", err)
-		return webrtc.SessionDescription{}
-	}
-
-	// Create channel that is blocked until ICE Gathering is complete
-	gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
-
-	// Sets the LocalDescription, and starts our UDP listeners
-	if err = peerConnection.SetLocalDescription(answer); err != nil {
-		log.Println("Failed to set local description", err)
-		return webrtc.SessionDescription{}
+		localSdpChan <- webrtc.SessionDescription{}
+		return
 	}
 
 	streamID := remoteSdp.StreamID
@@ -154,13 +146,23 @@ func newPeerHandler(remoteSdp struct {
 		}
 	})
 
-	// Block until ICE Gathering is complete, disabling trickle ICE
-	// we do this because we only can exchange one signaling message
-	// in a production application you should exchange ICE Candidates via OnICECandidate
-	<-gatherComplete
+	// Create answer
+	answer, err := peerConnection.CreateAnswer(nil)
+	if err != nil {
+		log.Println("Failed to create answer", err)
+		localSdpChan <- webrtc.SessionDescription{}
+		return
+	}
 
-	// Output the local description and send it to browser
-	return *peerConnection.LocalDescription()
+	// Sets the LocalDescription, and starts our UDP listeners
+	if err = peerConnection.SetLocalDescription(answer); err != nil {
+		log.Println("Failed to set local description", err)
+		localSdpChan <- webrtc.SessionDescription{}
+		return
+	}
+
+	// Send answer to client
+	localSdpChan <- answer
 }
 
 // Search for Codec PayloadType
@@ -198,6 +200,6 @@ func Serve(remoteSdpChan chan struct {
 	for {
 		// Wait for incoming session description
 		// then send the local description to browser
-		localSdpChan <- newPeerHandler(<-remoteSdpChan, cfg)
+		newPeerHandler(localSdpChan, <-remoteSdpChan, cfg)
 	}
 }
