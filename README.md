@@ -63,7 +63,7 @@ For container, you may use MPEGTS for now (will change).
 
 ### With GStreamer
 
-To stream X11 screen,
+To stream your X11 screen,
 
 ```bash
 gst-launch-1.0 ximagesrc startx=0 show-pointer=true use-damage=0 \
@@ -72,6 +72,8 @@ gst-launch-1.0 ximagesrc startx=0 show-pointer=true use-damage=0 \
 ! mpegtsmux \
 ! srtserversink uri=srt://127.0.0.1:9710/ latency=1000000 streamid=demo:demo
 ```
+
+*This might not work at the moment.*
 
 ## Playing stream
 
@@ -109,7 +111,7 @@ As MPV uses ffmpeg libav, support for SRT streams can be easily added.
 
 ### ld returns an error when launching ghostream
 
-When using `libsrt-gnutls-dev` rather than `libsrt-openssl-dev` on Debian/Ubuntu,
+When missing `libsrt-openssl-dev` on Debian/Ubuntu,
 then srtgo package is unable to build.
 
 ```bash
@@ -120,8 +122,6 @@ then srtgo package is unable to build.
 /usr/bin/ld: cannot find -lsrt
 collect2: error: ld returned 1 exit status
 ```
-
-The solution is to switch to `libsrt-openssl-dev`.
 
 ## References
 
