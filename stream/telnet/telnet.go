@@ -143,7 +143,6 @@ func StartASCIIArtStream(streamID string, reader io.ReadCloser) {
 	currentMessage[streamID] = new(string)
 	pixelBuff := make([]byte, Cfg.Width*Cfg.Height)
 	textBuff := strings.Builder{}
-	textBuff.Grow((2*Cfg.Width + 1) * Cfg.Height)
 	for {
 		n, err := reader.Read(pixelBuff)
 		if err != nil {
@@ -157,6 +156,7 @@ func StartASCIIArtStream(streamID string, reader io.ReadCloser) {
 
 		// Header
 		textBuff.Reset()
+		textBuff.Grow((2*Cfg.Width + 1) * Cfg.Height)
 		for i := 0; i < 42; i++ {
 			textBuff.WriteByte('\n')
 		}
