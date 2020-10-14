@@ -61,4 +61,8 @@ func TestTelnetOutput(t *testing.T) {
 	if n != 42+(2*Cfg.Width+1)*Cfg.Height {
 		t.Fatalf("Read %d from TCP, expected %d", n, 42+(2*Cfg.Width+1)*Cfg.Height)
 	}
+
+	if GetNumberConnectedSessions("demo") != 1 {
+		t.Fatalf("Expected one telnet client only, found %d", GetNumberConnectedSessions("demo"))
+	}
 }
