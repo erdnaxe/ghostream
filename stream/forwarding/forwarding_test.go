@@ -11,20 +11,6 @@ import (
 
 // TestServeSRT Serve a SRT server, stream content during 5 seconds and ensure that it is well received
 func TestForwardStream(t *testing.T) {
-	// Check that ffmpeg is installed
-	which := exec.Command("which", "ffmpeg")
-	if err := which.Start(); err != nil {
-		t.Fatal("Error while checking if ffmpeg got installed:", err)
-	}
-	state, err := which.Process.Wait()
-	if err != nil {
-		t.Fatal("Error while checking if ffmpeg got installed:", err)
-	}
-	if state.ExitCode() != 0 {
-		// FFMPEG is not installed
-		t.Skip("WARNING: FFMPEG is not installed. Skipping stream test")
-	}
-
 	// Start virtual RTMP server with ffmpeg
 	forwardedFfmpeg := exec.Command("ffmpeg", "-hide_banner", "-loglevel", "error",
 		"-y", // allow overwrite /dev/null
