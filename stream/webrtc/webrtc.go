@@ -2,7 +2,6 @@
 package webrtc
 
 import (
-	"fmt"
 	"log"
 	"math/rand"
 	"strings"
@@ -166,7 +165,7 @@ func newPeerHandler(localSdpChan chan webrtc.SessionDescription, remoteSdp struc
 	<-gatherComplete
 
 	// Send answer to client
-	localSdpChan <- answer
+	localSdpChan <- *peerConnection.LocalDescription()
 }
 
 // Search for Codec PayloadType
@@ -178,7 +177,8 @@ func getPayloadType(m webrtc.MediaEngine, codecType webrtc.RTPCodecType, codecNa
 			return codec, codec.PayloadType
 		}
 	}
-	panic(fmt.Sprintf("Remote peer does not support %s", codecName))
+	log.Printf("Remote peer does not support %s", codecName)
+	return nil, 0
 }
 
 // Serve WebRTC media streaming server
