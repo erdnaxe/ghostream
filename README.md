@@ -5,6 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/gitlab.crans.org/nounous/ghostream)](https://goreportcard.com/report/gitlab.crans.org/nounous/ghostream)
 [![pipeline status](https://gitlab.crans.org/nounous/ghostream/badges/dev/pipeline.svg)](https://gitlab.crans.org/nounous/ghostream/commits/dev)
 [![coverage report](https://gitlab.crans.org/nounous/ghostream/badges/dev/coverage.svg)](https://gitlab.crans.org/nounous/ghostream/-/commits/dev)
+[![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/erdnaxe/ghostream)](https://hub.docker.com/r/erdnaxe/ghostream)
 
 *Boooo!* A simple streaming server with authentication and open-source technologies.
 
