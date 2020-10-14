@@ -46,8 +46,9 @@ docker run -it --rm -p 2112:2112 -p 9710:9710/udp -p 8080:8080 -p 10000-10005:10
 
 ## Configuration
 
-Ghostream can be configured by placing [ghostream.yml](docs/ghostream.example.yml) in current directory, in `~/.ghostream/` or in `/etc/ghostream/`.
-You can also override any value using environnement variables, e.g. `GHOSTREAM_AUTH_BACKEND=ldap` will change the authentification backend.
+Ghostream can be configured by placing [ghostream.yml](docs/ghostream.example.yml) in `/etc/ghostream/`.
+You can overwrite the configuration path with `GHOSTREAM_CONFIG` environnement variable.
+You can also overwride any value using environnement variables, e.g. `GHOSTREAM_AUTH_BACKEND=ldap` will change the authentification backend.
 
 ## Streaming
 
