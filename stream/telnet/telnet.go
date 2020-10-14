@@ -30,16 +30,16 @@ type Options struct {
 func Serve(config *Options) {
 	Cfg = config
 
-	if !Cfg.Enabled {
+	if !config.Enabled {
 		return
 	}
 
 	currentMessage = make(map[string]*string)
 	clientCount = make(map[string]int)
 
-	listener, err := net.Listen("tcp", Cfg.ListenAddress)
+	listener, err := net.Listen("tcp", config.ListenAddress)
 	if err != nil {
-		log.Printf("Error while listening to the address %s: %s", Cfg.ListenAddress, err)
+		log.Printf("Error while listening to the address %s: %s", config.ListenAddress, err)
 		return
 	}
 
@@ -111,7 +111,7 @@ func Serve(config *Options) {
 						clientCount[streamID]--
 						break
 					}
-					time.Sleep(time.Duration(Cfg.Delay) * time.Millisecond)
+					time.Sleep(time.Duration(config.Delay) * time.Millisecond)
 				}
 			}(s)
 		}
@@ -128,8 +128,8 @@ func GetNumberConnectedSessions(streamID string) int {
 	return clientCount[streamID]
 }
 
-func asciiChar(pixel byte) string {
-	asciiChars := []string{"@", "#", "$", "%", "?", "*", "+", ";", ":", ",", ".", " "}
+func asciiChar(pixel byte) byte {
+	asciiChars := []byte{'@', '#', '$', '%', '?', '*', '+', ';', ':', ',', '.', ' '}
 	return asciiChars[(255-pixel)/22]
 }
 
@@ -141,22 +141,35 @@ func StartASCIIArtStream(streamID string, reader io.ReadCloser) {
 	}
 
 	currentMessage[streamID] = new(string)
-	buff := make([]byte, Cfg.Width*Cfg.Height)
-	header := "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-	var pixel byte
+	pixelBuff := make([]byte, Cfg.Width*Cfg.Height)
+	textBuff := strings.Builder{}
+	textBuff.Grow((2*Cfg.Width + 1) * Cfg.Height)
 	for {
-		n, _ := reader.Read(buff)
-		if n == 0 {
+		n, err := reader.Read(pixelBuff)
+		if err != nil {
+			log.Printf("An error occured while reading input: %s", err)
 			break
 		}
-		imageStr := ""
+		if n == 0 {
+			// Stream is finished
+			break
+		}
+
+		// Header
+		textBuff.Reset()
+		for i := 0; i < 42; i++ {
+			textBuff.WriteByte('\n')
+		}
+
+		// Convert image to ASCII
 		for j := 0; j < Cfg.Height; j++ {
 			for i := 0; i < Cfg.Width; i++ {
-				pixel = buff[Cfg.Width*j+i]
-				imageStr += asciiChar(pixel) + asciiChar(pixel)
+				textBuff.WriteByte(asciiChar(pixelBuff[Cfg.Width*j+i]))
+				textBuff.WriteByte(asciiChar(pixelBuff[Cfg.Width*j+i]))
 			}
-			imageStr += "\n"
+			textBuff.WriteByte('\n')
 		}
-		*(currentMessage[streamID]) = header + imageStr
+
+		*(currentMessage[streamID]) = textBuff.String()
 	}
 }
