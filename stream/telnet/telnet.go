@@ -143,6 +143,7 @@ func StartASCIIArtStream(streamID string, reader io.ReadCloser) {
 	currentMessage[streamID] = new(string)
 	buff := make([]byte, Cfg.Width*Cfg.Height)
 	header := "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+	var pixel byte
 	for {
 		n, _ := reader.Read(buff)
 		if n == 0 {
@@ -151,7 +152,7 @@ func StartASCIIArtStream(streamID string, reader io.ReadCloser) {
 		imageStr := ""
 		for j := 0; j < Cfg.Height; j++ {
 			for i := 0; i < Cfg.Width; i++ {
-				pixel := buff[Cfg.Width*j+i]
+				pixel = buff[Cfg.Width*j+i]
 				imageStr += asciiChar(pixel) + asciiChar(pixel)
 			}
 			imageStr += "\n"
