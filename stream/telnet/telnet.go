@@ -16,7 +16,7 @@ var (
 	currentMessage map[string]*string
 	clientCount    map[string]int
 
-	ASCIICHARS = []byte{' ', '.', ',', ':', ';', '+', '*', '?', '%', '$', '#', '@'}
+	asciiChars = []byte{' ', '.', ',', ':', ';', '+', '*', '?', '%', '$', '#', '@'}
 )
 
 // Options holds telnet package configuration
@@ -161,8 +161,8 @@ func StartASCIIArtStream(streamID string, reader io.ReadCloser) {
 		// Convert image to ASCII
 		for j := 0; j < Cfg.Height; j++ {
 			for i := 0; i < Cfg.Width; i++ {
-				textBuff.WriteByte(ASCIICHARS[pixelBuff[Cfg.Width*j+i]/22])
-				textBuff.WriteByte(ASCIICHARS[pixelBuff[Cfg.Width*j+i]/22])
+				textBuff.WriteByte(asciiChars[pixelBuff[Cfg.Width*j+i]/22])
+				textBuff.WriteByte(asciiChars[pixelBuff[Cfg.Width*j+i]/22])
 			}
 			textBuff.WriteByte('\n')
 		}
