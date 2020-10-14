@@ -154,12 +154,16 @@ func newPeerHandler(localSdpChan chan webrtc.SessionDescription, remoteSdp struc
 		return
 	}
 
-	// Sets the LocalDescription, and starts our UDP listeners
+	// Sets the LocalDescription
+	// Using GatheringCompletePromise disable trickle ICE
+	// FIXME: https://github.com/pion/webrtc/wiki/Release-WebRTC@v3.0.0
+	gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
 	if err = peerConnection.SetLocalDescription(answer); err != nil {
 		log.Println("Failed to set local description", err)
 		localSdpChan <- webrtc.SessionDescription{}
 		return
 	}
+	<-gatherComplete
 
 	// Send answer to client
 	localSdpChan <- answer
