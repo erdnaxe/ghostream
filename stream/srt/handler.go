@@ -23,7 +23,7 @@ func handleStreamer(s *srtgo.SrtSocket, name string, clientDataChannels map[stri
 		// 5s timeout
 		n, err := s.Read(buff, 5000)
 		if err != nil {
-			log.Println("Error occured while reading SRT socket:", err)
+			log.Println("Error occurred while reading SRT socket:", err)
 			break
 		}
 

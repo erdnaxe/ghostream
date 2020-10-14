@@ -142,7 +142,7 @@ func StartASCIIArtStream(streamID string, reader io.ReadCloser) {
 	for {
 		n, err := reader.Read(pixelBuff)
 		if err != nil {
-			log.Printf("An error occured while reading input: %s", err)
+			log.Printf("An error occurred while reading input: %s", err)
 			break
 		}
 		if n == 0 {

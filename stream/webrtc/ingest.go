@@ -51,7 +51,7 @@ func ingestFrom(inputChannel chan srt.Packet) {
 			break
 		}
 		if err != nil {
-			log.Printf("Error occured while receiving SRT srtPacket of type %s: %s", srtPacket.PacketType, err)
+			log.Printf("Error occurred while receiving SRT srtPacket of type %s: %s", srtPacket.PacketType, err)
 		}
 	}
 }

@@ -45,7 +45,7 @@ func Serve(inputChannel chan srt.Packet, cfg Options) {
 			break
 		}
 		if err != nil {
-			log.Printf("Error occured while receiving SRT packet of type %s: %s", packet.PacketType, err)
+			log.Printf("Error occurred while receiving SRT packet of type %s: %s", packet.PacketType, err)
 		}
 	}
 }
