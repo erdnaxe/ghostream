@@ -26,7 +26,7 @@ type Backend interface {
 
 // New initialize authentification backend
 func New(cfg *Options) (Backend, error) {
-	var backend Backend = nil
+	var backend Backend
 	var err error
 
 	if !cfg.Enabled {

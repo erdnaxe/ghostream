@@ -85,6 +85,9 @@ func Load() (*Config, error) {
 		configuro.WithLoadFromConfigFile("/etc/ghostream/ghostream.yml", false),
 		configuro.WithEnvConfigPathOverload("GHOSTREAM_CONFIG"),
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	// Load default configuration
 	cfg := New()

@@ -28,13 +28,13 @@ func TestSplitHostPort(t *testing.T) {
 	}
 
 	// Split demo, should fail
-	host, port, err = splitHostPort("demo")
+	_, _, err = splitHostPort("demo")
 	if err == nil {
 		t.Errorf("splitHostPort managed to split unsplitable hostport")
 	}
 
 	// Split demo:port, should fail
-	host, port, err = splitHostPort("demo:port")
+	_, _, err = splitHostPort("demo:port")
 	if err == nil {
 		t.Errorf("splitHostPort managed to split unsplitable hostport")
 	}
