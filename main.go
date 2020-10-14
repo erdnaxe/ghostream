@@ -44,8 +44,8 @@ func main() {
 	localSdpChan := make(chan webrtc.SessionDescription)
 
 	// SRT channel for forwarding and webrtc
-	forwardingChannel := make(chan srt.Packet, 65536)
-	webrtcChannel := make(chan srt.Packet, 65536)
+	forwardingChannel := make(chan srt.Packet, 64)
+	webrtcChannel := make(chan srt.Packet, 64)
 
 	// Start routines
 	go forwarding.Serve(forwardingChannel, cfg.Forwarding)
