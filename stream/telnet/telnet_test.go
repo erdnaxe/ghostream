@@ -6,10 +6,18 @@ import (
 	"math/rand"
 	"net"
 	"testing"
+	"time"
 )
 
 // TestTelnetOutput creates a TCP client that connects to the server and get one image.
 func TestTelnetOutput(t *testing.T) {
+	// Try to start Telnet server while it is disabled
+	Serve(&Options{Enabled: false})
+	StartASCIIArtStream("demo", ioutil.NopCloser(bytes.NewReader([]byte{})))
+	if GetNumberConnectedSessions("demo") != 0 {
+		t.Fatalf("Mysteriously found %d connected clients", GetNumberConnectedSessions("demo"))
+	}
+
 	// Enable and start Telnet server
 	Serve(&Options{
 		Enabled:       true,
@@ -32,6 +40,17 @@ func TestTelnetOutput(t *testing.T) {
 		t.Fatalf("Error while connecting to the TCP server: %s", err)
 	}
 
+	// Say goodbye
+	_, err = client.Write([]byte("exit"))
+	if err != nil {
+		t.Fatalf("Error while closing TCP connection: %s", err)
+	}
+
+	client, err = net.Dial("tcp", Cfg.ListenAddress)
+	if err != nil {
+		t.Fatalf("Error while connecting to the TCP server: %s", err)
+	}
+
 	// Create a sufficient large buffer
 	buff := make([]byte, 3*len(sampleImage))
 
@@ -44,6 +63,22 @@ func TestTelnetOutput(t *testing.T) {
 	}
 	if n != len("[GHOSTREAM]\nEnter stream ID: ") {
 		t.Fatalf("Read %d bytes from TCP, expected %d, read: %s", n, len("[GHOSTREAM]\nEnter stream ID: "), buff[:n])
+	}
+
+	// Send wrong stream ID
+	_, err = client.Write([]byte("toto"))
+	if err != nil {
+		t.Fatalf("Error while writing from TCP: %s", err)
+	}
+	n, err = client.Read(buff)
+	if err != nil {
+		t.Fatalf("Error while reading from TCP: %s", err)
+	}
+	if n == len("Unknown stream ID.\n") {
+		_, err = client.Read(buff)
+		if err != nil {
+			t.Fatalf("Error while reading from TCP: %s", err)
+		}
 	}
 
 	// Send stream ID
@@ -64,5 +99,16 @@ func TestTelnetOutput(t *testing.T) {
 
 	if GetNumberConnectedSessions("demo") != 1 {
 		t.Fatalf("Expected one telnet client only, found %d", GetNumberConnectedSessions("demo"))
+	}
+
+	// Close connection, ensure that the counter got decremented
+	err = client.Close()
+	if err != nil {
+		t.Fatalf("Error while closing telnet connection: %s", err)
+	}
+	// Wait for timeout
+	time.Sleep(time.Second)
+	if GetNumberConnectedSessions("demo") != 0 {
+		t.Fatalf("Expected no telnet client, found %d", GetNumberConnectedSessions("demo"))
 	}
 }
