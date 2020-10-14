@@ -15,6 +15,8 @@ var (
 	Cfg            *Options
 	currentMessage map[string]*string
 	clientCount    map[string]int
+
+	ASCIICHARS = []byte{' ', '.', ',', ':', ';', '+', '*', '?', '%', '$', '#', '@'}
 )
 
 // Options holds telnet package configuration
@@ -128,11 +130,6 @@ func GetNumberConnectedSessions(streamID string) int {
 	return clientCount[streamID]
 }
 
-func asciiChar(pixel byte) byte {
-	asciiChars := []byte{'@', '#', '$', '%', '?', '*', '+', ';', ':', ',', '.', ' '}
-	return asciiChars[(255-pixel)/22]
-}
-
 // StartASCIIArtStream send all packets received by ffmpeg as ASCII Art to telnet clients
 func StartASCIIArtStream(streamID string, reader io.ReadCloser) {
 	if !Cfg.Enabled {
@@ -164,8 +161,8 @@ func StartASCIIArtStream(streamID string, reader io.ReadCloser) {
 		// Convert image to ASCII
 		for j := 0; j < Cfg.Height; j++ {
 			for i := 0; i < Cfg.Width; i++ {
-				textBuff.WriteByte(asciiChar(pixelBuff[Cfg.Width*j+i]))
-				textBuff.WriteByte(asciiChar(pixelBuff[Cfg.Width*j+i]))
+				textBuff.WriteByte(ASCIICHARS[pixelBuff[Cfg.Width*j+i]/22])
+				textBuff.WriteByte(ASCIICHARS[pixelBuff[Cfg.Width*j+i]/22])
 			}
 			textBuff.WriteByte('\n')
 		}
