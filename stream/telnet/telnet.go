@@ -57,8 +57,7 @@ func Serve(config *Options) {
 				streamID := ""
 				// Request for stream ID
 				for {
-					_, _ = s.Write([]byte("[GHOSTREAM]\n"))
-					_, err = s.Write([]byte("Enter stream ID: "))
+					_, err = s.Write([]byte("[GHOSTREAM]\nEnter stream ID: "))
 					if err != nil {
 						log.Println("Error while requesting stream ID to telnet client")
 						_ = s.Close()
