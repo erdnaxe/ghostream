@@ -13,3 +13,7 @@ pkged.go
 
 # Coverage files
 *.cov
+
+# Profiler and test files
+*.prof
+*.test
