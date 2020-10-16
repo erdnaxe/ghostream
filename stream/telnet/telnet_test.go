@@ -93,8 +93,8 @@ func TestTelnetOutput(t *testing.T) {
 		t.Fatalf("Error while reading the image from TCP: %s", err)
 	}
 	// Ensure that the size of the image is correct
-	if n != 42+(2*Cfg.Width+1)*Cfg.Height {
-		t.Fatalf("Read %d from TCP, expected %d", n, 42+(2*Cfg.Width+1)*Cfg.Height)
+	if n < 10800 {
+		t.Fatalf("Read %d from TCP, expected more than 10800", n)
 	}
 
 	if GetNumberConnectedSessions("demo") != 1 {
