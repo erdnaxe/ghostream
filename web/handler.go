@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/markbates/pkger"
@@ -15,6 +16,11 @@ import (
 	"gitlab.crans.org/nounous/ghostream/stream/srt"
 	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
+)
+
+var (
+	// Precompile regex
+	validPath = regexp.MustCompile("^/[a-z0-9_-]*$")
 )
 
 // Handle WebRTC session description exchange via POST

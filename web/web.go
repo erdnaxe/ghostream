@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"regexp"
 	"strings"
 
 	"github.com/markbates/pkger"
@@ -42,9 +41,6 @@ var (
 
 	// Preload templates
 	templates *template.Template
-
-	// Precompile regex
-	validPath = regexp.MustCompile("^/[a-z0-9@_\\-]*/?$")
 )
 
 // Load templates with pkger
