@@ -130,7 +130,7 @@ func viewerHandler(w http.ResponseWriter, r *http.Request) {
 	// Validation on path
 	if validPath.FindStringSubmatch(r.URL.Path) == nil {
 		http.NotFound(w, r)
-		log.Print(r.URL.Path)
+		log.Printf("Replied not found on %s", r.URL.Path)
 		return
 	}
 
