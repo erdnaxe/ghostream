@@ -158,12 +158,15 @@ func StartASCIIArtStream(streamID string, reader io.ReadCloser) {
 		}
 
 		// Convert image to ASCII
-		for j := 0; j < Cfg.Height; j++ {
-			for i := 0; i < Cfg.Width; i++ {
-				textBuff.WriteByte(asciiChars[pixelBuff[Cfg.Width*j+i]/22])
-				textBuff.WriteByte(asciiChars[pixelBuff[Cfg.Width*j+i]/22])
+		for i, pixel := range pixelBuff {
+			if i%Cfg.Width == 0 {
+				// New line
+				textBuff.WriteByte('\n')
 			}
-			textBuff.WriteByte('\n')
+
+			// Print two times the character to make a square
+			textBuff.WriteByte(asciiChars[pixel/22])
+			textBuff.WriteByte(asciiChars[pixel/22])
 		}
 
 		*(currentMessage[streamID]) = textBuff.String()
