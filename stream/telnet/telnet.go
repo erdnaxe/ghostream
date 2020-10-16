@@ -2,6 +2,7 @@
 package telnet
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -15,8 +16,6 @@ var (
 	Cfg            *Options
 	currentMessage map[string]*string
 	clientCount    map[string]int
-
-	asciiChars = []byte{' ', '.', ',', ':', ';', '+', '*', '?', '%', '$', '#', '@'}
 )
 
 // Options holds telnet package configuration
@@ -99,6 +98,9 @@ func Serve(config *Options) {
 
 				clientCount[streamID]++
 
+				// Hide terminal cursor
+				_, _ = s.Write([]byte("\033[?25l"))
+
 				for {
 					n, err := s.Write([]byte(*currentMessage[streamID]))
 					if err != nil {
@@ -152,7 +154,7 @@ func StartASCIIArtStream(streamID string, reader io.ReadCloser) {
 
 		// Header
 		textBuff.Reset()
-		textBuff.Grow((2*Cfg.Width + 1) * Cfg.Height)
+		textBuff.Grow((40*Cfg.Width+6)*Cfg.Height + 47)
 		for i := 0; i < 42; i++ {
 			textBuff.WriteByte('\n')
 		}
@@ -161,13 +163,15 @@ func StartASCIIArtStream(streamID string, reader io.ReadCloser) {
 		for i, pixel := range pixelBuff {
 			if i%Cfg.Width == 0 {
 				// New line
-				textBuff.WriteByte('\n')
+				textBuff.WriteString("\033[49m\n")
 			}
 
 			// Print two times the character to make a square
-			textBuff.WriteByte(asciiChars[pixel/22])
-			textBuff.WriteByte(asciiChars[pixel/22])
+			text := fmt.Sprintf("\033[48;2;%d;%d;%dm ", pixel, pixel, pixel)
+			textBuff.WriteString(text)
+			textBuff.WriteString(text)
 		}
+		textBuff.WriteString("\033[49m")
 
 		*(currentMessage[streamID]) = textBuff.String()
 	}
