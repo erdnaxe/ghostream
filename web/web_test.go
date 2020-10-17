@@ -4,11 +4,17 @@ import (
 	"net/http"
 	"testing"
 	"time"
+
+	"gitlab.crans.org/nounous/ghostream/stream"
 )
 
 // TestHTTPServe tries to serve a real HTTP server and load some pages
 func TestHTTPServe(t *testing.T) {
-	go Serve(nil, nil, &Options{Enabled: false, ListenAddress: "127.0.0.1:8081"})
+	// Init streams messaging
+	streams := make(map[string]stream.Stream)
+
+	// Create a disabled web server
+	go Serve(streams, nil, nil, &Options{Enabled: false, ListenAddress: "127.0.0.1:8081"})
 
 	// Sleep 500ms to ensure that the web server is running, to avoid fails because the request came too early
 	time.Sleep(500 * time.Millisecond)
@@ -20,7 +26,7 @@ func TestHTTPServe(t *testing.T) {
 	}
 
 	// Now let's really start the web server
-	go Serve(nil, nil, &Options{Enabled: true, ListenAddress: "127.0.0.1:8081"})
+	go Serve(streams, nil, nil, &Options{Enabled: true, ListenAddress: "127.0.0.1:8081"})
 
 	// Sleep 500ms to ensure that the web server is running, to avoid fails because the request came too early
 	time.Sleep(500 * time.Millisecond)
@@ -52,7 +58,7 @@ func TestHTTPServe(t *testing.T) {
 		t.Errorf("Viewer page returned %v != %v on GET", resp.StatusCode, http.StatusOK)
 	}
 
-	// Test viewer statistic endpoint
+	// Test viewer statistics endpoint
 	resp, err = http.Get("http://localhost:8081/_stats/demo/")
 	if err != nil {
 		t.Errorf("Error while getting /_stats: %s", err)

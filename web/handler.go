@@ -13,14 +13,12 @@ import (
 
 	"github.com/markbates/pkger"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
-	"gitlab.crans.org/nounous/ghostream/stream/srt"
-	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
 )
 
 var (
 	// Precompile regex
-	validPath = regexp.MustCompile("^/[a-z0-9_-]*$")
+	validPath = regexp.MustCompile("^/[a-z0-9@_-]*$")
 )
 
 // Handle WebRTC session description exchange via POST
@@ -152,14 +150,19 @@ func staticHandler() http.Handler {
 }
 
 func statisticsHandler(w http.ResponseWriter, r *http.Request) {
-	// Display connected users stats, from WebRTC or streaming directly from a video player
-	streamID := strings.Replace(r.URL.Path[7:], "/", "", -1)
+	name := strings.Replace(r.URL.Path[7:], "/", "", -1)
+	userCount := 0
+
+	// Get requested stream
+	stream, ok := streams[name]
+	if ok {
+		// Get number of output channels
+		userCount = stream.Count()
+	}
+
+	// Display connected users statistics
 	enc := json.NewEncoder(w)
-	err := enc.Encode(struct {
-		ConnectedViewers int
-	}{webrtc.GetNumberConnectedSessions(streamID) +
-		srt.GetNumberConnectedSessions(streamID) +
-		telnet.GetNumberConnectedSessions(streamID)})
+	err := enc.Encode(struct{ ConnectedViewers int }{userCount})
 	if err != nil {
 		http.Error(w, "Failed to generate JSON.", http.StatusInternalServerError)
 		log.Printf("Failed to generate JSON: %s", err)
