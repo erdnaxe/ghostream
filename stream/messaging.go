@@ -9,7 +9,7 @@ type Stream struct {
 	Broadcast chan<- []byte
 
 	// Use a map to be able to delete an item
-	outputs map[chan<- []byte]struct{}
+	outputs map[chan []byte]struct{}
 
 	// Mutex to lock this ressource
 	lock sync.Mutex
@@ -20,7 +20,7 @@ func New() *Stream {
 	s := &Stream{}
 	broadcast := make(chan []byte, 64)
 	s.Broadcast = broadcast
-	s.outputs = make(map[chan<- []byte]struct{})
+	s.outputs = make(map[chan []byte]struct{})
 	go s.run(broadcast)
 	return s
 }
@@ -34,9 +34,9 @@ func (s *Stream) run(broadcast <-chan []byte) {
 				select {
 				case output <- msg:
 				default:
-					// Remove output if failed
-					delete(s.outputs, output)
-					close(output)
+					// If full, do a ring buffer
+					<-output
+					output <- msg
 				}
 			}
 		}()
@@ -57,14 +57,14 @@ func (s *Stream) Close() {
 }
 
 // Register a new output on a stream
-func (s *Stream) Register(output chan<- []byte) {
+func (s *Stream) Register(output chan []byte) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.outputs[output] = struct{}{}
 }
 
 // Unregister removes an output
-func (s *Stream) Unregister(output chan<- []byte) {
+func (s *Stream) Unregister(output chan []byte) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 

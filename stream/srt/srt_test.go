@@ -5,6 +5,8 @@ import (
 	"os/exec"
 	"testing"
 	"time"
+
+	"gitlab.crans.org/nounous/ghostream/stream"
 )
 
 // TestSplitHostPort Try to split a host like 127.0.0.1:1234 in host, port (127.0.0.1, 1234à
@@ -55,7 +57,9 @@ func TestServeSRT(t *testing.T) {
 		t.Skip("WARNING: FFMPEG is not installed. Skipping stream test")
 	}
 
-	go Serve(&Options{Enabled: true, ListenAddress: ":9711", MaxClients: 2}, nil, nil, nil)
+	// Init streams messaging and SRT server
+	streams := make(map[string]stream.Stream)
+	go Serve(streams, nil, &Options{Enabled: true, ListenAddress: ":9711", MaxClients: 2})
 
 	ffmpeg := exec.Command("ffmpeg", "-hide_banner", "-loglevel", "error",
 		"-f", "lavfi", "-i", "testsrc=size=640x480:rate=10",
@@ -78,6 +82,4 @@ func TestServeSRT(t *testing.T) {
 	}()
 
 	time.Sleep(5 * time.Second) // Delay is in nanoseconds, here 5s
-
-	// TODO Kill SRT server
 }

@@ -12,10 +12,7 @@ import (
 
 	"github.com/haivision/srtgo"
 	"gitlab.crans.org/nounous/ghostream/auth"
-)
-
-var (
-	clientDataChannels map[string][]chan Packet
+	"gitlab.crans.org/nounous/ghostream/stream"
 )
 
 // Options holds web package configuration
@@ -23,13 +20,6 @@ type Options struct {
 	Enabled       bool
 	ListenAddress string
 	MaxClients    int
-}
-
-// Packet contains the necessary data to broadcast events like stream creating, packet receiving or stream closing.
-type Packet struct {
-	Data       []byte
-	PacketType string
-	StreamName string
 }
 
 // Split host and port from listen address
@@ -48,13 +38,8 @@ func splitHostPort(hostport string) (string, uint16, error) {
 	return host, uint16(port64), nil
 }
 
-// GetNumberConnectedSessions get the number of currently connected clients
-func GetNumberConnectedSessions(streamID string) int {
-	return len(clientDataChannels[streamID])
-}
-
 // Serve SRT server
-func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel, webrtcChannel chan Packet) {
+func Serve(streams map[string]stream.Stream, authBackend auth.Backend, cfg *Options) {
 	if !cfg.Enabled {
 		// SRT is not enabled, ignore
 		return
@@ -75,8 +60,6 @@ func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel, webrtcChan
 		log.Fatal("Unable to listen for SRT clients:", err)
 	}
 
-	clientDataChannels = make(map[string][]chan Packet)
-
 	for {
 		// Wait for new connection
 		s, err := sck.Accept()
@@ -94,10 +77,6 @@ func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel, webrtcChan
 		}
 		split := strings.Split(streamID, ":")
 
-		if clientDataChannels[streamID] == nil {
-			clientDataChannels[streamID] = make([]chan Packet, 0, cfg.MaxClients)
-		}
-
 		if len(split) > 1 {
 			// password was provided so it is a streamer
 			name, password := split[0], split[1]
@@ -110,15 +89,13 @@ func Serve(cfg *Options, authBackend auth.Backend, forwardingChannel, webrtcChan
 				}
 			}
 
-			go handleStreamer(s, name, clientDataChannels, forwardingChannel, webrtcChannel)
+			go handleStreamer(s, streams, name)
 		} else {
 			// password was not provided so it is a viewer
 			name := split[0]
 
-			dataChannel := make(chan Packet, 4096)
-			clientDataChannels[streamID] = append(clientDataChannels[streamID], dataChannel)
-
-			go handleViewer(s, name, dataChannel, clientDataChannels)
+			// Send stream
+			go handleViewer(s, streams, name)
 		}
 	}
 }
