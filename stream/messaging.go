@@ -75,3 +75,8 @@ func (s *Stream) Unregister(output chan []byte) {
 		close(output)
 	}
 }
+
+// Count number of outputs
+func (s *Stream) Count() int {
+	return len(s.outputs)
+}
