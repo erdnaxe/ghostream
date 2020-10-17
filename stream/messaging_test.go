@@ -7,7 +7,7 @@ import (
 func TestWithoutOutputs(t *testing.T) {
 	stream := New()
 	defer stream.Close()
-	stream.Broadcast <- "hello world"
+	stream.Broadcast <- []byte("hello world")
 }
 
 func TestWithOneOutput(t *testing.T) {
@@ -15,14 +15,14 @@ func TestWithOneOutput(t *testing.T) {
 	defer stream.Close()
 
 	// Register one output
-	output := make(chan interface{}, 64)
+	output := make(chan []byte, 64)
 	stream.Register(output)
 
 	// Try to pass one message
-	stream.Broadcast <- "hello world"
+	stream.Broadcast <- []byte("hello world")
 	msg := <-output
-	if m, ok := msg.(string); !ok || m != "hello world" {
-		t.Error("Message has wrong type or content")
+	if string(msg) != "hello world" {
+		t.Errorf("Message has wrong content: %s != hello world", msg)
 	}
 
 	// Unregister

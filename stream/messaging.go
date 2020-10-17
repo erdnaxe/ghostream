@@ -6,10 +6,10 @@ import "sync"
 // Stream makes packages able to subscribe to an incoming stream
 type Stream struct {
 	// Incoming data come from this channel
-	Broadcast chan<- interface{}
+	Broadcast chan<- []byte
 
 	// Use a map to be able to delete an item
-	outputs map[chan<- interface{}]struct{}
+	outputs map[chan<- []byte]struct{}
 
 	// Mutex to lock this ressource
 	lock sync.Mutex
@@ -18,14 +18,14 @@ type Stream struct {
 // New creates a new stream.
 func New() *Stream {
 	s := &Stream{}
-	broadcast := make(chan interface{}, 64)
+	broadcast := make(chan []byte, 64)
 	s.Broadcast = broadcast
-	s.outputs = make(map[chan<- interface{}]struct{})
+	s.outputs = make(map[chan<- []byte]struct{})
 	go s.run(broadcast)
 	return s
 }
 
-func (s *Stream) run(broadcast <-chan interface{}) {
+func (s *Stream) run(broadcast <-chan []byte) {
 	for msg := range broadcast {
 		func() {
 			s.lock.Lock()
@@ -57,14 +57,14 @@ func (s *Stream) Close() {
 }
 
 // Register a new output on a stream
-func (s *Stream) Register(output chan<- interface{}) {
+func (s *Stream) Register(output chan<- []byte) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.outputs[output] = struct{}{}
 }
 
 // Unregister removes an output
-func (s *Stream) Unregister(output chan<- interface{}) {
+func (s *Stream) Unregister(output chan<- []byte) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
