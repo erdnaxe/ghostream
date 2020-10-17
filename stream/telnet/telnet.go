@@ -4,7 +4,6 @@ package telnet
 import (
 	"log"
 	"net"
-	"time"
 
 	"gitlab.crans.org/nounous/ghostream/stream"
 )
@@ -13,9 +12,6 @@ import (
 type Options struct {
 	Enabled       bool
 	ListenAddress string
-	Width         int
-	Height        int
-	Delay         int
 }
 
 // Serve Telnet server
@@ -24,10 +20,6 @@ func Serve(streams map[string]*stream.Stream, cfg *Options) {
 		// Telnet is not enabled, ignore
 		return
 	}
-
-	// Start conversion routine
-	textStreams := make(map[string]*[]byte)
-	go autoStartConversion(streams, textStreams, cfg)
 
 	// Start TCP server
 	listener, err := net.Listen("tcp", cfg.ListenAddress)
@@ -44,27 +36,6 @@ func Serve(streams map[string]*stream.Stream, cfg *Options) {
 			continue
 		}
 
-		go handleViewer(s, streams, textStreams, cfg)
-	}
-}
-
-// Convertion routine listen to existing stream and start text conversions
-func autoStartConversion(streams map[string]*stream.Stream, textStreams map[string]*[]byte, cfg *Options) {
-	for {
-		for name, stream := range streams {
-			textStream, ok := textStreams[name]
-			if ok {
-				// Everything is fine
-				continue
-			}
-
-			// Start conversion
-			log.Printf("Starting text conversion of %s", name)
-			// FIXME that is not how to use a pointer
-			textStream = &[]byte{}
-			textStreams[name] = textStream
-			go streamToTextStream(stream, textStream, cfg)
-		}
-		time.Sleep(time.Second)
+		go handleViewer(s, streams, cfg)
 	}
 }

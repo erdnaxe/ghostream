@@ -1,4 +1,5 @@
-package telnet
+// Package text transcode a video to text
+package text
 
 import (
 	"bufio"
@@ -7,20 +8,70 @@ import (
 	"io"
 	"log"
 	"os/exec"
+	"strings"
+	"time"
 
 	"gitlab.crans.org/nounous/ghostream/stream"
 )
 
-// Convert rawvideo to ANSI text
-func streamToTextStream(stream *stream.Stream, text *[]byte, cfg *Options) {
-	// Start ffmpeg
-	video := make(chan []byte)
-	stream.Register(video)
-	_, rawvideo, err := startFFmpeg(video, cfg)
-	if err != nil {
-		log.Printf("Error while starting ffmpeg: %s", err)
+// Options holds text package configuration
+type Options struct {
+	Enabled   bool
+	Width     int
+	Height    int
+	Framerate int
+}
+
+// Init text transcoder
+func Init(streams map[string]*stream.Stream, cfg *Options) {
+	if !cfg.Enabled {
+		// Text transcode is not enabled, ignore
+		return
 	}
 
+	// Regulary check existing streams
+	for {
+		for sourceName, sourceStream := range streams {
+			if strings.Contains(sourceName, "@") {
+				// Not a source stream, pass
+				continue
+			}
+
+			// Check that the transcoded stream does not already exist
+			name := sourceName + "@text"
+			_, ok := streams[name]
+			if ok {
+				// Stream is already transcoded
+				continue
+			}
+
+			// Start conversion
+			log.Printf("Starting text transcode '%s'", name)
+			st := stream.New()
+			streams[name] = st
+
+			go transcode(sourceStream, st, cfg)
+		}
+
+		// Regulary pull stream list,
+		// it may be better to tweak the messaging system
+		// to get an event on a new stream.
+		time.Sleep(time.Second)
+	}
+}
+
+// Convert video to ANSI text
+func transcode(input, output *stream.Stream, cfg *Options) {
+	// Start ffmpeg to transcode video to rawvideo
+	videoInput := make(chan []byte)
+	input.Register(videoInput)
+	ffmpeg, rawvideo, err := startFFmpeg(videoInput, cfg)
+	if err != nil {
+		log.Printf("Error while starting ffmpeg: %s", err)
+		return
+	}
+
+	// Transcode rawvideo to ANSI text
 	pixelBuff := make([]byte, cfg.Width*cfg.Height)
 	textBuff := bytes.Buffer{}
 	for {
@@ -55,13 +106,16 @@ func streamToTextStream(stream *stream.Stream, text *[]byte, cfg *Options) {
 		}
 		textBuff.WriteString("\033[49m")
 
-		*text = textBuff.Bytes()
+		output.Broadcast <- textBuff.Bytes()
 	}
+
+	// Stop transcode
+	ffmpeg.Process.Kill()
 }
 
 // Start a ffmpeg instance to convert stream into rawvideo
 func startFFmpeg(in <-chan []byte, cfg *Options) (*exec.Cmd, *io.ReadCloser, error) {
-	bitrate := fmt.Sprintf("%dk", cfg.Width*cfg.Height/cfg.Delay)
+	bitrate := fmt.Sprintf("%dk", cfg.Width*cfg.Height*cfg.Framerate)
 	ffmpegArgs := []string{"-hide_banner", "-loglevel", "error", "-i", "pipe:0",
 		"-an", "-vf", fmt.Sprintf("scale=%dx%d", cfg.Width, cfg.Height),
 		"-b:v", bitrate, "-minrate", bitrate, "-maxrate", bitrate, "-bufsize", bitrate,

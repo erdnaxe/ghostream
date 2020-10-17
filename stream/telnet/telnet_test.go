@@ -18,9 +18,6 @@ func TestTelnetOutput(t *testing.T) {
 	cfg := Options{
 		Enabled:       true,
 		ListenAddress: "127.0.0.1:8023",
-		Width:         80,
-		Height:        45,
-		Delay:         50,
 	}
 	go Serve(streams, &cfg)
 

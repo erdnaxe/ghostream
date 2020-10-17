@@ -9,7 +9,7 @@ import (
 	"gitlab.crans.org/nounous/ghostream/stream"
 )
 
-func handleViewer(s net.Conn, streams map[string]*stream.Stream, textStreams map[string]*[]byte, cfg *Options) {
+func handleViewer(s net.Conn, streams map[string]*stream.Stream, cfg *Options) {
 	// Prompt user about stream name
 	if _, err := s.Write([]byte("[GHOSTREAM]\nEnter stream name: ")); err != nil {
 		log.Printf("Error while writing to TCP socket: %s", err)
@@ -23,7 +23,7 @@ func handleViewer(s net.Conn, streams map[string]*stream.Stream, textStreams map
 		s.Close()
 		return
 	}
-	name := strings.TrimSpace(string(buff[:n]))
+	name := strings.TrimSpace(string(buff[:n])) + "@text"
 	if len(name) < 1 {
 		// Too short, exit
 		s.Close()
@@ -45,7 +45,9 @@ func handleViewer(s net.Conn, streams map[string]*stream.Stream, textStreams map
 	}
 
 	// Register new client
-	log.Printf("New Telnet viewer for stream %s", name)
+	log.Printf("New Telnet viewer for stream '%s'", name)
+	c := make(chan []byte, 128)
+	st.Register(c)
 	st.IncrementClientCount()
 
 	// Hide terminal cursor
@@ -55,28 +57,23 @@ func handleViewer(s net.Conn, streams map[string]*stream.Stream, textStreams map
 		return
 	}
 
-	// Send stream
-	for {
-		text, ok := textStreams[name]
-		if !ok {
-			log.Println("Stream is not converted to text, kicking Telnet viewer")
-			if _, err := s.Write([]byte("This stream cannot be opened.\n")); err != nil {
-				log.Printf("Error while writing to TCP socket: %s", err)
-			}
+	// Receive data and send them
+	for data := range c {
+		if len(data) < 1 {
+			log.Print("Remove Telnet viewer because of end of stream")
 			break
 		}
 
-		// Send text to client
-		n, err := s.Write(*text)
-		if err != nil || n == 0 {
-			log.Printf("Error while sending TCP data: %s", err)
+		// Send data
+		_, err := s.Write(data)
+		if err != nil {
+			log.Printf("Remove Telnet viewer because of sending error, %s", err)
 			break
 		}
-
-		time.Sleep(time.Duration(cfg.Delay) * time.Millisecond)
 	}
 
-	// Close connection
-	s.Close()
+	// Close output
+	st.Unregister(c)
 	st.DecrementClientCount()
+	s.Close()
 }
