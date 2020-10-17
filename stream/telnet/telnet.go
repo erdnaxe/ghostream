@@ -59,7 +59,8 @@ func autoStartConversion(streams map[string]*stream.Stream, textStreams map[stri
 			}
 
 			// Start conversion
-			log.Print("Starting text conversion of %s", name)
+			log.Printf("Starting text conversion of %s", name)
+			// FIXME that is not how to use a pointer
 			textStream = &[]byte{}
 			textStreams[name] = textStream
 			go streamToTextStream(stream, textStream, cfg)
