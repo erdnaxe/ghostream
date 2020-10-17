@@ -157,7 +157,7 @@ func statisticsHandler(w http.ResponseWriter, r *http.Request) {
 	stream, ok := streams[name]
 	if ok {
 		// Get number of output channels
-		userCount = stream.Count()
+		userCount = stream.ClientCount()
 	}
 
 	// Display connected users statistics
