@@ -8,7 +8,7 @@ import (
 	"gitlab.crans.org/nounous/ghostream/stream"
 )
 
-func handleStreamer(socket *srtgo.SrtSocket, streams map[string]stream.Stream, name string) {
+func handleStreamer(socket *srtgo.SrtSocket, streams map[string]*stream.Stream, name string) {
 	// Check stream does not exist
 	if _, ok := streams[name]; ok {
 		log.Print("Stream already exists, refusing new streamer")
@@ -18,7 +18,7 @@ func handleStreamer(socket *srtgo.SrtSocket, streams map[string]stream.Stream, n
 
 	// Create stream
 	log.Printf("New SRT streamer for stream %s", name)
-	st := *stream.New()
+	st := stream.New()
 	streams[name] = st
 
 	// Create a new buffer
@@ -54,7 +54,7 @@ func handleStreamer(socket *srtgo.SrtSocket, streams map[string]stream.Stream, n
 	delete(streams, name)
 }
 
-func handleViewer(s *srtgo.SrtSocket, streams map[string]stream.Stream, name string) {
+func handleViewer(s *srtgo.SrtSocket, streams map[string]*stream.Stream, name string) {
 	log.Printf("New SRT viewer for stream %s", name)
 
 	// Get requested stream
@@ -66,16 +66,16 @@ func handleViewer(s *srtgo.SrtSocket, streams map[string]stream.Stream, name str
 
 	// Register new output
 	c := make(chan []byte, 128)
-	st.Register(c)
+	st.Register(c, false)
 
 	// Receive data and send them
-	for {
-		data := <-c
+	for data := range c {
 		if len(data) < 1 {
 			log.Print("Remove SRT viewer because of end of stream")
 			break
 		}
 
+		// Send data
 		_, err := s.Write(data, 1000)
 		if err != nil {
 			log.Printf("Remove SRT viewer because of sending error, %s", err)
@@ -84,6 +84,6 @@ func handleViewer(s *srtgo.SrtSocket, streams map[string]stream.Stream, name str
 	}
 
 	// Close output
-	st.Unregister(c)
+	st.Unregister(c, false)
 	s.Close()
 }

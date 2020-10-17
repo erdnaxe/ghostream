@@ -58,7 +58,7 @@ func TestServeSRT(t *testing.T) {
 	}
 
 	// Init streams messaging and SRT server
-	streams := make(map[string]stream.Stream)
+	streams := make(map[string]*stream.Stream)
 	go Serve(streams, nil, &Options{Enabled: true, ListenAddress: ":9711", MaxClients: 2})
 
 	ffmpeg := exec.Command("ffmpeg", "-hide_banner", "-loglevel", "error",

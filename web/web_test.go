@@ -11,7 +11,7 @@ import (
 // TestHTTPServe tries to serve a real HTTP server and load some pages
 func TestHTTPServe(t *testing.T) {
 	// Init streams messaging
-	streams := make(map[string]stream.Stream)
+	streams := make(map[string]*stream.Stream)
 
 	// Create a disabled web server
 	go Serve(streams, nil, nil, &Options{Enabled: false, ListenAddress: "127.0.0.1:8081"})

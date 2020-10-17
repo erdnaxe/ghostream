@@ -39,7 +39,7 @@ func splitHostPort(hostport string) (string, uint16, error) {
 }
 
 // Serve SRT server
-func Serve(streams map[string]stream.Stream, authBackend auth.Backend, cfg *Options) {
+func Serve(streams map[string]*stream.Stream, authBackend auth.Backend, cfg *Options) {
 	if !cfg.Enabled {
 		// SRT is not enabled, ignore
 		return

@@ -11,6 +11,9 @@ type Stream struct {
 	// Use a map to be able to delete an item
 	outputs map[chan []byte]struct{}
 
+	// Count clients for statistics
+	nbClients int
+
 	// Mutex to lock this ressource
 	lock sync.Mutex
 }
@@ -21,6 +24,7 @@ func New() *Stream {
 	broadcast := make(chan []byte, 64)
 	s.Broadcast = broadcast
 	s.outputs = make(map[chan []byte]struct{})
+	s.nbClients = 0
 	go s.run(broadcast)
 	return s
 }
@@ -56,15 +60,20 @@ func (s *Stream) Close() {
 	close(s.Broadcast)
 }
 
-// Register a new output on a stream
-func (s *Stream) Register(output chan []byte) {
+// Register a new output on a stream.
+// If hidden in true, then do not count this client.
+func (s *Stream) Register(output chan []byte, hidden bool) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.outputs[output] = struct{}{}
+	if !hidden {
+		s.nbClients++
+	}
 }
 
-// Unregister removes an output
-func (s *Stream) Unregister(output chan []byte) {
+// Unregister removes an output.
+// If hidden in true, then do not count this client.
+func (s *Stream) Unregister(output chan []byte, hidden bool) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -73,10 +82,13 @@ func (s *Stream) Unregister(output chan []byte) {
 	if ok {
 		delete(s.outputs, output)
 		close(output)
+		if !hidden {
+			s.nbClients--
+		}
 	}
 }
 
-// Count number of outputs
+// Count number of clients
 func (s *Stream) Count() int {
-	return len(s.outputs)
+	return s.nbClients
 }
