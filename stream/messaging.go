@@ -62,18 +62,15 @@ func (s *Stream) Close() {
 
 // Register a new output on a stream.
 // If hidden in true, then do not count this client.
-func (s *Stream) Register(output chan []byte, hidden bool) {
+func (s *Stream) Register(output chan []byte) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.outputs[output] = struct{}{}
-	if !hidden {
-		s.nbClients++
-	}
 }
 
 // Unregister removes an output.
 // If hidden in true, then do not count this client.
-func (s *Stream) Unregister(output chan []byte, hidden bool) {
+func (s *Stream) Unregister(output chan []byte) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -82,13 +79,20 @@ func (s *Stream) Unregister(output chan []byte, hidden bool) {
 	if ok {
 		delete(s.outputs, output)
 		close(output)
-		if !hidden {
-			s.nbClients--
-		}
 	}
 }
 
-// Count number of clients
-func (s *Stream) Count() int {
+// ClientCount returns the number of clients
+func (s *Stream) ClientCount() int {
 	return s.nbClients
+}
+
+// IncrementClientCount increments the number of clients
+func (s *Stream) IncrementClientCount() {
+	s.nbClients++
+}
+
+// DecrementClientCount decrements the number of clients
+func (s *Stream) DecrementClientCount() {
+	s.nbClients--
 }

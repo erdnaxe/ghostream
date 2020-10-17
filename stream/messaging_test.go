@@ -16,7 +16,8 @@ func TestWithOneOutput(t *testing.T) {
 
 	// Register one output
 	output := make(chan []byte, 64)
-	stream.Register(output, false)
+	stream.Register(output)
+	stream.IncrementClientCount()
 
 	// Try to pass one message
 	stream.Broadcast <- []byte("hello world")
@@ -26,15 +27,16 @@ func TestWithOneOutput(t *testing.T) {
 	}
 
 	// Check client count
-	if count := stream.Count(); count != 1 {
+	if count := stream.ClientCount(); count != 1 {
 		t.Errorf("Client counter returned %d, expected 1", count)
 	}
 
 	// Unregister
-	stream.Unregister(output, false)
+	stream.Unregister(output)
+	stream.DecrementClientCount()
 
 	// Check client count
-	if count := stream.Count(); count != 0 {
+	if count := stream.ClientCount(); count != 0 {
 		t.Errorf("Client counter returned %d, expected 0", count)
 	}
 }

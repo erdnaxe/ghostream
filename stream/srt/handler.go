@@ -66,7 +66,8 @@ func handleViewer(s *srtgo.SrtSocket, streams map[string]*stream.Stream, name st
 
 	// Register new output
 	c := make(chan []byte, 128)
-	st.Register(c, false)
+	st.Register(c)
+	st.IncrementClientCount()
 
 	// Receive data and send them
 	for data := range c {
@@ -84,6 +85,7 @@ func handleViewer(s *srtgo.SrtSocket, streams map[string]*stream.Stream, name st
 	}
 
 	// Close output
-	st.Unregister(c, false)
+	st.Unregister(c)
+	st.DecrementClientCount()
 	s.Close()
 }
