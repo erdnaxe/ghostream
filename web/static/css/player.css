@@ -1,18 +1,9 @@
 /* Player */
-.video-responsive {
-  position: relative;
-  padding-top: 56.25%; /* 16/9 */
-}
+video {
+  display: block;
+  flex-grow: 1;
 
-.video-responsive video {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-
-  /* Black borders when video is not 16/9 */
+  /* Black borders around video */
   background-color: #000;
 }
 
@@ -22,6 +13,7 @@
   padding: 0.2rem 0.5rem;
   color: rgb(187, 187, 187);
   user-select: none;
+  text-align: right;
 }
 
 .control-quality,

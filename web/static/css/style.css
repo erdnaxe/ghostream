@@ -43,20 +43,15 @@ h1, h2, h3, h4 {
 
 .container {
   height: 100%;
-  width: 100%;
   display: flex;
   flex-wrap: wrap;
-  height: 100%;
 }
 
 .col-video {
   flex-basis: 0;
   flex-grow: 1;
-  text-align: right;
-
-  /* Limit max width to limit video size */
-  margin: auto;
-  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
 }
 
 .col-chat {
