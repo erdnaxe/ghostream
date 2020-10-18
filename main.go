@@ -10,10 +10,12 @@ import (
 	"gitlab.crans.org/nounous/ghostream/auth"
 	"gitlab.crans.org/nounous/ghostream/internal/config"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
+	"gitlab.crans.org/nounous/ghostream/stream"
 	"gitlab.crans.org/nounous/ghostream/stream/forwarding"
 	"gitlab.crans.org/nounous/ghostream/stream/srt"
 	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
+	"gitlab.crans.org/nounous/ghostream/transcoder"
 	"gitlab.crans.org/nounous/ghostream/web"
 )
 
@@ -43,17 +45,17 @@ func main() {
 	})
 	localSdpChan := make(chan webrtc.SessionDescription)
 
-	// SRT channel for forwarding and webrtc
-	forwardingChannel := make(chan srt.Packet, 64)
-	webrtcChannel := make(chan srt.Packet, 64)
+	// Init streams messaging
+	streams := make(map[string]*stream.Stream)
 
 	// Start routines
-	go forwarding.Serve(forwardingChannel, cfg.Forwarding)
+	go transcoder.Init(streams, &cfg.Transcoder)
+	go forwarding.Serve(streams, cfg.Forwarding)
 	go monitoring.Serve(&cfg.Monitoring)
-	go srt.Serve(&cfg.Srt, authBackend, forwardingChannel, webrtcChannel)
-	go telnet.Serve(&cfg.Telnet)
-	go web.Serve(remoteSdpChan, localSdpChan, &cfg.Web)
-	go webrtc.Serve(remoteSdpChan, localSdpChan, webrtcChannel, &cfg.WebRTC)
+	go srt.Serve(streams, authBackend, &cfg.Srt)
+	go telnet.Serve(streams, &cfg.Telnet)
+	go web.Serve(streams, remoteSdpChan, localSdpChan, &cfg.Web)
+	go webrtc.Serve(streams, remoteSdpChan, localSdpChan, &cfg.WebRTC)
 
 	// Wait for routines
 	select {}

@@ -13,6 +13,8 @@ import (
 	"gitlab.crans.org/nounous/ghostream/stream/srt"
 	"gitlab.crans.org/nounous/ghostream/stream/telnet"
 	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
+	"gitlab.crans.org/nounous/ghostream/transcoder"
+	"gitlab.crans.org/nounous/ghostream/transcoder/text"
 	"gitlab.crans.org/nounous/ghostream/web"
 )
 
@@ -23,6 +25,7 @@ type Config struct {
 	Monitoring monitoring.Options
 	Srt        srt.Options
 	Telnet     telnet.Options
+	Transcoder transcoder.Options
 	Web        web.Options
 	WebRTC     webrtc.Options
 }
@@ -54,9 +57,14 @@ func New() *Config {
 		Telnet: telnet.Options{
 			Enabled:       false,
 			ListenAddress: ":8023",
-			Width:         80,
-			Height:        45,
-			Delay:         50,
+		},
+		Transcoder: transcoder.Options{
+			Text: text.Options{
+				Enabled:   false,
+				Width:     80,
+				Height:    45,
+				Framerate: 20,
+			},
 		},
 		Web: web.Options{
 			Enabled:                     true,

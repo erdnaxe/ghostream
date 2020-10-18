@@ -8,7 +8,7 @@ import (
 
 	"github.com/pion/webrtc/v3"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
-	"gitlab.crans.org/nounous/ghostream/stream/srt"
+	"gitlab.crans.org/nounous/ghostream/stream"
 )
 
 // Options holds web package configuration
@@ -182,12 +182,12 @@ func getPayloadType(m webrtc.MediaEngine, codecType webrtc.RTPCodecType, codecNa
 }
 
 // Serve WebRTC media streaming server
-func Serve(remoteSdpChan chan struct {
+func Serve(streams map[string]*stream.Stream, remoteSdpChan chan struct {
 	StreamID          string
 	RemoteDescription webrtc.SessionDescription
-}, localSdpChan chan webrtc.SessionDescription, inputChannel chan srt.Packet, cfg *Options) {
+}, localSdpChan chan webrtc.SessionDescription, cfg *Options) {
 	if !cfg.Enabled {
-		// SRT is not enabled, ignore
+		// WebRTC is not enabled, ignore
 		return
 	}
 
@@ -197,8 +197,8 @@ func Serve(remoteSdpChan chan struct {
 	videoTracks = make(map[string][]*webrtc.Track)
 	audioTracks = make(map[string][]*webrtc.Track)
 
-	// Ingest data from SRT
-	go ingestFrom(inputChannel)
+	// Ingest data
+	go autoIngest(streams)
 
 	// Handle new connections
 	for {

@@ -1,178 +1,112 @@
-// Package telnet provides some fancy tools, like an ASCII-art stream.
+// Package telnet expose text version of stream.
 package telnet
 
 import (
-	"fmt"
-	"io"
 	"log"
 	"net"
 	"strings"
 	"time"
-)
 
-var (
-	// Cfg contains the different options of the telnet package, see below
-	// TODO Config should not be exported
-	Cfg            *Options
-	currentMessage map[string]*string
-	clientCount    map[string]int
+	"gitlab.crans.org/nounous/ghostream/stream"
 )
 
 // Options holds telnet package configuration
 type Options struct {
 	Enabled       bool
 	ListenAddress string
-	Width         int
-	Height        int
-	Delay         int
 }
 
-// Serve starts the telnet server and listen to clients
-func Serve(config *Options) {
-	Cfg = config
-
-	if !config.Enabled {
+// Serve Telnet server
+func Serve(streams map[string]*stream.Stream, cfg *Options) {
+	if !cfg.Enabled {
+		// Telnet is not enabled, ignore
 		return
 	}
 
-	currentMessage = make(map[string]*string)
-	clientCount = make(map[string]int)
-
-	listener, err := net.Listen("tcp", config.ListenAddress)
+	// Start TCP server
+	listener, err := net.Listen("tcp", cfg.ListenAddress)
 	if err != nil {
-		log.Printf("Error while listening to the address %s: %s", config.ListenAddress, err)
-		return
+		log.Fatalf("Error while listening to the address %s: %s", cfg.ListenAddress, err)
 	}
+	log.Printf("Telnet server listening on %s", cfg.ListenAddress)
 
-	go func() {
-		for {
-			s, err := listener.Accept()
-			if err != nil {
-				log.Printf("Error while accepting TCP socket: %s", s)
-				continue
-			}
-
-			go func(s net.Conn) {
-				streamID := ""
-				// Request for stream ID
-				for {
-					_, err = s.Write([]byte("[GHOSTREAM]\nEnter stream ID: "))
-					if err != nil {
-						log.Println("Error while requesting stream ID to telnet client")
-						_ = s.Close()
-						return
-					}
-					buff := make([]byte, 255)
-					n, err := s.Read(buff)
-					if err != nil {
-						log.Println("Error while requesting stream ID to telnet client")
-						_ = s.Close()
-						return
-					}
-
-					// Avoid bruteforce
-					time.Sleep(3 * time.Second)
-
-					streamID = string(buff[:n])
-					streamID = strings.Replace(streamID, "\r", "", -1)
-					streamID = strings.Replace(streamID, "\n", "", -1)
-
-					if len(streamID) > 0 {
-						if strings.ToLower(streamID) == "exit" {
-							_, _ = s.Write([]byte("Goodbye!\n"))
-							_ = s.Close()
-							return
-						}
-						if _, ok := currentMessage[streamID]; !ok {
-							_, err = s.Write([]byte("Unknown stream ID.\n"))
-							if err != nil {
-								log.Println("Error while requesting stream ID to telnet client")
-								_ = s.Close()
-								return
-							}
-							continue
-						}
-						break
-					}
-				}
-
-				clientCount[streamID]++
-
-				// Hide terminal cursor
-				_, _ = s.Write([]byte("\033[?25l"))
-
-				for {
-					n, err := s.Write([]byte(*currentMessage[streamID]))
-					if err != nil {
-						log.Printf("Error while sending TCP data: %s", err)
-						_ = s.Close()
-						clientCount[streamID]--
-						break
-					}
-					if n == 0 {
-						_ = s.Close()
-						clientCount[streamID]--
-						break
-					}
-					time.Sleep(time.Duration(config.Delay) * time.Millisecond)
-				}
-			}(s)
-		}
-	}()
-
-	log.Println("Telnet server initialized")
-}
-
-// GetNumberConnectedSessions returns the numbers of clients that are viewing the stream through a telnet shell
-func GetNumberConnectedSessions(streamID string) int {
-	if Cfg == nil || !Cfg.Enabled {
-		return 0
-	}
-	return clientCount[streamID]
-}
-
-// StartASCIIArtStream send all packets received by ffmpeg as ASCII Art to telnet clients
-func StartASCIIArtStream(streamID string, reader io.ReadCloser) {
-	if !Cfg.Enabled {
-		_ = reader.Close()
-		return
-	}
-
-	currentMessage[streamID] = new(string)
-	pixelBuff := make([]byte, Cfg.Width*Cfg.Height)
-	textBuff := strings.Builder{}
+	// Handle each new client
 	for {
-		n, err := reader.Read(pixelBuff)
+		s, err := listener.Accept()
 		if err != nil {
-			log.Printf("An error occurred while reading input: %s", err)
-			break
-		}
-		if n == 0 {
-			// Stream is finished
-			break
+			log.Printf("Error while accepting TCP socket: %s", s)
+			continue
 		}
 
-		// Header
-		textBuff.Reset()
-		textBuff.Grow((40*Cfg.Width+6)*Cfg.Height + 47)
-		for i := 0; i < 42; i++ {
-			textBuff.WriteByte('\n')
-		}
-
-		// Convert image to ASCII
-		for i, pixel := range pixelBuff {
-			if i%Cfg.Width == 0 {
-				// New line
-				textBuff.WriteString("\033[49m\n")
-			}
-
-			// Print two times the character to make a square
-			text := fmt.Sprintf("\033[48;2;%d;%d;%dm ", pixel, pixel, pixel)
-			textBuff.WriteString(text)
-			textBuff.WriteString(text)
-		}
-		textBuff.WriteString("\033[49m")
-
-		*(currentMessage[streamID]) = textBuff.String()
+		go handleViewer(s, streams, cfg)
 	}
+}
+
+func handleViewer(s net.Conn, streams map[string]*stream.Stream, cfg *Options) {
+	// Prompt user about stream name
+	if _, err := s.Write([]byte("[GHOSTREAM]\nEnter stream name: ")); err != nil {
+		log.Printf("Error while writing to TCP socket: %s", err)
+		s.Close()
+		return
+	}
+	buff := make([]byte, 255)
+	n, err := s.Read(buff)
+	if err != nil {
+		log.Printf("Error while requesting stream ID to telnet client: %s", err)
+		s.Close()
+		return
+	}
+	name := strings.TrimSpace(string(buff[:n])) + "@text"
+	if len(name) < 1 {
+		// Too short, exit
+		s.Close()
+		return
+	}
+
+	// Wait a bit
+	time.Sleep(time.Second)
+
+	// Get requested stream
+	st, ok := streams[name]
+	if !ok {
+		log.Println("Stream does not exist, kicking new Telnet viewer")
+		if _, err := s.Write([]byte("This stream is inactive.\n")); err != nil {
+			log.Printf("Error while writing to TCP socket: %s", err)
+		}
+		s.Close()
+		return
+	}
+
+	// Register new client
+	log.Printf("New Telnet viewer for stream '%s'", name)
+	c := make(chan []byte, 128)
+	st.Register(c)
+	st.IncrementClientCount()
+
+	// Hide terminal cursor
+	if _, err = s.Write([]byte("\033[?25l")); err != nil {
+		log.Printf("Error while writing to TCP socket: %s", err)
+		s.Close()
+		return
+	}
+
+	// Receive data and send them
+	for data := range c {
+		if len(data) < 1 {
+			log.Print("Remove Telnet viewer because of end of stream")
+			break
+		}
+
+		// Send data
+		_, err := s.Write(data)
+		if err != nil {
+			log.Printf("Remove Telnet viewer because of sending error, %s", err)
+			break
+		}
+	}
+
+	// Close output
+	st.Unregister(c)
+	st.DecrementClientCount()
+	s.Close()
 }

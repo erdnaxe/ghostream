@@ -5,24 +5,24 @@ import (
 	"testing"
 
 	"github.com/pion/webrtc/v3"
-	"gitlab.crans.org/nounous/ghostream/stream/srt"
+	"gitlab.crans.org/nounous/ghostream/stream"
 )
 
 func TestServe(t *testing.T) {
-	// Serve WebRTC server
+	// Init streams messaging and WebRTC server
+	streams := make(map[string]*stream.Stream)
 	remoteSdpChan := make(chan struct {
 		StreamID          string
 		RemoteDescription webrtc.SessionDescription
 	})
 	localSdpChan := make(chan webrtc.SessionDescription)
-	webrtcChannel := make(chan srt.Packet, 64)
 	cfg := Options{
 		Enabled:     true,
 		MinPortUDP:  10000,
 		MaxPortUDP:  10005,
 		STUNServers: []string{"stun:stun.l.google.com:19302"},
 	}
-	go Serve(remoteSdpChan, localSdpChan, webrtcChannel, &cfg)
+	go Serve(streams, remoteSdpChan, localSdpChan, &cfg)
 
 	// New client connection
 	mediaEngine := webrtc.MediaEngine{}
