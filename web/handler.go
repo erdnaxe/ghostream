@@ -150,14 +150,17 @@ func staticHandler() http.Handler {
 }
 
 func statisticsHandler(w http.ResponseWriter, r *http.Request) {
-	name := strings.Replace(r.URL.Path[7:], "/", "", -1)
+	name := strings.SplitN(strings.Replace(r.URL.Path[7:], "/", "", -1), "@", 2)[0]
 	userCount := 0
 
-	// Get requested stream
-	stream, ok := streams[name]
-	if ok {
-		// Get number of output channels
-		userCount = stream.ClientCount()
+	// Get all substreams
+	for _, outputType := range []string{"", "@720p", "@480p", "@360p", "@240p", "@text"} {
+		// Get requested stream
+		stream, ok := streams[name+outputType]
+		if ok {
+			// Get number of output channels
+			userCount += stream.ClientCount()
+		}
 	}
 
 	// Display connected users statistics
