@@ -76,7 +76,7 @@ startPeerConnection = () => {
 
 // Register keyboard events
 let viewer = document.getElementById("viewer")
-window.onkeydown = (event) => {
+window.addEventListener("keydown", (event) => {
     switch (event.key) {
         case 'f':
             // F key put player in fullscreen
@@ -90,16 +90,8 @@ window.onkeydown = (event) => {
         case ' ':
             // M and space key mute player
             viewer.muted = !viewer.muted
+            event.preventDefault()
+            viewer.play()
             break
     }
-}
-
-// On click, mute and demute
-viewer.addEventListener("play", (event) => {
-    event.preventDefault()
-    viewer.muted = !viewer.muted
-})
-viewer.addEventListener("pause", (event) => {
-    event.preventDefault()
-    viewer.muted = !viewer.muted
 })
