@@ -74,25 +74,32 @@ startPeerConnection = () => {
     }
 }
 
-// Register keyboard interactions
-window.onkeydown = function (event) {
-    let viewer = document.getElementById("viewer")
-    // Toggle fullscreen mode
-    if (event.key === "f") {
-        if (document.fullscreen)
-            document.exitFullscreen().then()
-        else
-            viewer.requestFullscreen().then()
-    }
-    // (Un)mute the stream
-    else if (event.key === "m") {
-        viewer.muted = !viewer.muted;
-    }
-    // Pause the stream
-    else if (event.key === " ") {
-        if (viewer.paused)
-            viewer.play()
-        else
-            viewer.pause()
+// Register keyboard events
+let viewer = document.getElementById("viewer")
+window.onkeydown = (event) => {
+    switch (event.key) {
+        case 'f':
+            // F key put player in fullscreen
+            if (document.fullscreenElement !== null) {
+                document.exitFullscreen()
+            } else {
+                viewer.requestFullscreen()
+            }
+            break
+        case 'm':
+        case ' ':
+            // M and space key mute player
+            viewer.muted = !viewer.muted
+            break
     }
 }
+
+// On click, mute and demute
+viewer.addEventListener("play", (event) => {
+    event.preventDefault()
+    viewer.muted = !viewer.muted
+})
+viewer.addEventListener("pause", (event) => {
+    event.preventDefault()
+    viewer.muted = !viewer.muted
+})

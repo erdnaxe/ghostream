@@ -70,10 +70,5 @@ video {
 
 /* Hide chat toggler on small screen */
 .control-chat {
-  display: none;
-}
-@media(min-width:1000px){
-  .control-chat {
-    display: inline;
-  }
+  display: inline;
 }
