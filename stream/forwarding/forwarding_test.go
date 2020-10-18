@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"gitlab.crans.org/nounous/ghostream/stream"
 	"gitlab.crans.org/nounous/ghostream/stream/srt"
 )
 
@@ -30,16 +31,15 @@ func TestForwardStream(t *testing.T) {
 		}
 	}()
 
-	forwardingList := make(map[string][]string)
-	forwardingList["demo"] = []string{"rtmp://127.0.0.1:1936/live/app"}
-
-	forwardingChannel := make(chan srt.Packet)
+	cfg := make(map[string][]string)
+	cfg["demo"] = []string{"rtmp://127.0.0.1:1936/live/app"}
 
 	// Register forwarding stream list
-	go Serve(forwardingChannel, forwardingList)
+	streams := make(map[string]*stream.Stream)
+	go Serve(streams, cfg)
 
 	// Serve SRT Server without authentification backend
-	go srt.Serve(&srt.Options{Enabled: true, ListenAddress: ":9712", MaxClients: 2}, nil, forwardingChannel, nil)
+	go srt.Serve(streams, nil, &srt.Options{Enabled: true, ListenAddress: ":9712", MaxClients: 2})
 
 	ffmpeg := exec.Command("ffmpeg", "-hide_banner", "-loglevel", "error",
 		"-re", "-f", "lavfi", "-i", "testsrc=size=640x480:rate=10",

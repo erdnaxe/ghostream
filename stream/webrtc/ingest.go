@@ -3,61 +3,53 @@ package webrtc
 
 import (
 	"bufio"
-	"fmt"
-	"io"
 	"log"
 	"net"
 	"os/exec"
+	"strings"
+	"time"
 
 	"github.com/pion/rtp"
 	"github.com/pion/webrtc/v3"
-	"gitlab.crans.org/nounous/ghostream/stream/srt"
-	"gitlab.crans.org/nounous/ghostream/stream/telnet"
+	"gitlab.crans.org/nounous/ghostream/stream"
 )
 
 var (
-	ffmpeg      = make(map[string]*exec.Cmd)
-	ffmpegInput = make(map[string]io.WriteCloser)
+	activeStream map[string]struct{}
 )
 
-func ingestFrom(inputChannel chan srt.Packet) {
-	// FIXME Clean code
-
+func autoIngest(streams map[string]*stream.Stream) {
+	// Regulary check existing streams
+	activeStream = make(map[string]struct{})
 	for {
-		var err error = nil
-		srtPacket := <-inputChannel
-		switch srtPacket.PacketType {
-		case "register":
-			go registerStream(&srtPacket)
-			break
-		case "sendData":
-			if _, ok := ffmpegInput[srtPacket.StreamName]; !ok {
-				break
+		for name, st := range streams {
+			if strings.Contains(name, "@") {
+				// Not a source stream, pass
+				continue
 			}
-			// FIXME send to stream srtPacket.StreamName
-			if _, err := ffmpegInput[srtPacket.StreamName].Write(srtPacket.Data); err != nil {
-				log.Printf("Failed to write data to ffmpeg input: %s", err)
+
+			if _, ok := activeStream[name]; ok {
+				// Stream is already ingested
+				continue
 			}
-			break
-		case "close":
-			log.Printf("WebRTC CloseConnection %s", srtPacket.StreamName)
-			_ = ffmpeg[srtPacket.StreamName].Process.Kill()
-			_ = ffmpegInput[srtPacket.StreamName].Close()
-			delete(ffmpeg, srtPacket.StreamName)
-			delete(ffmpegInput, srtPacket.StreamName)
-			break
-		default:
-			log.Println("Unknown SRT srtPacket type:", srtPacket.PacketType)
-			break
+
+			// Start ingestion
+			log.Printf("Starting webrtc for '%s'", name)
+			go ingest(name, st)
 		}
-		if err != nil {
-			log.Printf("Error occurred while receiving SRT srtPacket of type %s: %s", srtPacket.PacketType, err)
-		}
+
+		// Regulary pull stream list,
+		// it may be better to tweak the messaging system
+		// to get an event on a new stream.
+		time.Sleep(time.Second)
 	}
 }
 
-func registerStream(srtPacket *srt.Packet) {
-	log.Printf("WebRTC RegisterStream %s", srtPacket.StreamName)
+func ingest(name string, input *stream.Stream) {
+	// Register to get stream
+	videoInput := make(chan []byte, 1024)
+	input.Register(videoInput)
+	activeStream[name] = struct{}{}
 
 	// Open a UDP Listener for RTP Packets on port 5004
 	videoListener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1"), Port: 5004})
@@ -70,55 +62,12 @@ func registerStream(srtPacket *srt.Packet) {
 		log.Printf("Faited to open UDP listener %s", err)
 		return
 	}
-	// FIXME Close UDP listeners at the end of the stream, not the end of the routine
-	/*	defer func() {
-		if err = videoListener.Close(); err != nil {
-			log.Printf("Faited to close UDP listener %s", err)
-		}
-		if err = audioListener.Close(); err != nil {
-			log.Printf("Faited to close UDP listener %s", err)
-		}
-	}() */
 
-	ffmpegArgs := []string{"-hide_banner", "-loglevel", "error", "-i", "pipe:0",
-		"-an", "-vcodec", "libvpx", "-crf", "10", "-cpu-used", "5", "-b:v", "6000k", "-maxrate", "8000k", "-bufsize", "12000k", // TODO Change bitrate when changing quality
-		"-qmin", "10", "-qmax", "42", "-threads", "4", "-deadline", "1", "-error-resilient", "1",
-		"-auto-alt-ref", "1",
-		"-f", "rtp", "rtp://127.0.0.1:5004",
-		"-vn", "-acodec", "libopus", "-cpu-used", "5", "-deadline", "1", "-qmin", "10", "-qmax", "42", "-error-resilient", "1", "-auto-alt-ref", "1",
-		"-f", "rtp", "rtp://127.0.0.1:5005"}
-
-	// Export stream to ascii art
-	if telnet.Cfg.Enabled {
-		bitrate := fmt.Sprintf("%dk", telnet.Cfg.Width*telnet.Cfg.Height/telnet.Cfg.Delay)
-		ffmpegArgs = append(ffmpegArgs,
-			"-an", "-vf", fmt.Sprintf("scale=%dx%d", telnet.Cfg.Width, telnet.Cfg.Height),
-			"-b:v", bitrate, "-minrate", bitrate, "-maxrate", bitrate, "-bufsize", bitrate, "-q", "42", "-pix_fmt", "gray", "-f", "rawvideo", "pipe:1")
-	}
-
-	ffmpeg[srtPacket.StreamName] = exec.Command("ffmpeg", ffmpegArgs...)
-
-	input, err := ffmpeg[srtPacket.StreamName].StdinPipe()
+	// Start ffmpag to convert videoInput to video and audio UDP
+	ffmpeg, err := startFFmpeg(videoInput)
 	if err != nil {
-		panic(err)
-	}
-	ffmpegInput[srtPacket.StreamName] = input
-	errOutput, err := ffmpeg[srtPacket.StreamName].StderrPipe()
-	if err != nil {
-		panic(err)
-	}
-
-	// Receive raw video output and convert it to ASCII art, then forward it TCP
-	if telnet.Cfg.Enabled {
-		output, err := ffmpeg[srtPacket.StreamName].StdoutPipe()
-		if err != nil {
-			panic(err)
-		}
-		go telnet.StartASCIIArtStream(srtPacket.StreamName, output)
-	}
-
-	if err := ffmpeg[srtPacket.StreamName].Start(); err != nil {
-		panic(err)
+		log.Printf("Error while starting ffmpeg: %s", err)
+		return
 	}
 
 	// Receive video
@@ -128,7 +77,7 @@ func registerStream(srtPacket *srt.Packet) {
 			n, _, err := videoListener.ReadFromUDP(inboundRTPPacket)
 			if err != nil {
 				log.Printf("Failed to read from UDP: %s", err)
-				continue
+				break
 			}
 			packet := &rtp.Packet{}
 			if err := packet.Unmarshal(inboundRTPPacket[:n]); err != nil {
@@ -136,13 +85,13 @@ func registerStream(srtPacket *srt.Packet) {
 				continue
 			}
 
-			if videoTracks[srtPacket.StreamName] == nil {
-				videoTracks[srtPacket.StreamName] = make([]*webrtc.Track, 0)
+			if videoTracks[name] == nil {
+				videoTracks[name] = make([]*webrtc.Track, 0)
 			}
 
 			// Write RTP srtPacket to all video tracks
 			// Adapt payload and SSRC to match destination
-			for _, videoTrack := range videoTracks[srtPacket.StreamName] {
+			for _, videoTrack := range videoTracks[name] {
 				packet.Header.PayloadType = videoTrack.PayloadType()
 				packet.Header.SSRC = videoTrack.SSRC()
 				if writeErr := videoTrack.WriteRTP(packet); writeErr != nil {
@@ -160,7 +109,7 @@ func registerStream(srtPacket *srt.Packet) {
 			n, _, err := audioListener.ReadFromUDP(inboundRTPPacket)
 			if err != nil {
 				log.Printf("Failed to read from UDP: %s", err)
-				continue
+				break
 			}
 			packet := &rtp.Packet{}
 			if err := packet.Unmarshal(inboundRTPPacket[:n]); err != nil {
@@ -168,13 +117,13 @@ func registerStream(srtPacket *srt.Packet) {
 				continue
 			}
 
-			if audioTracks[srtPacket.StreamName] == nil {
-				audioTracks[srtPacket.StreamName] = make([]*webrtc.Track, 0)
+			if audioTracks[name] == nil {
+				audioTracks[name] = make([]*webrtc.Track, 0)
 			}
 
 			// Write RTP srtPacket to all audio tracks
 			// Adapt payload and SSRC to match destination
-			for _, audioTrack := range audioTracks[srtPacket.StreamName] {
+			for _, audioTrack := range audioTracks[name] {
 				packet.Header.PayloadType = audioTrack.PayloadType()
 				packet.Header.SSRC = audioTrack.SSRC()
 				if writeErr := audioTrack.WriteRTP(packet); writeErr != nil {
@@ -185,10 +134,60 @@ func registerStream(srtPacket *srt.Packet) {
 		}
 	}()
 
+	// Wait for stopped ffmpeg
+	if err = ffmpeg.Wait(); err != nil {
+		log.Printf("Faited to wait for ffmpeg: %s", err)
+	}
+
+	// Close UDP listeners
+	if err = videoListener.Close(); err != nil {
+		log.Printf("Faited to close UDP listener: %s", err)
+	}
+	if err = audioListener.Close(); err != nil {
+		log.Printf("Faited to close UDP listener: %s", err)
+	}
+	delete(activeStream, name)
+}
+
+func startFFmpeg(in <-chan []byte) (ffmpeg *exec.Cmd, err error) {
+	ffmpegArgs := []string{"-hide_banner", "-loglevel", "error", "-i", "pipe:0",
+		"-an", "-vcodec", "libvpx", "-crf", "10", "-cpu-used", "5", "-b:v", "6000k", "-maxrate", "8000k", "-bufsize", "12000k", // TODO Change bitrate when changing quality
+		"-qmin", "10", "-qmax", "42", "-threads", "4", "-deadline", "1", "-error-resilient", "1",
+		"-auto-alt-ref", "1",
+		"-f", "rtp", "rtp://127.0.0.1:5004",
+		"-vn", "-acodec", "libopus", "-cpu-used", "5", "-deadline", "1", "-qmin", "10", "-qmax", "42", "-error-resilient", "1", "-auto-alt-ref", "1",
+		"-f", "rtp", "rtp://127.0.0.1:5005"}
+	ffmpeg = exec.Command("ffmpeg", ffmpegArgs...)
+
+	// Handle errors output
+	errOutput, err := ffmpeg.StderrPipe()
+	if err != nil {
+		return nil, err
+	}
 	go func() {
 		scanner := bufio.NewScanner(errOutput)
 		for scanner.Scan() {
 			log.Printf("[WEBRTC FFMPEG %s] %s", "demo", scanner.Text())
 		}
 	}()
+
+	// Handle stream input
+	input, err := ffmpeg.StdinPipe()
+	if err != nil {
+		return nil, err
+	}
+	go func() {
+		for data := range in {
+			if _, err := input.Write(data); err != nil {
+				log.Printf("Failed to write data to ffmpeg input: %s", err)
+			}
+		}
+
+		// End of stream
+		ffmpeg.Process.Kill()
+	}()
+
+	// Start process
+	err = ffmpeg.Start()
+	return ffmpeg, err
 }

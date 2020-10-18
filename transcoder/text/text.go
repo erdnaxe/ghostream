@@ -153,5 +153,5 @@ func startFFmpeg(in <-chan []byte, cfg *Options) (*exec.Cmd, *io.ReadCloser, err
 
 	// Start process
 	err = ffmpeg.Start()
-	return ffmpeg, &output, nil
+	return ffmpeg, &output, err
 }

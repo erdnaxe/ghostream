@@ -2,12 +2,10 @@
 package forwarding
 
 import (
-	"bufio"
-	"io"
 	"log"
-	"os/exec"
+	"time"
 
-	"gitlab.crans.org/nounous/ghostream/stream/srt"
+	"gitlab.crans.org/nounous/ghostream/stream"
 )
 
 // Options to configure the stream forwarding.
@@ -15,21 +13,46 @@ import (
 type Options map[string][]string
 
 // Serve handles incoming packets from SRT and forward them to other external services
-func Serve(inputChannel chan srt.Packet, cfg Options) {
+func Serve(streams map[string]*stream.Stream, cfg Options) {
 	if len(cfg) < 1 {
 		// No forwarding, ignore
-		for {
-			<-inputChannel // Clear input channel
-		}
+		return
 	}
 
 	log.Printf("Stream forwarding initialized")
-	ffmpegInstances := make(map[string]*exec.Cmd)
+	for {
+		for name, st := range streams {
+			fwdCfg, ok := cfg[name]
+			if !ok {
+				// Not configured
+				continue
+			}
+
+			// Start forwarding
+			log.Printf("Starting forwarding for '%s'", name)
+			go forward(st, fwdCfg)
+		}
+
+		// Regulary pull stream list,
+		// it may be better to tweak the messaging system
+		// to get an event on a new stream.
+		time.Sleep(time.Second)
+	}
+}
+
+func forward(st *stream.Stream, fwdCfg []string) {
+	// FIXME
+	/*ffmpegInstances := make(map[string]*exec.Cmd)
 	ffmpegInputStreams := make(map[string]*io.WriteCloser)
 	for {
 		var err error = nil
 		// Wait for packets
-		packet := <-inputChannel
+		// FIXME packet := <-inputChannel
+		packet := srt.Packet{
+			Data:       []byte{},
+			PacketType: "nothing",
+			StreamName: "demo",
+		}
 		switch packet.PacketType {
 		case "register":
 			err = registerStream(packet.StreamName, ffmpegInstances, ffmpegInputStreams, cfg)
@@ -47,9 +70,10 @@ func Serve(inputChannel chan srt.Packet, cfg Options) {
 		if err != nil {
 			log.Printf("Error occurred while receiving SRT packet of type %s: %s", packet.PacketType, err)
 		}
-	}
+	}*/
 }
 
+/*
 // registerStream creates ffmpeg instance associated with newly created stream
 func registerStream(name string, ffmpegInstances map[string]*exec.Cmd, ffmpegInputStreams map[string]*io.WriteCloser, cfg Options) error {
 	streams, exist := cfg[name]
@@ -119,3 +143,4 @@ func close(name string, ffmpegInstances map[string]*exec.Cmd, ffmpegInputStreams
 	delete(ffmpegInputStreams, name)
 	return nil
 }
+*/
