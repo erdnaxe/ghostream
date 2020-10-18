@@ -14,6 +14,6 @@ FROM debian:bullseye-slim
 RUN apt-get update && apt-get install -y ffmpeg libsrt1 musl
 COPY --from=build_base /code/out/ghostream /app/ghostream
 WORKDIR /app
-# 9710 (UDP) for SRT, 8080 for Web, 2112 for monitoring and 10000-10005 (UDP) for WebRTC
-EXPOSE 9710/udp 8080 2112 10000-10005/udp
+# 2112 for monitoring, 8023 for Telnet, 8080 for Web, 9710 for SRT, 10000-10005 (UDP) for WebRTC
+EXPOSE 2112 8023 8080 9710/udp 10000-10005/udp
 CMD ["/app/ghostream"]
