@@ -1,3 +1,4 @@
+// Package transcoder manages transcoders
 package transcoder
 
 import (
