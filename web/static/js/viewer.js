@@ -73,3 +73,26 @@ startPeerConnection = () => {
         }
     }
 }
+
+// Register keyboard interactions
+window.onkeydown = function (event) {
+    let viewer = document.getElementById("viewer")
+    // Toggle fullscreen mode
+    if (event.key === "f") {
+        if (document.fullscreen)
+            document.exitFullscreen().then()
+        else
+            viewer.requestFullscreen().then()
+    }
+    // (Un)mute the stream
+    else if (event.key === "m") {
+        viewer.muted = !viewer.muted;
+    }
+    // Pause the stream
+    else if (event.key === " ") {
+        if (viewer.paused)
+            viewer.play()
+        else
+            viewer.pause()
+    }
+}
