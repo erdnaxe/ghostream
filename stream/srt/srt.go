@@ -69,6 +69,9 @@ func Serve(streams map[string]*stream.Stream, authBackend auth.Backend, cfg *Opt
 			continue
 		}
 
+		// FIXME: Flush socket
+		// Without this, the SRT buffer might get full before reading it
+
 		// streamid can be "name:password" for streamer or "name" for viewer
 		streamID, err := s.GetSockOptString(C.SRTO_STREAMID)
 		if err != nil {

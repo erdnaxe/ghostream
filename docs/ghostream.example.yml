@@ -82,16 +82,24 @@ telnet:
   #
   #listenAddress: :8023
 
-  # Size is in characters. It is recommended to keep a 16x9 format.
-  #
-  #width: 80
-  #height: 45
+## Transcoders configuration ##
+transcoder:
+  text:
+    # By default the text transcoder is disabled.
+    # You need to enable it to use telnet output.
+    #
+    #enabled: false
 
-  # Time in milliseconds between two images.
-  # By default 50 ms, so 20 FPS.
-  # Displaying text takes time.
-  #
-  #delay: 50
+    # Size is in characters. It is recommended to keep a 16x9 format.
+    #
+    #width: 80
+    #height: 45
+
+    # Time in milliseconds between two images.
+    # By default 50 ms, so 20 FPS.
+    # Displaying text takes time.
+    #
+    #delay: 50
 
 ## Web server ##
 # The web server serves a WebRTC player.

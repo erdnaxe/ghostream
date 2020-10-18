@@ -65,7 +65,7 @@ func handleViewer(s *srtgo.SrtSocket, streams map[string]*stream.Stream, name st
 	}
 
 	// Register new output
-	c := make(chan []byte, 128)
+	c := make(chan []byte, 1024)
 	st.Register(c)
 	st.IncrementClientCount()
 

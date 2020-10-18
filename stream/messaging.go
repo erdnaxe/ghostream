@@ -1,7 +1,9 @@
 // Package stream defines a structure to communication between inputs and outputs
 package stream
 
-import "sync"
+import (
+	"sync"
+)
 
 // Stream makes packages able to subscribe to an incoming stream
 type Stream struct {
@@ -21,7 +23,7 @@ type Stream struct {
 // New creates a new stream.
 func New() *Stream {
 	s := &Stream{}
-	broadcast := make(chan []byte, 64)
+	broadcast := make(chan []byte, 1024)
 	s.Broadcast = broadcast
 	s.outputs = make(map[chan []byte]struct{})
 	s.nbClients = 0

@@ -50,7 +50,7 @@ func main() {
 
 	// Start routines
 	go transcoder.Init(streams, &cfg.Transcoder)
-	go forwarding.Serve(streams, &cfg.Forwarding)
+	go forwarding.Serve(streams, cfg.Forwarding)
 	go monitoring.Serve(&cfg.Monitoring)
 	go srt.Serve(streams, authBackend, &cfg.Srt)
 	go telnet.Serve(streams, &cfg.Telnet)

@@ -25,6 +25,7 @@ type Config struct {
 	Monitoring monitoring.Options
 	Srt        srt.Options
 	Telnet     telnet.Options
+	Transcoder transcoder.Options
 	Web        web.Options
 	WebRTC     webrtc.Options
 }
