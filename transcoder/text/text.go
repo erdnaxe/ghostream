@@ -63,7 +63,7 @@ func Init(streams map[string]*stream.Stream, cfg *Options) {
 // Convert video to ANSI text
 func transcode(input, output *stream.Stream, cfg *Options) {
 	// Start ffmpeg to transcode video to rawvideo
-	videoInput := make(chan []byte)
+	videoInput := make(chan []byte, 1024)
 	input.Register(videoInput)
 	ffmpeg, rawvideo, err := startFFmpeg(videoInput, cfg)
 	if err != nil {

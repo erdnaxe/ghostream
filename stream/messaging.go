@@ -16,7 +16,7 @@ type Stream struct {
 	// Count clients for statistics
 	nbClients int
 
-	// Mutex to lock this ressource
+	// Mutex to lock outputs map
 	lock sync.Mutex
 }
 
@@ -33,28 +33,28 @@ func New() *Stream {
 
 func (s *Stream) run(broadcast <-chan []byte) {
 	for msg := range broadcast {
-		func() {
-			s.lock.Lock()
-			defer s.lock.Unlock()
-			for output := range s.outputs {
-				select {
-				case output <- msg:
-				default:
-					// If full, do a ring buffer
+		s.lock.Lock()
+		for output := range s.outputs {
+			select {
+			case output <- msg:
+			default:
+				// If full, do a ring buffer
+				// Check that output is not of size zero
+				if len(output) > 1 {
 					<-output
-					output <- msg
 				}
 			}
-		}()
+		}
+		s.lock.Unlock()
 	}
 
 	// Incoming chan has been closed, close all outputs
 	s.lock.Lock()
-	defer s.lock.Unlock()
 	for ch := range s.outputs {
 		delete(s.outputs, ch)
 		close(ch)
 	}
+	s.lock.Unlock()
 }
 
 // Close the incoming chan, this will also delete all outputs
@@ -63,7 +63,6 @@ func (s *Stream) Close() {
 }
 
 // Register a new output on a stream.
-// If hidden in true, then do not count this client.
 func (s *Stream) Register(output chan []byte) {
 	s.lock.Lock()
 	defer s.lock.Unlock()

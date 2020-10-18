@@ -21,12 +21,12 @@ func handleStreamer(socket *srtgo.SrtSocket, streams map[string]*stream.Stream, 
 	st := stream.New()
 	streams[name] = st
 
-	// Create a new buffer
-	// UDP packet cannot be larger than MTU (1500)
-	buff := make([]byte, 1500)
-
 	// Read RTP packets forever and send them to the WebRTC Client
 	for {
+		// Create a new buffer
+		// UDP packet cannot be larger than MTU (1500)
+		buff := make([]byte, 1500)
+
 		// 5s timeout
 		n, err := socket.Read(buff, 5000)
 		if err != nil {
@@ -41,11 +41,8 @@ func handleStreamer(socket *srtgo.SrtSocket, streams map[string]*stream.Stream, 
 		}
 
 		// Send raw data to other streams
-		// Copy data in another buffer to ensure that the data would not be overwritten
-		// FIXME: might be unnecessary
-		data := make([]byte, n)
-		copy(data, buff[:n])
-		st.Broadcast <- data
+		buff = buff[:n]
+		st.Broadcast <- buff
 	}
 
 	// Close stream
