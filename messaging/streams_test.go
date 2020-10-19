@@ -22,7 +22,10 @@ func TestWithOneStream(t *testing.T) {
 	}
 
 	// Create a quality
-	quality := stream.CreateQuality("source")
+	quality, err := stream.CreateQuality("source")
+	if err != nil {
+		t.Errorf("Failed to create quality")
+	}
 
 	// Register one output
 	output := make(chan []byte, 64)

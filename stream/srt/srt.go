@@ -12,7 +12,7 @@ import (
 
 	"github.com/haivision/srtgo"
 	"gitlab.crans.org/nounous/ghostream/auth"
-	"gitlab.crans.org/nounous/ghostream/stream"
+	"gitlab.crans.org/nounous/ghostream/messaging"
 )
 
 // Options holds web package configuration
@@ -39,7 +39,7 @@ func splitHostPort(hostport string) (string, uint16, error) {
 }
 
 // Serve SRT server
-func Serve(streams map[string]*stream.Stream, authBackend auth.Backend, cfg *Options) {
+func Serve(streams *messaging.Streams, authBackend auth.Backend, cfg *Options) {
 	if !cfg.Enabled {
 		// SRT is not enabled, ignore
 		return

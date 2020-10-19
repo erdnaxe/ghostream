@@ -91,6 +91,7 @@ func (l *Streams) Delete(name string) {
 	// Make sure we did not already delete this stream
 	l.lockStreams.Lock()
 	if _, ok := l.streams[name]; ok {
+		l.streams[name].Close()
 		delete(l.streams, name)
 	}
 	l.lockStreams.Unlock()

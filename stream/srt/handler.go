@@ -5,21 +5,26 @@ import (
 	"log"
 
 	"github.com/haivision/srtgo"
-	"gitlab.crans.org/nounous/ghostream/stream"
+	"gitlab.crans.org/nounous/ghostream/messaging"
 )
 
-func handleStreamer(socket *srtgo.SrtSocket, streams map[string]*stream.Stream, name string) {
-	// Check stream does not exist
-	if _, ok := streams[name]; ok {
-		log.Print("Stream already exists, refusing new streamer")
+func handleStreamer(socket *srtgo.SrtSocket, streams *messaging.Streams, name string) {
+	// Create stream
+	stream, err := streams.Create(name)
+	if err != nil {
+		log.Printf("Error on stream creating: %s", err)
 		socket.Close()
 		return
 	}
 
-	// Create stream
-	log.Printf("New SRT streamer for stream %s", name)
-	st := stream.New()
-	streams[name] = st
+	// Create source quality
+	q, err := stream.CreateQuality("source")
+	if err != nil {
+		log.Printf("Error on quality creating: %s", err)
+		socket.Close()
+		return
+	}
+	log.Printf("New SRT streamer for stream '%s' quality 'source'", name)
 
 	// Read RTP packets forever and send them to the WebRTC Client
 	for {
@@ -42,29 +47,38 @@ func handleStreamer(socket *srtgo.SrtSocket, streams map[string]*stream.Stream, 
 
 		// Send raw data to other streams
 		buff = buff[:n]
-		st.Broadcast <- buff
+		q.Broadcast <- buff
 	}
 
 	// Close stream
-	st.Close()
+	streams.Delete(name)
 	socket.Close()
-	delete(streams, name)
 }
 
-func handleViewer(s *srtgo.SrtSocket, streams map[string]*stream.Stream, name string) {
-	log.Printf("New SRT viewer for stream %s", name)
-
+func handleViewer(socket *srtgo.SrtSocket, streams *messaging.Streams, name string) {
 	// Get requested stream
-	st, ok := streams[name]
-	if !ok {
-		log.Println("Stream does not exist, refusing new viewer")
+	stream, err := streams.Get(name)
+	if err != nil {
+		log.Printf("Failed to get stream: %s", err)
+		socket.Close()
 		return
 	}
 
+	// Get requested quality
+	// FIXME: make qualities available
+	qualityName := "source"
+	q, err := stream.GetQuality(qualityName)
+	if err != nil {
+		log.Printf("Failed to get quality: %s", err)
+		socket.Close()
+		return
+	}
+	log.Printf("New SRT viewer for stream %s quality %s", name, qualityName)
+
 	// Register new output
 	c := make(chan []byte, 1024)
-	st.Register(c)
-	st.IncrementClientCount()
+	q.Register(c)
+	stream.IncrementClientCount()
 
 	// Receive data and send them
 	for data := range c {
@@ -74,7 +88,7 @@ func handleViewer(s *srtgo.SrtSocket, streams map[string]*stream.Stream, name st
 		}
 
 		// Send data
-		_, err := s.Write(data, 1000)
+		_, err := socket.Write(data, 1000)
 		if err != nil {
 			log.Printf("Remove SRT viewer because of sending error, %s", err)
 			break
@@ -82,7 +96,7 @@ func handleViewer(s *srtgo.SrtSocket, streams map[string]*stream.Stream, name st
 	}
 
 	// Close output
-	st.Unregister(c)
-	st.DecrementClientCount()
-	s.Close()
+	q.Unregister(c)
+	stream.DecrementClientCount()
+	socket.Close()
 }

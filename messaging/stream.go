@@ -25,13 +25,25 @@ func newStream() (s *Stream) {
 	return s
 }
 
+// Close stream.
+func (s *Stream) Close() {
+	for quality := range s.qualities {
+		s.DeleteQuality(quality)
+	}
+}
+
 // CreateQuality creates a new quality associated with this stream.
-func (s *Stream) CreateQuality(name string) (quality *Quality) {
+func (s *Stream) CreateQuality(name string) (quality *Quality, err error) {
+	// If quality already exist, fail
+	if _, ok := s.qualities[name]; ok {
+		return nil, errors.New("quality already exists")
+	}
+
 	s.lockQualities.Lock()
 	quality = newQuality()
 	s.qualities[name] = quality
 	s.lockQualities.Unlock()
-	return quality
+	return quality, nil
 }
 
 // DeleteQuality removes a stream quality.
