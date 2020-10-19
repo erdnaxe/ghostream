@@ -3,6 +3,8 @@ package messaging
 
 import (
 	"sync"
+
+	"github.com/pion/webrtc/v3"
 )
 
 // Quality holds a specific stream quality.
@@ -17,6 +19,12 @@ type Quality struct {
 
 	// Mutex to lock outputs map
 	lockOutputs sync.Mutex
+
+	// WebRTC session descriptor exchange.
+	// When new client connects, a SDP arrives on WebRtcRemoteSdp,
+	// then webrtc package answers on WebRtcLocalSdp.
+	WebRtcLocalSdp  chan webrtc.SessionDescription
+	WebRtcRemoteSdp chan webrtc.SessionDescription
 }
 
 func newQuality() (q *Quality) {
@@ -24,6 +32,8 @@ func newQuality() (q *Quality) {
 	broadcast := make(chan []byte, 1024)
 	q.Broadcast = broadcast
 	q.outputs = make(map[chan []byte]struct{})
+	q.WebRtcLocalSdp = make(chan webrtc.SessionDescription, 1)
+	q.WebRtcRemoteSdp = make(chan webrtc.SessionDescription, 1)
 	go q.run(broadcast)
 	return q
 }

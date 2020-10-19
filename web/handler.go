@@ -51,12 +51,27 @@ func viewerPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get requested stream
+	stream, err := streams.Get(path)
+	if err != nil {
+		http.Error(w, "Stream not found", http.StatusNotFound)
+		log.Printf("Stream not found: %s", path)
+		return
+	}
+
+	// Get requested quality
+	// FIXME: extract quality from request
+	qualityName := "source"
+	q, err := stream.GetQuality(qualityName)
+	if err != nil {
+		http.Error(w, "Quality not found", http.StatusNotFound)
+		log.Printf("Quality not found: %s", qualityName)
+		return
+	}
+
 	// Exchange session descriptions with WebRTC stream server
-	remoteSdpChan <- struct {
-		StreamID          string
-		RemoteDescription webrtc.SessionDescription
-	}{StreamID: path, RemoteDescription: remoteDescription}
-	localDescription := <-localSdpChan
+	q.WebRtcRemoteSdp <- remoteDescription
+	localDescription := <-q.WebRtcLocalSdp
 
 	// Send server description as JSON
 	jsonDesc, err := json.Marshal(localDescription)

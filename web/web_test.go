@@ -14,7 +14,7 @@ func TestHTTPServe(t *testing.T) {
 	streams := messaging.New()
 
 	// Create a disabled web server
-	go Serve(streams, nil, nil, &Options{Enabled: false, ListenAddress: "127.0.0.1:8081"})
+	go Serve(streams, &Options{Enabled: false, ListenAddress: "127.0.0.1:8081"})
 
 	// Sleep 500ms to ensure that the web server is running, to avoid fails because the request came too early
 	time.Sleep(500 * time.Millisecond)
@@ -26,7 +26,7 @@ func TestHTTPServe(t *testing.T) {
 	}
 
 	// Now let's really start the web server
-	go Serve(streams, nil, nil, &Options{Enabled: true, ListenAddress: "127.0.0.1:8081"})
+	go Serve(streams, &Options{Enabled: true, ListenAddress: "127.0.0.1:8081"})
 
 	// Sleep 500ms to ensure that the web server is running, to avoid fails because the request came too early
 	time.Sleep(500 * time.Millisecond)

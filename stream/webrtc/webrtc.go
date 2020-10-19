@@ -45,13 +45,10 @@ func GetNumberConnectedSessions(streamID string) int {
 
 // newPeerHandler is called when server receive a new session description
 // this initiates a WebRTC connection and return server description
-func newPeerHandler(localSdpChan chan webrtc.SessionDescription, remoteSdp struct {
-	StreamID          string
-	RemoteDescription webrtc.SessionDescription
-}, cfg *Options) {
+func newPeerHandler(name string, localSdpChan chan webrtc.SessionDescription, remoteSdp webrtc.SessionDescription, cfg *Options) {
 	// Create media engine using client SDP
 	mediaEngine := webrtc.MediaEngine{}
-	if err := mediaEngine.PopulateFromSDP(remoteSdp.RemoteDescription); err != nil {
+	if err := mediaEngine.PopulateFromSDP(remoteSdp); err != nil {
 		log.Println("Failed to create new media engine", err)
 		localSdpChan <- webrtc.SessionDescription{}
 		return
@@ -106,13 +103,13 @@ func newPeerHandler(localSdpChan chan webrtc.SessionDescription, remoteSdp struc
 	}
 
 	// Set the remote SessionDescription
-	if err = peerConnection.SetRemoteDescription(remoteSdp.RemoteDescription); err != nil {
+	if err = peerConnection.SetRemoteDescription(remoteSdp); err != nil {
 		log.Println("Failed to set remote description", err)
 		localSdpChan <- webrtc.SessionDescription{}
 		return
 	}
 
-	streamID := remoteSdp.StreamID
+	streamID := name
 	split := strings.SplitN(streamID, "@", 2)
 	streamID = split[0]
 	quality := "source"
@@ -182,10 +179,7 @@ func getPayloadType(m webrtc.MediaEngine, codecType webrtc.RTPCodecType, codecNa
 }
 
 // Serve WebRTC media streaming server
-func Serve(streams *messaging.Streams, remoteSdpChan chan struct {
-	StreamID          string
-	RemoteDescription webrtc.SessionDescription
-}, localSdpChan chan webrtc.SessionDescription, cfg *Options) {
+func Serve(streams *messaging.Streams, cfg *Options) {
 	if !cfg.Enabled {
 		// WebRTC is not enabled, ignore
 		return
@@ -193,17 +187,42 @@ func Serve(streams *messaging.Streams, remoteSdpChan chan struct {
 
 	log.Printf("WebRTC server using UDP from port %d to %d", cfg.MinPortUDP, cfg.MaxPortUDP)
 
-	// Allocate memory
+	// WebRTC ingested tracks
 	videoTracks = make(map[string][]*webrtc.Track)
 	audioTracks = make(map[string][]*webrtc.Track)
 
-	// Ingest data
-	go autoIngest(streams)
+	// Subscribe to new stream event
+	event := make(chan string, 8)
+	streams.Subscribe(event)
 
+	// For each new stream
+	for name := range event {
+		// Get stream
+		stream, err := streams.Get(name)
+		if err != nil {
+			log.Printf("Failed to get stream '%s'", name)
+		}
+
+		// Get specific quality
+		// FIXME: make it possible to forward other qualities
+		qualityName := "source"
+		quality, err := stream.GetQuality(qualityName)
+		if err != nil {
+			log.Printf("Failed to get quality '%s'", qualityName)
+		}
+
+		// Start forwarding
+		log.Printf("Starting webrtc for '%s' quality '%s'", name, qualityName)
+		go ingest(name, quality)
+		go listenSdp(name, quality.WebRtcLocalSdp, quality.WebRtcRemoteSdp, cfg)
+	}
+}
+
+func listenSdp(name string, localSdp, remoteSdp chan webrtc.SessionDescription, cfg *Options) {
 	// Handle new connections
 	for {
 		// Wait for incoming session description
 		// then send the local description to browser
-		newPeerHandler(localSdpChan, <-remoteSdpChan, cfg)
+		newPeerHandler(name, localSdp, <-remoteSdp, cfg)
 	}
 }

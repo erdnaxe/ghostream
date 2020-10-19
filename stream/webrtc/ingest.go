@@ -12,33 +12,6 @@ import (
 	"gitlab.crans.org/nounous/ghostream/messaging"
 )
 
-func autoIngest(streams *messaging.Streams) {
-	// Subscribe to new stream event
-	event := make(chan string, 8)
-	streams.Subscribe(event)
-
-	// For each new stream
-	for name := range event {
-		// Get stream
-		stream, err := streams.Get(name)
-		if err != nil {
-			log.Printf("Failed to get stream '%s'", name)
-		}
-
-		// Get specific quality
-		// FIXME: make it possible to forward other qualities
-		qualityName := "source"
-		quality, err := stream.GetQuality(qualityName)
-		if err != nil {
-			log.Printf("Failed to get quality '%s'", qualityName)
-		}
-
-		// Start forwarding
-		log.Printf("Starting webrtc for '%s' quality '%s'", name, qualityName)
-		go ingest(name, quality)
-	}
-}
-
 func ingest(name string, q *messaging.Quality) {
 	// Register to get stream
 	videoInput := make(chan []byte, 1024)

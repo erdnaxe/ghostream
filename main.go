@@ -38,13 +38,6 @@ func main() {
 		defer authBackend.Close()
 	}
 
-	// WebRTC session description channels
-	remoteSdpChan := make(chan struct {
-		StreamID          string
-		RemoteDescription webrtc.SessionDescription
-	})
-	localSdpChan := make(chan webrtc.SessionDescription)
-
 	// Init streams messaging
 	streams := messaging.New()
 
@@ -54,8 +47,8 @@ func main() {
 	go monitoring.Serve(&cfg.Monitoring)
 	go srt.Serve(streams, authBackend, &cfg.Srt)
 	go telnet.Serve(streams, &cfg.Telnet)
-	go web.Serve(streams, remoteSdpChan, localSdpChan, &cfg.Web)
-	go webrtc.Serve(streams, remoteSdpChan, localSdpChan, &cfg.WebRTC)
+	go web.Serve(streams, &cfg.Web)
+	go webrtc.Serve(streams, &cfg.WebRTC)
 
 	// Wait for routines
 	select {}

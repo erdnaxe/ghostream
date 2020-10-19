@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/markbates/pkger"
-	"github.com/pion/webrtc/v3"
 	"gitlab.crans.org/nounous/ghostream/messaging"
 )
 
@@ -32,13 +31,6 @@ type Options struct {
 
 var (
 	cfg *Options
-
-	// WebRTC session description channels
-	remoteSdpChan chan struct {
-		StreamID          string
-		RemoteDescription webrtc.SessionDescription
-	}
-	localSdpChan chan webrtc.SessionDescription
 
 	// Preload templates
 	templates *template.Template
@@ -78,13 +70,8 @@ func loadTemplates() error {
 }
 
 // Serve HTTP server
-func Serve(s *messaging.Streams, rSdpChan chan struct {
-	StreamID          string
-	RemoteDescription webrtc.SessionDescription
-}, lSdpChan chan webrtc.SessionDescription, c *Options) {
+func Serve(s *messaging.Streams, c *Options) {
 	streams = s
-	remoteSdpChan = rSdpChan
-	localSdpChan = lSdpChan
 	cfg = c
 
 	if !cfg.Enabled {
