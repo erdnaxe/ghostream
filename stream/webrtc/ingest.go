@@ -6,50 +6,43 @@ import (
 	"log"
 	"net"
 	"os/exec"
-	"strings"
-	"time"
 
 	"github.com/pion/rtp"
 	"github.com/pion/webrtc/v3"
-	"gitlab.crans.org/nounous/ghostream/stream"
+	"gitlab.crans.org/nounous/ghostream/messaging"
 )
 
-var (
-	activeStream map[string]struct{}
-)
+func autoIngest(streams *messaging.Streams) {
+	// Subscribe to new stream event
+	event := make(chan string, 8)
+	streams.Subscribe(event)
 
-func autoIngest(streams map[string]*stream.Stream) {
-	// Regulary check existing streams
-	activeStream = make(map[string]struct{})
-	for {
-		for name, st := range streams {
-			if strings.Contains(name, "@") {
-				// Not a source stream, pass
-				continue
-			}
-
-			if _, ok := activeStream[name]; ok {
-				// Stream is already ingested
-				continue
-			}
-
-			// Start ingestion
-			log.Printf("Starting webrtc for '%s'", name)
-			go ingest(name, st)
+	// For each new stream
+	for name := range event {
+		// Get stream
+		stream, err := streams.Get(name)
+		if err != nil {
+			log.Printf("Failed to get stream '%s'", name)
 		}
 
-		// Regulary pull stream list,
-		// it may be better to tweak the messaging system
-		// to get an event on a new stream.
-		time.Sleep(time.Second)
+		// Get specific quality
+		// FIXME: make it possible to forward other qualities
+		qualityName := "source"
+		quality, err := stream.GetQuality(qualityName)
+		if err != nil {
+			log.Printf("Failed to get quality '%s'", qualityName)
+		}
+
+		// Start forwarding
+		log.Printf("Starting webrtc for '%s' quality '%s'", name, qualityName)
+		go ingest(name, quality)
 	}
 }
 
-func ingest(name string, input *stream.Stream) {
+func ingest(name string, q *messaging.Quality) {
 	// Register to get stream
 	videoInput := make(chan []byte, 1024)
-	input.Register(videoInput)
-	activeStream[name] = struct{}{}
+	q.Register(videoInput)
 
 	// Open a UDP Listener for RTP Packets on port 5004
 	videoListener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1"), Port: 5004})
@@ -146,7 +139,7 @@ func ingest(name string, input *stream.Stream) {
 	if err = audioListener.Close(); err != nil {
 		log.Printf("Faited to close UDP listener: %s", err)
 	}
-	delete(activeStream, name)
+	q.Unregister(videoInput)
 }
 
 func startFFmpeg(in <-chan []byte) (ffmpeg *exec.Cmd, err error) {

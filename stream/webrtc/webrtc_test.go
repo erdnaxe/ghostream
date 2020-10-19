@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"github.com/pion/webrtc/v3"
-	"gitlab.crans.org/nounous/ghostream/stream"
+	"gitlab.crans.org/nounous/ghostream/messaging"
 )
 
 func TestServe(t *testing.T) {
 	// Init streams messaging and WebRTC server
-	streams := make(map[string]*stream.Stream)
+	streams := messaging.New()
 	remoteSdpChan := make(chan struct {
 		StreamID          string
 		RemoteDescription webrtc.SessionDescription

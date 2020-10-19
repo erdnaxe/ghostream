@@ -8,7 +8,7 @@ import (
 
 	"github.com/pion/webrtc/v3"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
-	"gitlab.crans.org/nounous/ghostream/stream"
+	"gitlab.crans.org/nounous/ghostream/messaging"
 )
 
 // Options holds web package configuration
@@ -182,7 +182,7 @@ func getPayloadType(m webrtc.MediaEngine, codecType webrtc.RTPCodecType, codecNa
 }
 
 // Serve WebRTC media streaming server
-func Serve(streams map[string]*stream.Stream, remoteSdpChan chan struct {
+func Serve(streams *messaging.Streams, remoteSdpChan chan struct {
 	StreamID          string
 	RemoteDescription webrtc.SessionDescription
 }, localSdpChan chan webrtc.SessionDescription, cfg *Options) {
