@@ -3,13 +3,13 @@ package telnet
 import (
 	"testing"
 
-	"gitlab.crans.org/nounous/ghostream/stream"
+	"gitlab.crans.org/nounous/ghostream/messaging"
 )
 
 // TestTelnetOutput creates a TCP client that connects to the server and get one image.
 func TestTelnetOutput(t *testing.T) {
 	// Try to start Telnet server while it is disabled
-	streams := make(map[string]*stream.Stream)
+	streams := messaging.New()
 	go Serve(streams, &Options{Enabled: false})
 
 	// FIXME test connect

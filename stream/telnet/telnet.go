@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.crans.org/nounous/ghostream/stream"
+	"gitlab.crans.org/nounous/ghostream/messaging"
 )
 
 // Options holds telnet package configuration
@@ -17,7 +17,7 @@ type Options struct {
 }
 
 // Serve Telnet server
-func Serve(streams map[string]*stream.Stream, cfg *Options) {
+func Serve(streams *messaging.Streams, cfg *Options) {
 	if !cfg.Enabled {
 		// Telnet is not enabled, ignore
 		return
@@ -32,17 +32,17 @@ func Serve(streams map[string]*stream.Stream, cfg *Options) {
 
 	// Handle each new client
 	for {
-		s, err := listener.Accept()
+		socket, err := listener.Accept()
 		if err != nil {
-			log.Printf("Error while accepting TCP socket: %s", s)
+			log.Printf("Error while accepting TCP socket: %s", err)
 			continue
 		}
 
-		go handleViewer(s, streams, cfg)
+		go handleViewer(socket, streams, cfg)
 	}
 }
 
-func handleViewer(s net.Conn, streams map[string]*stream.Stream, cfg *Options) {
+func handleViewer(s net.Conn, streams *messaging.Streams, cfg *Options) {
 	// Prompt user about stream name
 	if _, err := s.Write([]byte("[GHOSTREAM]\nEnter stream name: ")); err != nil {
 		log.Printf("Error while writing to TCP socket: %s", err)
@@ -67,9 +67,9 @@ func handleViewer(s net.Conn, streams map[string]*stream.Stream, cfg *Options) {
 	time.Sleep(time.Second)
 
 	// Get requested stream
-	st, ok := streams[name]
-	if !ok {
-		log.Println("Stream does not exist, kicking new Telnet viewer")
+	stream, err := streams.Get(name)
+	if err != nil {
+		log.Printf("Stream does not exist, kicking new Telnet viewer: %s", err)
 		if _, err := s.Write([]byte("This stream is inactive.\n")); err != nil {
 			log.Printf("Error while writing to TCP socket: %s", err)
 		}
@@ -77,11 +77,21 @@ func handleViewer(s net.Conn, streams map[string]*stream.Stream, cfg *Options) {
 		return
 	}
 
+	// Get requested quality
+	// FIXME: make qualities available
+	qualityName := "source"
+	q, err := stream.GetQuality(qualityName)
+	if err != nil {
+		log.Printf("Failed to get quality: %s", err)
+		s.Close()
+		return
+	}
+	log.Printf("New Telnet viewer for stream %s quality %s", name, qualityName)
+
 	// Register new client
-	log.Printf("New Telnet viewer for stream '%s'", name)
 	c := make(chan []byte, 128)
-	st.Register(c)
-	st.IncrementClientCount()
+	q.Register(c)
+	stream.IncrementClientCount()
 
 	// Hide terminal cursor
 	if _, err = s.Write([]byte("\033[?25l")); err != nil {
@@ -106,7 +116,7 @@ func handleViewer(s net.Conn, streams map[string]*stream.Stream, cfg *Options) {
 	}
 
 	// Close output
-	st.Unregister(c)
-	st.DecrementClientCount()
+	q.Unregister(c)
+	stream.DecrementClientCount()
 	s.Close()
 }
