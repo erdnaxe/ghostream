@@ -5,9 +5,8 @@ import (
 	"bufio"
 	"log"
 	"os/exec"
-	"time"
 
-	"gitlab.crans.org/nounous/ghostream/stream"
+	"gitlab.crans.org/nounous/ghostream/messaging"
 )
 
 // Options to configure the stream forwarding.
@@ -15,37 +14,49 @@ import (
 type Options map[string][]string
 
 // Serve handles incoming packets from SRT and forward them to other external services
-func Serve(streams map[string]*stream.Stream, cfg Options) {
+func Serve(streams *messaging.Streams, cfg Options) {
 	if len(cfg) < 1 {
 		// No forwarding, ignore
 		return
 	}
 
+	// Subscribe to new stream event
+	event := make(chan string, 8)
+	streams.Subscribe(event)
 	log.Printf("Stream forwarding initialized")
-	for {
-		for name, st := range streams {
-			fwdCfg, ok := cfg[name]
-			if !ok {
-				// Not configured
-				continue
-			}
 
-			// Start forwarding
-			log.Printf("Starting forwarding for '%s'", name)
-			go forward(st, fwdCfg)
+	// For each new stream
+	for name := range event {
+		streamCfg, ok := cfg[name]
+		if !ok {
+			// Not configured
+			continue
 		}
 
-		// Regulary pull stream list,
-		// it may be better to tweak the messaging system
-		// to get an event on a new stream.
-		time.Sleep(time.Second)
+		// Get stream
+		stream, err := streams.Get(name)
+		if err != nil {
+			log.Printf("Failed to get stream '%s'", name)
+		}
+
+		// Get specific quality
+		// FIXME: make it possible to forward other qualities
+		qualityName := "source"
+		quality, err := stream.GetQuality(qualityName)
+		if err != nil {
+			log.Printf("Failed to get quality '%s'", qualityName)
+		}
+
+		// Start forwarding
+		log.Printf("Starting forwarding for '%s' quality '%s'", name, qualityName)
+		go forward(quality, streamCfg)
 	}
 }
 
 // Start a FFMPEG instance and redirect stream output to forwarded streams
-func forward(st *stream.Stream, fwdCfg []string) {
+func forward(q *messaging.Quality, fwdCfg []string) {
 	output := make(chan []byte, 1024)
-	st.Register(output)
+	q.Register(output)
 
 	// Launch FFMPEG instance
 	params := []string{"-hide_banner", "-loglevel", "error", "-re", "-i", "pipe:0"}
@@ -77,7 +88,7 @@ func forward(st *stream.Stream, fwdCfg []string) {
 		_ = input.Close()
 		_ = errOutput.Close()
 		_ = ffmpeg.Process.Kill()
-		st.Unregister(output)
+		q.Unregister(output)
 	}()
 
 	// Log standard error output

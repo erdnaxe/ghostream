@@ -10,7 +10,7 @@ import (
 	"gitlab.crans.org/nounous/ghostream/auth"
 	"gitlab.crans.org/nounous/ghostream/internal/config"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
-	"gitlab.crans.org/nounous/ghostream/stream"
+	"gitlab.crans.org/nounous/ghostream/messaging"
 	"gitlab.crans.org/nounous/ghostream/stream/forwarding"
 	"gitlab.crans.org/nounous/ghostream/stream/srt"
 	"gitlab.crans.org/nounous/ghostream/stream/telnet"
@@ -46,7 +46,7 @@ func main() {
 	localSdpChan := make(chan webrtc.SessionDescription)
 
 	// Init streams messaging
-	streams := make(map[string]*stream.Stream)
+	streams := messaging.New()
 
 	// Start routines
 	go transcoder.Init(streams, &cfg.Transcoder)

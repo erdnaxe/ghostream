@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.crans.org/nounous/ghostream/stream"
+	"gitlab.crans.org/nounous/ghostream/messaging"
 	"gitlab.crans.org/nounous/ghostream/stream/srt"
 )
 
@@ -35,7 +35,7 @@ func TestForwardStream(t *testing.T) {
 	cfg["demo"] = []string{"rtmp://127.0.0.1:1936/live/app"}
 
 	// Register forwarding stream list
-	streams := make(map[string]*stream.Stream)
+	streams := messaging.New()
 	go Serve(streams, cfg)
 
 	// Serve SRT Server without authentification backend
