@@ -153,19 +153,15 @@ func statisticsHandler(w http.ResponseWriter, r *http.Request) {
 	name := strings.SplitN(strings.Replace(r.URL.Path[7:], "/", "", -1), "@", 2)[0]
 	userCount := 0
 
-	// Get all substreams
-	for _, outputType := range []string{"", "@720p", "@480p", "@360p", "@240p", "@text"} {
-		// Get requested stream
-		stream, ok := streams[name+outputType]
-		if ok {
-			// Get number of output channels
-			userCount += stream.ClientCount()
-		}
+	// Get requested stream
+	stream, err := streams.Get(name)
+	if err == nil {
+		userCount = stream.ClientCount()
 	}
 
 	// Display connected users statistics
 	enc := json.NewEncoder(w)
-	err := enc.Encode(struct{ ConnectedViewers int }{userCount})
+	err = enc.Encode(struct{ ConnectedViewers int }{userCount})
 	if err != nil {
 		http.Error(w, "Failed to generate JSON.", http.StatusInternalServerError)
 		log.Printf("Failed to generate JSON: %s", err)

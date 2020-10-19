@@ -11,7 +11,7 @@ import (
 
 	"github.com/markbates/pkger"
 	"github.com/pion/webrtc/v3"
-	"gitlab.crans.org/nounous/ghostream/stream"
+	"gitlab.crans.org/nounous/ghostream/messaging"
 )
 
 // Options holds web package configuration
@@ -44,7 +44,7 @@ var (
 	templates *template.Template
 
 	// Streams to get statistics
-	streams map[string]*stream.Stream
+	streams *messaging.Streams
 )
 
 // Load templates with pkger
@@ -78,7 +78,7 @@ func loadTemplates() error {
 }
 
 // Serve HTTP server
-func Serve(s map[string]*stream.Stream, rSdpChan chan struct {
+func Serve(s *messaging.Streams, rSdpChan chan struct {
 	StreamID          string
 	RemoteDescription webrtc.SessionDescription
 }, lSdpChan chan webrtc.SessionDescription, c *Options) {

@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"gitlab.crans.org/nounous/ghostream/messaging"
 )
 
 func TestViewerPageGET(t *testing.T) {
@@ -11,6 +13,9 @@ func TestViewerPageGET(t *testing.T) {
 	if err := loadTemplates(); err != nil {
 		t.Errorf("Failed to load templates: %v", err)
 	}
+
+	// Init streams messaging
+	streams = messaging.New()
 
 	cfg = &Options{}
 
