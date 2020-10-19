@@ -13,7 +13,7 @@ type Quality struct {
 	// Incoming data come from this channel
 	Broadcast chan<- []byte
 
-	// Incoming data will be outputed to all those outputs.
+	// Incoming data will be outputted to all those outputs.
 	// Use a map to be able to delete an item.
 	outputs map[chan []byte]struct{}
 
