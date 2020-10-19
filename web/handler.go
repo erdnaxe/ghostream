@@ -157,6 +157,7 @@ func statisticsHandler(w http.ResponseWriter, r *http.Request) {
 	stream, err := streams.Get(name)
 	if err == nil {
 		userCount = stream.ClientCount()
+		userCount += webrtc.GetNumberConnectedSessions(name)
 	}
 
 	// Display connected users statistics

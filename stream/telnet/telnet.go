@@ -56,7 +56,7 @@ func handleViewer(s net.Conn, streams *messaging.Streams, cfg *Options) {
 		s.Close()
 		return
 	}
-	name := strings.TrimSpace(string(buff[:n])) + "@text"
+	name := strings.TrimSpace(string(buff[:n]))
 	if len(name) < 1 {
 		// Too short, exit
 		s.Close()
@@ -69,7 +69,7 @@ func handleViewer(s net.Conn, streams *messaging.Streams, cfg *Options) {
 	// Get requested stream
 	stream, err := streams.Get(name)
 	if err != nil {
-		log.Printf("Stream does not exist, kicking new Telnet viewer: %s", err)
+		log.Printf("Kicking new Telnet viewer: %s", err)
 		if _, err := s.Write([]byte("This stream is inactive.\n")); err != nil {
 			log.Printf("Error while writing to TCP socket: %s", err)
 		}
@@ -78,11 +78,13 @@ func handleViewer(s net.Conn, streams *messaging.Streams, cfg *Options) {
 	}
 
 	// Get requested quality
-	// FIXME: make qualities available
-	qualityName := "source"
+	qualityName := "text"
 	q, err := stream.GetQuality(qualityName)
 	if err != nil {
-		log.Printf("Failed to get quality: %s", err)
+		log.Printf("Kicking new Telnet viewer: %s", err)
+		if _, err := s.Write([]byte("This stream is not converted to text.\n")); err != nil {
+			log.Printf("Error while writing to TCP socket: %s", err)
+		}
 		s.Close()
 		return
 	}
