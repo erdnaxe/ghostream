@@ -2,7 +2,7 @@
 package transcoder
 
 import (
-	"gitlab.crans.org/nounous/ghostream/stream"
+	"gitlab.crans.org/nounous/ghostream/messaging"
 	"gitlab.crans.org/nounous/ghostream/transcoder/text"
 )
 
@@ -12,6 +12,6 @@ type Options struct {
 }
 
 // Init all transcoders
-func Init(streams map[string]*stream.Stream, cfg *Options) {
+func Init(streams *messaging.Streams, cfg *Options) {
 	go text.Init(streams, &cfg.Text)
 }

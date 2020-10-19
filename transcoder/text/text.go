@@ -8,10 +8,8 @@ import (
 	"io"
 	"log"
 	"os/exec"
-	"strings"
-	"time"
 
-	"gitlab.crans.org/nounous/ghostream/stream"
+	"gitlab.crans.org/nounous/ghostream/messaging"
 )
 
 // Options holds text package configuration
@@ -23,45 +21,46 @@ type Options struct {
 }
 
 // Init text transcoder
-func Init(streams map[string]*stream.Stream, cfg *Options) {
+func Init(streams *messaging.Streams, cfg *Options) {
 	if !cfg.Enabled {
 		// Text transcode is not enabled, ignore
 		return
 	}
 
-	// Regulary check existing streams
-	for {
-		for sourceName, sourceStream := range streams {
-			if strings.Contains(sourceName, "@") {
-				// Not a source stream, pass
-				continue
-			}
+	// Subscribe to new stream event
+	event := make(chan string, 8)
+	streams.Subscribe(event)
 
-			// Check that the transcoded stream does not already exist
-			name := sourceName + "@text"
-			_, ok := streams[name]
-			if ok {
-				// Stream is already transcoded
-				continue
-			}
-
-			// Start conversion
-			log.Printf("Starting text transcode '%s'", name)
-			st := stream.New()
-			streams[name] = st
-
-			go transcode(sourceStream, st, cfg)
+	// For each new stream
+	for name := range event {
+		// Get stream
+		stream, err := streams.Get(name)
+		if err != nil {
+			log.Printf("Failed to get stream '%s'", name)
 		}
 
-		// Regulary pull stream list,
-		// it may be better to tweak the messaging system
-		// to get an event on a new stream.
-		time.Sleep(time.Second)
+		// Get specific quality
+		// FIXME: make it possible to forward other qualities
+		qualityName := "source"
+		quality, err := stream.GetQuality(qualityName)
+		if err != nil {
+			log.Printf("Failed to get quality '%s'", qualityName)
+		}
+
+		// Create new text quality
+		outputQuality, err := stream.CreateQuality("text")
+		if err != nil {
+			log.Printf("Failed to create quality 'text': %s", err)
+		}
+
+		// Start forwarding
+		log.Printf("Starting text transcoder for '%s' quality '%s'", name, qualityName)
+		go transcode(quality, outputQuality, cfg)
 	}
 }
 
 // Convert video to ANSI text
-func transcode(input, output *stream.Stream, cfg *Options) {
+func transcode(input, output *messaging.Quality, cfg *Options) {
 	// Start ffmpeg to transcode video to rawvideo
 	videoInput := make(chan []byte, 1024)
 	input.Register(videoInput)
