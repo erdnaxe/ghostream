@@ -2,6 +2,7 @@
 package messaging
 
 import (
+	"errors"
 	"sync"
 )
 
@@ -33,7 +34,7 @@ func (s *Stream) CreateQuality(name string) (quality *Quality) {
 	return quality
 }
 
-// DeleteQuality removes a quality.
+// DeleteQuality removes a stream quality.
 func (s *Stream) DeleteQuality(name string) {
 	// Make sure we did not already close this output
 	s.lockQualities.Lock()
@@ -42,6 +43,17 @@ func (s *Stream) DeleteQuality(name string) {
 		delete(s.qualities, name)
 	}
 	s.lockQualities.Unlock()
+}
+
+// GetQuality gets a specific stream quality.
+func (s *Stream) GetQuality(name string) (quality *Quality, err error) {
+	s.lockQualities.Lock()
+	quality, ok := s.qualities[name]
+	s.lockQualities.Unlock()
+	if !ok {
+		return nil, errors.New("quality does not exist")
+	}
+	return quality, nil
 }
 
 // ClientCount returns the number of clients.
