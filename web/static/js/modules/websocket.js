@@ -17,21 +17,18 @@ export class GsWebSocket {
      * @param {Function} openCallback Function called when connection is established. 
      * @param {Function} closeCallback Function called when connection is lost. 
      */
-    open(openCallback, closeCallback) {
+    open() {
         this._open();
-        this.socket.addEventListener("open", (event) => {
+        this.socket.addEventListener("open", () => {
             console.log("WebSocket opened");
-            openCallback(event);
         });
-        this.socket.addEventListener("close", (event) => {
+        this.socket.addEventListener("close", () => {
             console.log("WebSocket closed, retrying connection in 1s...");
             setTimeout(this._open, 1000);
-            closeCallback(event);
         });
-        this.socket.addEventListener("error", (event) => {
+        this.socket.addEventListener("error", () => {
             console.log("WebSocket errored, retrying connection in 1s...");
             setTimeout(this._open, 1000);
-            closeCallback(event);
         });
     }
 

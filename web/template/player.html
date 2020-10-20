@@ -34,14 +34,11 @@
   {{end}}
 </div>
 
-{{if .WidgetURL}}<script src="/static/js/sideWidget.js"></script>{{end}}
-<script src="/static/js/videoQuality.js"></script>
-<script src="/static/js/viewer.js"></script>
-<script src="/static/js/viewersCounter.js"></script>
+<script type="module" src="/static/js/main.js"></script>
 <script>
   const stunServers = [
     {{range $id, $value := .Cfg.STUNServers}}
-    '{{$value}}',
+    "{{$value}}",
     {{end}}
   ]
   startPeerConnection()
