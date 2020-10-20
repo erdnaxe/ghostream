@@ -21,76 +21,20 @@ var (
 	validPath = regexp.MustCompile("^/[a-z0-9@_-]*$")
 )
 
-// Handle WebRTC session description exchange via POST
-func viewerPostHandler(w http.ResponseWriter, r *http.Request) {
-	// Limit response body to 128KB
-	r.Body = http.MaxBytesReader(w, r.Body, 131072)
-
-	// Get stream ID from URL, or from domain name
-	path := r.URL.Path[1:]
-	host := r.Host
-	if strings.Contains(host, ":") {
-		realHost, _, err := net.SplitHostPort(r.Host)
-		if err != nil {
-			log.Printf("Failed to split host and port from %s", r.Host)
-			return
-		}
-		host = realHost
-	}
-	host = strings.Replace(host, ".", "-", -1)
-	if streamID, ok := cfg.MapDomainToStream[host]; ok {
-		path = streamID
-	}
-
-	// Decode client description
-	dec := json.NewDecoder(r.Body)
-	dec.DisallowUnknownFields()
-	remoteDescription := webrtc.SessionDescription{}
-	if err := dec.Decode(&remoteDescription); err != nil {
-		http.Error(w, "The JSON WebRTC offer is malformed", http.StatusBadRequest)
+// Handle site index and viewer pages
+func viewerHandler(w http.ResponseWriter, r *http.Request) {
+	// Validation on path
+	if validPath.FindStringSubmatch(r.URL.Path) == nil {
+		http.NotFound(w, r)
+		log.Printf("Replied not found on %s", r.URL.Path)
 		return
 	}
 
-	// Get requested stream
-	stream, err := streams.Get(path)
-	if err != nil {
-		http.Error(w, "Stream not found", http.StatusNotFound)
-		log.Printf("Stream not found: %s", path)
-		return
+	// Check method
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed.", http.StatusMethodNotAllowed)
 	}
 
-	// Get requested quality
-	// FIXME: extract quality from request
-	qualityName := "source"
-	q, err := stream.GetQuality(qualityName)
-	if err != nil {
-		http.Error(w, "Quality not found", http.StatusNotFound)
-		log.Printf("Quality not found: %s", qualityName)
-		return
-	}
-
-	// Exchange session descriptions with WebRTC stream server
-	q.WebRtcRemoteSdp <- remoteDescription
-	localDescription := <-q.WebRtcLocalSdp
-
-	// Send server description as JSON
-	jsonDesc, err := json.Marshal(localDescription)
-	if err != nil {
-		http.Error(w, "An error occurred while formating response", http.StatusInternalServerError)
-		log.Println("An error occurred while sending session description", err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	_, err = w.Write(jsonDesc)
-	if err != nil {
-		log.Println("An error occurred while sending session description", err)
-	}
-
-	// Increment monitoring
-	monitoring.WebSessions.Inc()
-}
-
-func viewerGetHandler(w http.ResponseWriter, r *http.Request) {
 	// Get stream ID from URL, or from domain name
 	path := r.URL.Path[1:]
 	host := r.Host
@@ -135,27 +79,6 @@ func viewerGetHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Increment monitoring
 	monitoring.WebViewerServed.Inc()
-}
-
-// Handle site index and viewer pages
-// POST requests are used to exchange WebRTC session descriptions
-func viewerHandler(w http.ResponseWriter, r *http.Request) {
-	// Validation on path
-	if validPath.FindStringSubmatch(r.URL.Path) == nil {
-		http.NotFound(w, r)
-		log.Printf("Replied not found on %s", r.URL.Path)
-		return
-	}
-
-	// Route depending on HTTP method
-	switch r.Method {
-	case http.MethodGet:
-		viewerGetHandler(w, r)
-	case http.MethodPost:
-		viewerPostHandler(w, r)
-	default:
-		http.Error(w, "Sorry, only GET and POST methods are supported.", http.StatusBadRequest)
-	}
 }
 
 func staticHandler() http.Handler {
