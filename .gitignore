@@ -17,3 +17,9 @@ pkged.go
 # Profiler and test files
 *.prof
 *.test
+
+# Javascript tools
+.eslintrc.js
+node_modules
+package.json
+package-lock.json
