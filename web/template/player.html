@@ -34,18 +34,17 @@
   {{end}}
 </div>
 
-<script type="module" src="/static/js/main.js"></script>
-<script>
+<script type="module">
+  import { initViewerPage } from "/static/js/main.js";
+
+  // Some variables that need to be fixed by web page
+  const viewersCounterRefreshPeriod = Number("{{.Cfg.ViewersCounterRefreshPeriod}}");
+  const stream = "{{.Path}}";
   const stunServers = [
     {{range $id, $value := .Cfg.STUNServers}}
     "{{$value}}",
     {{end}}
   ]
-  startPeerConnection()
-
-  // Wait a bit before pulling viewers counter for the first time
-  setTimeout(() => {
-      refreshViewersCounter("{{.Path}}", {{.Cfg.ViewersCounterRefreshPeriod}})
-  }, 1000)
+  initViewerPage(stream, stunServers, viewersCounterRefreshPeriod)
 </script>
 {{end}}
