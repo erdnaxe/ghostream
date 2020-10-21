@@ -3,8 +3,11 @@ package forwarding
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os/exec"
+	"strings"
+	"time"
 
 	"gitlab.crans.org/nounous/ghostream/messaging"
 )
@@ -49,20 +52,30 @@ func Serve(streams *messaging.Streams, cfg Options) {
 
 		// Start forwarding
 		log.Printf("Starting forwarding for '%s' quality '%s'", name, qualityName)
-		go forward(quality, streamCfg)
+		go forward(name, quality, streamCfg)
 	}
 }
 
 // Start a FFMPEG instance and redirect stream output to forwarded streams
-func forward(q *messaging.Quality, fwdCfg []string) {
+func forward(streamName string, q *messaging.Quality, fwdCfg []string) {
 	output := make(chan []byte, 1024)
 	q.Register(output)
 
 	// Launch FFMPEG instance
 	params := []string{"-hide_banner", "-loglevel", "error", "-re", "-i", "pipe:0"}
 	for _, url := range fwdCfg {
+		// If the url should be date-formatted, replace special characters with the current time information
+		now := time.Now()
+		formattedURL := strings.ReplaceAll(url, "%Y", fmt.Sprintf("%04d", now.Year()))
+		formattedURL = strings.ReplaceAll(formattedURL, "%m", fmt.Sprintf("%02d", now.Month()))
+		formattedURL = strings.ReplaceAll(formattedURL, "%d", fmt.Sprintf("%02d", now.Day()))
+		formattedURL = strings.ReplaceAll(formattedURL, "%H", fmt.Sprintf("%02d", now.Hour()))
+		formattedURL = strings.ReplaceAll(formattedURL, "%M", fmt.Sprintf("%02d", now.Minute()))
+		formattedURL = strings.ReplaceAll(formattedURL, "%S", fmt.Sprintf("%02d", now.Second()))
+		formattedURL = strings.ReplaceAll(formattedURL, "%name", streamName)
+
 		params = append(params, "-f", "flv", "-preset", "ultrafast", "-tune", "zerolatency",
-			"-c", "copy", url)
+			"-c", "copy", formattedURL)
 	}
 	ffmpeg := exec.Command("ffmpeg", params...)
 
@@ -95,7 +108,7 @@ func forward(q *messaging.Quality, fwdCfg []string) {
 	go func() {
 		scanner := bufio.NewScanner(errOutput)
 		for scanner.Scan() {
-			log.Printf("[FORWARDING FFMPEG] %s", scanner.Text())
+			log.Printf("[FORWARDING FFMPEG %s] %s", streamName, scanner.Text())
 		}
 	}()
 

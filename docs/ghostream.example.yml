@@ -38,13 +38,17 @@ auth:
 ## Stream forwarding ##
 # Forward an incoming stream to other servers
 # The URL can be anything FFMpeg can accept as an stream output
+# If a file is specified, the name may contains %Y, %m, %d, %H, %M or %S
+# that will be replaced by the current date information.
 forwarding:
   # By default nothing is forwarded.
   #
   # This example forwards a stream named "demo" to Twitch and YouTube,
+  # and save the record in a timestamped-file,
   #demo:
   #  - rtmp://live-cdg.twitch.tv/app/STREAM_KEY
   #  - rtmp://a.rtmp.youtube.com/live2/STREAM_KEY
+  #  - /home/ghostream/lives/%name/live-%Y-%m-%d-%H-%M-%S.flv
 
 ## Prometheus monitoring ##
 # Expose a monitoring endpoint for Prometheus
