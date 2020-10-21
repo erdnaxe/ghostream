@@ -17,10 +17,10 @@ export class ViewerCounter {
      * @param {Number} updatePeriod 
      */
     regularUpdate(updatePeriod) {
-        setInterval(this._refreshViewersCounter, updatePeriod);
+        setInterval(() => this.refreshViewersCounter(), updatePeriod);
     }
 
-    _refreshViewersCounter() {
+    refreshViewersCounter() {
         fetch(this.url)
             .then(response => response.json())
             .then((data) => this.element.innerText = data.ConnectedViewers)

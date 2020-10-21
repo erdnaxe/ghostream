@@ -23,11 +23,11 @@ export class GsWebSocket {
         });
         this.socket.addEventListener("close", () => {
             console.log("WebSocket closed, retrying connection in 1s...");
-            setTimeout(this._open, 1000);
+            setTimeout(() => this._open(), 1000);
         });
         this.socket.addEventListener("error", () => {
             console.log("WebSocket errored, retrying connection in 1s...");
-            setTimeout(this._open, 1000);
+            setTimeout(() => this._open(), 1000);
         });
     }
 

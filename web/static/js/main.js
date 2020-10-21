@@ -58,6 +58,7 @@ export function initViewerPage(stream, stunServers, viewersCounterRefreshPeriod)
         stream,
     );
     viewerCounter.regularUpdate(viewersCounterRefreshPeriod);
+    viewerCounter.refreshViewersCounter();
 
     // Side widget toggler
     const sideWidgetToggle = document.getElementById("sideWidgetToggle");

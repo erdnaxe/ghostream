@@ -17,8 +17,8 @@ export class GsWebRTC {
         this.pc.addTransceiver("audio", { "direction": "sendrecv" });
 
         // Configure events
-        this.pc.oniceconnectionstatechange = this._onConnectionStateChange;
-        this.pc.ontrack = this._onTrack;
+        this.pc.oniceconnectionstatechange = () => this._onConnectionStateChange();
+        this.pc.ontrack = (e) => this._onTrack(e);
     }
 
     /**
