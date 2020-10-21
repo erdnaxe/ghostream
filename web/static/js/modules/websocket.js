@@ -13,7 +13,6 @@ export class GsWebSocket {
 
     /**
      * Open websocket.
-     * 
      * @param {Function} openCallback Function called when connection is established. 
      * @param {Function} closeCallback Function called when connection is lost. 
      */
@@ -34,19 +33,31 @@ export class GsWebSocket {
 
     /**
      * Exchange WebRTC session description with server.
-     * 
-     * @param {string} data JSON formated data 
-     * @param {Function} receiveCallback Function called when data is received
+     * @param {SessionDescription} localDescription WebRTC local SDP
+     * @param {string} stream Name of the stream
+     * @param {string} quality Requested quality 
      */
-    exchangeDescription(data, receiveCallback) {
+    sendDescription(localDescription, stream, quality) {
         if (this.socket.readyState !== 1) {
             console.log("WebSocket not ready to send data");
             return;
         }
-        this.socket.send(data);
+        this.socket.send(JSON.stringify({
+            "webRtcSdp": localDescription,
+            "stream": stream,
+            "quality": quality
+        }));
+    }
+
+    /**
+     * Set callback function on new session description.
+     * @param {Function} callback Function called when data is received
+     */
+    onDescription(callback) {
         this.socket.addEventListener("message", (event) => {
+            // FIXME: json to session description
             console.log("Message from server ", event.data);
-            receiveCallback(event);
+            callback(event.data);
         });
     }
 }

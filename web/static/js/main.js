@@ -1,5 +1,6 @@
 import { GsWebSocket } from "./modules/websocket.js";
 import { ViewerCounter } from "./modules/viewerCounter.js";
+import { GsWebRTC } from "./modules/webrtc.js";
 
 /**
  * Initialize viewer page
@@ -17,7 +18,17 @@ export function initViewerPage(stream, stunServers, viewersCounterRefreshPeriod)
     s.open();
 
     // Create WebRTC
-    // FIXME startPeerConnection() with stunServers
+    const c = new GsWebRTC(
+        stunServers,
+        document.getElementById("connectionIndicator"),
+    );
+    c.createOffer();
+    c.onICECandidate(localDescription => {
+        s.sendDescription(localDescription, stream, quality);
+    });
+    s.onDescription(data => {
+        c.setRemoteDescription(data);
+    });
 
     // Register keyboard events
     const viewer = document.getElementById("viewer");
