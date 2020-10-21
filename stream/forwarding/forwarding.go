@@ -62,7 +62,7 @@ func forward(streamName string, q *messaging.Quality, fwdCfg []string) {
 	q.Register(output)
 
 	// Launch FFMPEG instance
-	params := []string{"-hide_banner", "-loglevel", "error", "-re", "-i", "pipe:0"}
+	params := []string{"-hide_banner", "-loglevel", "error", "-i", "pipe:0"}
 	for _, url := range fwdCfg {
 		// If the url should be date-formatted, replace special characters with the current time information
 		now := time.Now()
