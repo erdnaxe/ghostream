@@ -39,7 +39,8 @@ export class GsWebSocket {
      */
     sendDescription(localDescription, stream, quality) {
         if (this.socket.readyState !== 1) {
-            console.log("WebSocket not ready to send data");
+            console.log("Waiting for WebSocket to send data...");
+            setTimeout(() => this.sendDescription(localDescription, stream, quality), 100);
             return;
         }
         this.socket.send(JSON.stringify({
