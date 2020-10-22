@@ -10,28 +10,28 @@ import { GsWebRTC } from "./modules/webrtc.js";
  * @param {Number} viewersCounterRefreshPeriod 
  */
 export function initViewerPage(stream, stunServers, viewersCounterRefreshPeriod) {
+    // Viewer element
+    const viewer = document.getElementById("viewer");
+
     // Default quality
     let quality = "source";
 
-    // Create WebSocket
-    const s = new GsWebSocket();
-    s.open();
-
-    // Create WebRTC
-    const c = new GsWebRTC(
+    // Create WebSocket and WebRTC
+    const websocket = new GsWebSocket();
+    const webrtc = new GsWebRTC(
         stunServers,
+        viewer,
         document.getElementById("connectionIndicator"),
     );
-    c.createOffer();
-    c.onICECandidate(localDescription => {
-        s.sendDescription(localDescription, stream, quality);
+    webrtc.createOffer();
+    webrtc.onICECandidate(localDescription => {
+        websocket.sendLocalDescription(localDescription, stream, quality);
     });
-    s.onDescription(sdp => {
-        c.setRemoteDescription(sdp);
+    websocket.onRemoteDescription(sdp => {
+        webrtc.setRemoteDescription(sdp);
     });
 
     // Register keyboard events
-    const viewer = document.getElementById("viewer");
     window.addEventListener("keydown", (event) => {
         switch (event.key) {
         case "f":

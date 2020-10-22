@@ -3,10 +3,12 @@
  */
 export class GsWebRTC {
     /**
-     * @param {list} stunServers 
-     * @param {HTMLElement} connectionIndicator 
+     * @param {list} stunServers STUN servers
+     * @param {HTMLElement} viewer Video HTML element
+     * @param {HTMLElement} connectionIndicator Connection indicator element
      */
-    constructor(stunServers, connectionIndicator) {
+    constructor(stunServers, viewer, connectionIndicator) {
+        this.viewer = viewer;
         this.connectionIndicator = connectionIndicator;
         this.pc = new RTCPeerConnection({
             iceServers: [{ urls: stunServers }]
@@ -26,7 +28,7 @@ export class GsWebRTC {
      * If connection closed or failed, try to reconnect.
      */
     _onConnectionStateChange() {
-        console.log("ICE connection state changed to " + this.pc.iceConnectionState);
+        console.log("[WebRTC] ICE connection state changed to " + this.pc.iceConnectionState);
         switch (this.pc.iceConnectionState) {
         case "disconnected":
             this.connectionIndicator.style.fill = "#dc3545";
@@ -39,7 +41,7 @@ export class GsWebRTC {
             break;
         case "closed":
         case "failed":
-            console.log("Connection closed, restarting...");
+            console.log("[WebRTC] Connection closed, restarting...");
             /*peerConnection.close();
                     peerConnection = null;
                     setTimeout(startPeerConnection, 1000);*/
@@ -52,10 +54,9 @@ export class GsWebRTC {
      * @param {Event} event 
      */
     _onTrack(event) {
-        console.log(`New ${event.track.kind} track`);
+        console.log(`[WebRTC] New ${event.track.kind} track`);
         if (event.track.kind === "video") {
-            const viewer = document.getElementById("viewer");
-            viewer.srcObject = event.streams[0];
+            this.viewer.srcObject = event.streams[0];
         }
     }
 
@@ -66,7 +67,7 @@ export class GsWebRTC {
     createOffer() {
         this.pc.createOffer().then(offer => {
             this.pc.setLocalDescription(offer);
-            console.log("WebRTC offer created");
+            console.log("[WebRTC] WebRTC offer created");
         }).catch(console.log);
     }
 
@@ -81,7 +82,7 @@ export class GsWebRTC {
         this.pc.onicecandidate = event => {
             if (event.candidate === null) {
                 // Send offer to server
-                console.log("Sending session description to server");
+                console.log("[WebRTC] Sending session description to server");
                 sendFunction(this.pc.localDescription);
             }
         };
