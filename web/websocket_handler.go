@@ -16,9 +16,9 @@ var upgrader = websocket.Upgrader{
 
 // clientDescription is sent by new client
 type clientDescription struct {
-	webRtcSdp webrtc.SessionDescription
-	stream    string
-	quality   string
+	WebRtcSdp webrtc.SessionDescription
+	Stream    string
+	Quality   string
 }
 
 // websocketHandler exchanges WebRTC SDP and viewer count
@@ -40,22 +40,22 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Get requested stream
-		stream, err := streams.Get(c.stream)
+		stream, err := streams.Get(c.Stream)
 		if err != nil {
-			log.Printf("Stream not found: %s", c.stream)
+			log.Printf("Stream not found: %s", c.Stream)
 			return
 		}
 
 		// Get requested quality
-		q, err := stream.GetQuality(c.quality)
+		q, err := stream.GetQuality(c.Quality)
 		if err != nil {
-			log.Printf("Quality not found: %s", c.quality)
+			log.Printf("Quality not found: %s", c.Quality)
 			return
 		}
 
 		// Exchange session descriptions with WebRTC stream server
 		// FIXME: Add trickle ICE support
-		q.WebRtcRemoteSdp <- c.webRtcSdp
+		q.WebRtcRemoteSdp <- c.WebRtcSdp
 		localDescription := <-q.WebRtcLocalSdp
 
 		// Send new local description
