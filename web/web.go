@@ -88,6 +88,7 @@ func Serve(s *messaging.Streams, c *Options) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", viewerHandler)
 	mux.Handle("/static/", staticHandler())
+	mux.HandleFunc("/_ws/", websocketHandler)
 	mux.HandleFunc("/_stats/", statisticsHandler)
 	log.Printf("HTTP server listening on %s", cfg.ListenAddress)
 	log.Fatal(http.ListenAndServe(cfg.ListenAddress, mux))

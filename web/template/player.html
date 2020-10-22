@@ -34,21 +34,17 @@
   {{end}}
 </div>
 
-{{if .WidgetURL}}<script src="/static/js/sideWidget.js"></script>{{end}}
-<script src="/static/js/videoQuality.js"></script>
-<script src="/static/js/viewer.js"></script>
-<script src="/static/js/viewersCounter.js"></script>
-<script>
+<script type="module">
+  import { initViewerPage } from "/static/js/viewer.js";
+
+  // Some variables that need to be fixed by web page
+  const viewersCounterRefreshPeriod = Number("{{.Cfg.ViewersCounterRefreshPeriod}}");
+  const stream = "{{.Path}}";
   const stunServers = [
     {{range $id, $value := .Cfg.STUNServers}}
-    '{{$value}}',
+    "{{$value}}",
     {{end}}
   ]
-  startPeerConnection()
-
-  // Wait a bit before pulling viewers counter for the first time
-  setTimeout(() => {
-      refreshViewersCounter("{{.Path}}", {{.Cfg.ViewersCounterRefreshPeriod}})
-  }, 1000)
+  initViewerPage(stream, stunServers, viewersCounterRefreshPeriod)
 </script>
 {{end}}
