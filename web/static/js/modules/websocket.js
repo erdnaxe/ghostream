@@ -40,7 +40,7 @@ export class GsWebSocket {
             setTimeout(() => this.sendDescription(localDescription, stream, quality), 100);
             return;
         }
-        console.log("[WebSocket] Sending WebRTC local session description");
+        console.log(`[WebSocket] Sending WebRTC local session description for stream ${stream} quality ${quality}`);
         this.socket.send(JSON.stringify({
             "webRtcSdp": localDescription,
             "stream": stream,

@@ -36,21 +36,21 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 		err = conn.ReadJSON(c)
 		if err != nil {
 			log.Printf("Failed to receive client description: %s", err)
-			return
+			continue
 		}
 
 		// Get requested stream
 		stream, err := streams.Get(c.Stream)
 		if err != nil {
 			log.Printf("Stream not found: %s", c.Stream)
-			return
+			continue
 		}
 
 		// Get requested quality
 		q, err := stream.GetQuality(c.Quality)
 		if err != nil {
 			log.Printf("Quality not found: %s", c.Quality)
-			return
+			continue
 		}
 
 		// Exchange session descriptions with WebRTC stream server
@@ -61,7 +61,7 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 		// Send new local description
 		if err := conn.WriteJSON(localDescription); err != nil {
 			log.Println(err)
-			return
+			continue
 		}
 	}
 }

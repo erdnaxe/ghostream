@@ -81,7 +81,7 @@ export function initViewerPage(stream, stunServers, viewersCounterRefreshPeriod)
         quality = event.target.value;
         console.log(`Stream quality changed to ${quality}`);
 
-        // Restart the connection with a new quality
-        // FIXME
+        // Restart WebRTC negociation
+        webrtc.createOffer();
     });
 }
