@@ -90,9 +90,9 @@ export class GsWebRTC {
     /**
      * Set WebRTC remote description
      * After that, the connection will be established and ontrack will be fired.
-     * @param {*} data Session description data
+     * @param {RTCSessionDescription} sdp Session description data
      */
-    setRemoteDescription(data) {
-        this.pc.setRemoteDescription(new RTCSessionDescription(data));
+    setRemoteDescription(sdp) {
+        this.pc.setRemoteDescription(sdp);
     }
 }

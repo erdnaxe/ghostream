@@ -26,8 +26,8 @@ export function initViewerPage(stream, stunServers, viewersCounterRefreshPeriod)
     c.onICECandidate(localDescription => {
         s.sendDescription(localDescription, stream, quality);
     });
-    s.onDescription(data => {
-        c.setRemoteDescription(data);
+    s.onDescription(sdp => {
+        c.setRemoteDescription(sdp);
     });
 
     // Register keyboard events

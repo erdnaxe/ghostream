@@ -55,9 +55,9 @@ export class GsWebSocket {
      */
     onDescription(callback) {
         this.socket.addEventListener("message", (event) => {
-            // FIXME: json to session description
             console.log("Message from server ", event.data);
-            callback(event.data);
+            const sdp = new RTCSessionDescription(JSON.parse(event.data));
+            callback(sdp);
         });
     }
 }
