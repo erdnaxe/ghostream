@@ -37,7 +37,7 @@ export class GsWebSocket {
     sendLocalDescription(localDescription, stream, quality) {
         if (this.socket.readyState !== 1) {
             console.log("[WebSocket] Waiting for connection to send data...");
-            setTimeout(() => this.sendDescription(localDescription, stream, quality), 100);
+            setTimeout(() => this.sendLocalDescription(localDescription, stream, quality), 100);
             return;
         }
         console.log(`[WebSocket] Sending WebRTC local session description for stream ${stream} quality ${quality}`);
