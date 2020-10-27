@@ -75,7 +75,7 @@ func newPeerHandler(name string, localSdpChan chan webrtc.SessionDescription, re
 	}
 
 	// Create video track
-	codec, payloadType := getPayloadType(mediaEngine, webrtc.RTPCodecTypeVideo, "VP8")
+	codec, payloadType := getPayloadType(mediaEngine, webrtc.RTPCodecTypeVideo, "H264")
 	videoTrack, err := webrtc.NewTrack(payloadType, rand.Uint32(), "video", "pion", codec)
 	if err != nil {
 		log.Println("Failed to create new video track", err)

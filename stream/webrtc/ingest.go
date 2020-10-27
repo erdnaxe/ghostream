@@ -18,12 +18,12 @@ func ingest(name string, q *messaging.Quality) {
 	q.Register(videoInput)
 
 	// Open a UDP Listener for RTP Packets on port 5004
-	videoListener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1"), Port: 5004})
+	audioListener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1"), Port: 5004})
 	if err != nil {
 		log.Printf("Faited to open UDP listener %s", err)
 		return
 	}
-	audioListener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1"), Port: 5005})
+	videoListener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1"), Port: 5005})
 	if err != nil {
 		log.Printf("Faited to open UDP listener %s", err)
 		return
@@ -117,11 +117,11 @@ func ingest(name string, q *messaging.Quality) {
 
 func startFFmpeg(in <-chan []byte) (ffmpeg *exec.Cmd, err error) {
 	ffmpegArgs := []string{"-hide_banner", "-loglevel", "error", "-i", "pipe:0",
-		"-an", "-vcodec", "libvpx", "-crf", "10", "-cpu-used", "5", "-b:v", "6000k", "-maxrate", "8000k", "-bufsize", "12000k", // TODO Change bitrate when changing quality
-		"-qmin", "10", "-qmax", "42", "-threads", "4", "-deadline", "1", "-error-resilient", "1",
-		"-auto-alt-ref", "1",
+		// Audio
+		"-vn", "-c:a", "libopus", "-b:a", "160k",
 		"-f", "rtp", "rtp://127.0.0.1:5004",
-		"-vn", "-acodec", "libopus", "-cpu-used", "5", "-deadline", "1", "-qmin", "10", "-qmax", "42", "-error-resilient", "1", "-auto-alt-ref", "1",
+		// Source
+		"-an", "-c:v", "copy", "-b:v", "3000k", "-maxrate", "5000k", "-bufsize", "5000k",
 		"-f", "rtp", "rtp://127.0.0.1:5005"}
 	ffmpeg = exec.Command("ffmpeg", ffmpegArgs...)
 

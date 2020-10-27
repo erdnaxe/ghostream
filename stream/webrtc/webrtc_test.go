@@ -26,7 +26,7 @@ func TestServe(t *testing.T) {
 	peerConnection, _ := api.NewPeerConnection(webrtc.Configuration{})
 
 	// Create video track
-	codec, payloadType := getPayloadType(mediaEngine, webrtc.RTPCodecTypeVideo, "VP8")
+	codec, payloadType := getPayloadType(mediaEngine, webrtc.RTPCodecTypeVideo, "H264")
 	videoTrack, err := webrtc.NewTrack(payloadType, rand.Uint32(), "video", "pion", codec)
 	if err != nil {
 		t.Error("Failed to create new video track", err)
