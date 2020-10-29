@@ -21,11 +21,7 @@
   <ul>
     <li>
       <b>Serveur :</b>
-      <code>srt://{{.Cfg.Hostname}}:{{.Cfg.SRTServerPort}}</code>,
-    </li>
-    <li>
-      <b>Clé de stream :</b>
-      <code>IDENTIFIANT:MOT_DE_PASSE</code>
+      <code>srt://{{.Cfg.Hostname}}:{{.Cfg.SRTServerPort}}?IDENTIFIANT:MOT_DE_PASS</code>,
       avec <code>IDENTIFIANT</code> et <code>MOT_DE_PASSE</code>
       vos identifiants.
     </li>
@@ -50,6 +46,81 @@
       -acodec aac -strict -2 -f flv
       srt://{{.Cfg.Hostname}}:{{.Cfg.SRTServerPort}}?streamid=IDENTIFIANT:MOT_DE_PASSE
     </code>
+  </p>
+
+  <h2>Comment lire un flux depuis un lecteur externe ?</h2>
+  <p>
+    À l'heure actuelle, la plupart des lecteurs vidéos ne supportent
+    pas le protocole SRT, ou le supportent mal. Un travail est en
+    cours pour les rendre un maximum compatibles. Liste non exhaustive
+    des lecteurs vidéos testés :
+  </p>
+
+  <h3>FFPlay</h3>
+  <p>
+    Si FFMpeg est installé sur votre machine, il est accompagné d'un
+    lecteur vidéo nommé <code>ffplay</code>. Si FFMpeg est compilé
+    avec le support de SRT (c'est le cas sur la plupart des distributions,
+    sauf cas ci-dessous), il vous suffira d'exécuter :
+  </p>
+
+  <p>
+    <code>
+      ffplay -fflags nobuffer srt://{{.Cfg.Hostname}}:{{.Cfg.SRTServerPort}}?streamid=IDENTIFIANT
+    </code>
+  </p>
+
+  <h3>MPV</h3>
+
+  <p>
+    MPV supporte officiellement SRT depuis le 16 octobre 2020.
+    Néanmoins, la version stable de MPV est beaucoup plus vieille.
+    Vous devez alors utiliser une version de développement pour
+    pouvoir lire un flux SRT depuis MPV. L'installation se fait
+    depuis <a href="https://mpv.io/installation/"> cette page</a>.
+    Sous Arch Linux, il vous suffit de récupérer le paquet
+    <code>mpv-git</code> dans l'AUR. Pour lire le flux, il suffit
+    d'exécuter :
+  </p>
+
+  <p>
+    <code>
+      mpv srt://{{.Cfg.Hostname}}:{{.Cfg.SRTServerPort}}?streamid=IDENTIFIANT
+    </code>
+  </p>
+
+  <h3>VLC Media Player</h3>
+
+  <p>
+    Bien que VLC supporte officiellement le protocole SRT,
+    toutes les options ne sont pas encore implémentées,
+    notamment l'option pour choisir son stream.
+    <a href="https://patches.videolan.org/patch/30299/">Un patch</a>
+    a été soumis et est en attente d'acceptation.
+    Une fois le patch accepté, il sera appliqué dans les versions
+    de développement de VLC. Sous Arch Linux, il suffit de récupérer
+    le paquet <code>vlc-git</code> de l'AUR. Avec un VLC à jour,
+    il suffit d'exécuter :
+  </p>
+
+  <p>
+    <code>
+      vlc srt://{{.Cfg.Hostname}}:{{.Cfg.SRTServerPort}}?streamid=IDENTIFIANT
+    </code>
+  </p>
+
+  <p>
+    Ou bien d'aller dans Média -> Ouvrir un flux réseau et d'entrer l'URL
+    <code>srt://{{.Cfg.Hostname}}:{{.Cfg.SRTServerPort}}?streamid=IDENTIFIANT</code>.
+  </p>
+
+  <h3>Le protocole n'existe pas ou n'est pas supporté.</h3>
+  <p>
+    La technologie SRT est très récente et n'est pas supportée par
+    les dépôts stables. Ainsi, si vous avez Ubuntu &le; 20.04 ou
+    Debian &le; Buster, vous ne pourrez pas utiliser de lecteur vidéo
+    ni même diffuser avec votre machine. Vous devrez vous mettre à
+    jour vers Ubuntu 20.10 ou Debian Bullseye.
   </p>
 
   <h2>Mentions légales</h2>
