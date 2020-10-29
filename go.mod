@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/go-ldap/ldap/v3 v3.2.3
 	github.com/gorilla/websocket v1.4.0
-	github.com/haivision/srtgo v0.0.0-20200731151239-e00427ae473a
+	github.com/haivision/srtgo v0.0.0-20201025191851-67964e8f497a
 	github.com/markbates/pkger v0.17.1
 	github.com/pion/rtp v1.6.0
 	github.com/pion/webrtc/v3 v3.0.0-beta.5

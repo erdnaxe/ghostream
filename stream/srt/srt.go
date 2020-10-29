@@ -1,9 +1,6 @@
 // Package srt serves a SRT server
 package srt
 
-// #include <srt/srt.h>
-import "C"
-
 import (
 	"log"
 	"net"
@@ -62,7 +59,7 @@ func Serve(streams *messaging.Streams, authBackend auth.Backend, cfg *Options) {
 
 	for {
 		// Wait for new connection
-		s, err := sck.Accept()
+		s, _, err := sck.Accept()
 		if err != nil {
 			// Something wrong happened
 			log.Println(err)
@@ -73,7 +70,7 @@ func Serve(streams *messaging.Streams, authBackend auth.Backend, cfg *Options) {
 		// Without this, the SRT buffer might get full before reading it
 
 		// streamid can be "name:password" for streamer or "name" for viewer
-		streamID, err := s.GetSockOptString(C.SRTO_STREAMID)
+		streamID, err := s.GetSockOptString(srtgo.SRTO_STREAMID)
 		if err != nil {
 			log.Print("Failed to get socket streamid")
 			continue
