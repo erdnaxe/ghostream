@@ -3,7 +3,9 @@ package webrtc
 
 import (
 	"bufio"
+	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"os/exec"
 
@@ -17,20 +19,23 @@ func ingest(name string, q *messaging.Quality) {
 	videoInput := make(chan []byte, 1024)
 	q.Register(videoInput)
 
-	// Open a UDP Listener for RTP Packets on port 5004
-	audioListener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1"), Port: 5004})
+	// FIXME Mux into RTP without having multiple UDP listeners
+	firstPort := int(rand.Int31n(63535)) + 2000
+
+	// Open UDP listeners for RTP Packets
+	audioListener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1"), Port: firstPort})
 	if err != nil {
 		log.Printf("Faited to open UDP listener %s", err)
 		return
 	}
-	videoListener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1"), Port: 5005})
+	videoListener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1"), Port: firstPort + 1})
 	if err != nil {
 		log.Printf("Faited to open UDP listener %s", err)
 		return
 	}
 
 	// Start ffmpag to convert videoInput to video and audio UDP
-	ffmpeg, err := startFFmpeg(videoInput)
+	ffmpeg, err := startFFmpeg(videoInput, firstPort)
 	if err != nil {
 		log.Printf("Error while starting ffmpeg: %s", err)
 		return
@@ -115,14 +120,14 @@ func ingest(name string, q *messaging.Quality) {
 	q.Unregister(videoInput)
 }
 
-func startFFmpeg(in <-chan []byte) (ffmpeg *exec.Cmd, err error) {
+func startFFmpeg(in <-chan []byte, listeningPort int) (ffmpeg *exec.Cmd, err error) {
 	ffmpegArgs := []string{"-hide_banner", "-loglevel", "error", "-i", "pipe:0",
 		// Audio
 		"-vn", "-c:a", "libopus", "-b:a", "160k",
-		"-f", "rtp", "rtp://127.0.0.1:5004",
+		"-f", "rtp", fmt.Sprintf("rtp://127.0.0.1:%d", listeningPort),
 		// Source
 		"-an", "-c:v", "copy", "-b:v", "3000k", "-maxrate", "5000k", "-bufsize", "5000k",
-		"-f", "rtp", "rtp://127.0.0.1:5005"}
+		"-f", "rtp", fmt.Sprintf("rtp://127.0.0.1:%d", listeningPort+1)}
 	ffmpeg = exec.Command("ffmpeg", ffmpegArgs...)
 
 	// Handle errors output
