@@ -117,7 +117,7 @@ func Load() (*Config, error) {
 
 	// If no credentials register, add demo account with password "demo"
 	if len(cfg.Auth.Basic.Credentials) < 1 {
-		cfg.Auth.Basic.Credentials["demo"] = "$2b$15$LRnG3eIHFlYIguTxZOLH7eHwbQC/vqjnLq6nDFiHSUDKIU.f5/1H6"
+		cfg.Auth.Basic.Credentials["demo"] = "$2b$10$xuU7XFwmRX2CMgdSaA8rM.4Y8.BtRNzhUedwN0G8tCegDRNUERTCS"
 	}
 
 	return cfg, nil

@@ -6,7 +6,7 @@ import (
 
 func TestBasicLogin(t *testing.T) {
 	basicCredentials := make(map[string]string)
-	basicCredentials["demo"] = "$2b$15$LRnG3eIHFlYIguTxZOLH7eHwbQC/vqjnLq6nDFiHSUDKIU.f5/1H6"
+	basicCredentials["demo"] = "$2b$10$xuU7XFwmRX2CMgdSaA8rM.4Y8.BtRNzhUedwN0G8tCegDRNUERTCS"
 
 	// Test good credentials
 	backend, _ := New(&Options{Credentials: basicCredentials})
