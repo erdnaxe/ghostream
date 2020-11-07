@@ -123,10 +123,10 @@ func ingest(name string, q *messaging.Quality) {
 func startFFmpeg(in <-chan []byte, listeningPort int) (ffmpeg *exec.Cmd, err error) {
 	ffmpegArgs := []string{"-hide_banner", "-loglevel", "error", "-i", "pipe:0",
 		// Audio
-		"-vn", "-c:a", "libopus", "-b:a", "160k",
+		"-vn", "-c:a", "libopus", "-b:a", "96k",
 		"-f", "rtp", fmt.Sprintf("rtp://127.0.0.1:%d", listeningPort),
 		// Source
-		"-an", "-c:v", "copy", "-b:v", "3000k", "-maxrate", "5000k", "-bufsize", "5000k",
+		"-an", "-c:v", "copy",
 		"-f", "rtp", fmt.Sprintf("rtp://127.0.0.1:%d", listeningPort+1)}
 	ffmpeg = exec.Command("ffmpeg", ffmpegArgs...)
 
