@@ -36,7 +36,8 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 		err = conn.ReadJSON(c)
 		if err != nil {
 			log.Printf("Failed to receive client description: %s", err)
-			continue
+			_ = conn.Close()
+			return
 		}
 
 		// Get requested stream
