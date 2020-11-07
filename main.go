@@ -7,6 +7,7 @@ package main
 import (
 	"log"
 
+	"github.com/pkg/profile"
 	"gitlab.crans.org/nounous/ghostream/auth"
 	"gitlab.crans.org/nounous/ghostream/internal/config"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
@@ -20,6 +21,9 @@ import (
 )
 
 func main() {
+	// TODO Don't always profile if not needed
+	defer profile.Start().Stop()
+
 	// Configure logger
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 
