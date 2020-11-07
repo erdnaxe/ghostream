@@ -30,7 +30,7 @@ services:
     restart: always
     ports:
       - 9710:9710/udp
-      - 10000-10005:10000-10005/udp
+      - 10000-11000:10000-11000/udp
     volumes:
       - ./ghostream_data:/etc/ghostream:ro
     labels:

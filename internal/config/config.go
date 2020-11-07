@@ -78,7 +78,7 @@ func New() *Config {
 		},
 		WebRTC: webrtc.Options{
 			Enabled:     true,
-			MaxPortUDP:  10005,
+			MaxPortUDP:  11000,
 			MinPortUDP:  10000,
 			STUNServers: []string{"stun:stun.l.google.com:19302"},
 		},

@@ -170,7 +170,7 @@ webrtc:
   # This range must be opened in your firewall.
   #
   #minPortUDP: 10000
-  #maxPortUDP: 10005
+  #maxPortUDP: 11000
 
   # STUN servers, you should host your own Coturn instance
   #
