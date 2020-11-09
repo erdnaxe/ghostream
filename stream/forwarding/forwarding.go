@@ -40,6 +40,7 @@ func Serve(streams *messaging.Streams, cfg Options) {
 		stream, err := streams.Get(name)
 		if err != nil {
 			log.Printf("Failed to get stream '%s'", name)
+			return
 		}
 
 		// Get specific quality
