@@ -88,17 +88,17 @@ export function initViewerPage(stream, viewersCounterRefreshPeriod, posterUrl) {
             case "f":
                 // F key put player in fullscreen
                 if (document.fullscreenElement !== null) {
-                    document.exitFullscreen();
+                    document.exitFullscreen()
                 } else {
-                    player.requestFullscreen();
+                    document.getElementsByTagName("video")[0].requestFullscreen()
                 }
                 break;
             case "m":
             case " ":
                 // M and space key mute player
-                player.setMute(!player.getMute());
-                event.preventDefault();
-                player.play();
+                player.setMute(!player.getMute())
+                event.preventDefault()
+                player.play()
                 break;
         }
     });
