@@ -34,13 +34,17 @@
   {{end}}
 </div>
 
-
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-<script src="/static/ovenplayer/ovenplayer.js"></script>
-<script src="/static/js/ovenplayer.js"></script>
+{{if .OMECfg.Enabled}}
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="/static/ovenplayer/ovenplayer.js"></script>
+  <script src="/static/js/ovenplayer.js"></script>
+{{end}}
 <script type="module">
-  // import { initViewerPage } from "/static/js/viewer.js";
-  import { initViewerPage } from "/static/js/ovenplayer.js";
+  {{if .OMECfg.Enabled}}
+    import { initViewerPage } from "/static/js/ovenplayer.js";
+  {{else}}
+    import { initViewerPage } from "/static/js/viewer.js";
+  {{end}}
 
   // Some variables that need to be fixed by web page
   const viewersCounterRefreshPeriod = Number("{{.Cfg.ViewersCounterRefreshPeriod}}");
@@ -50,6 +54,10 @@
     "{{$value}}",
     {{end}}
   ]
-  initViewerPage(stream, {{.OMEApp}}, /*stunServers,*/ viewersCounterRefreshPeriod, {{.Cfg.PlayerPoster}})
+  {{if .OMECfg.Enabled}}
+    initViewerPage(stream, {{.OMECfg.App}}, viewersCounterRefreshPeriod, {{.Cfg.PlayerPoster}})
+  {{else}}
+    initViewerPage(stream, stunServers, viewersCounterRefreshPeriod)
+  {{end}}
 </script>
 {{end}}

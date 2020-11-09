@@ -13,6 +13,7 @@ import (
 
 	"github.com/markbates/pkger"
 	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
+	"gitlab.crans.org/nounous/ghostream/stream/ovenmediaengine"
 	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
 )
 
@@ -61,8 +62,8 @@ func viewerHandler(w http.ResponseWriter, r *http.Request) {
 		Cfg       *Options
 		Path      string
 		WidgetURL string
-		OMEApp    string
-	}{Path: path, Cfg: cfg, WidgetURL: "", OMEApp: omeCfg.App}
+		OMECfg    *ovenmediaengine.Options
+	}{Path: path, Cfg: cfg, WidgetURL: "", OMECfg: omeCfg}
 
 	// Load widget is user does not disable it with ?nowidget
 	if _, ok := r.URL.Query()["nowidget"]; !ok {
