@@ -40,6 +40,7 @@ func Serve(streams *messaging.Streams, cfg Options) {
 		stream, err := streams.Get(name)
 		if err != nil {
 			log.Printf("Failed to get stream '%s'", name)
+			return
 		}
 
 		// Get specific quality
@@ -74,8 +75,8 @@ func forward(streamName string, q *messaging.Quality, fwdCfg []string) {
 		formattedURL = strings.ReplaceAll(formattedURL, "%S", fmt.Sprintf("%02d", now.Second()))
 		formattedURL = strings.ReplaceAll(formattedURL, "%name", streamName)
 
-		params = append(params, "-f", "flv", "-preset", "ultrafast", "-tune", "zerolatency",
-			"-c", "copy", formattedURL)
+		params = append(params, "-f", "flv",
+			"-c:v", "copy", "-c:a", "aac", "-b:a", "160k", "-ar", "44100", formattedURL)
 	}
 	ffmpeg := exec.Command("ffmpeg", params...)
 

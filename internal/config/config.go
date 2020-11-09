@@ -2,6 +2,7 @@
 package config
 
 import (
+	"gitlab.crans.org/nounous/ghostream/stream/ovenmediaengine"
 	"net"
 
 	"github.com/sherifabdlnaby/configuro"
@@ -23,6 +24,7 @@ type Config struct {
 	Auth       auth.Options
 	Forwarding forwarding.Options
 	Monitoring monitoring.Options
+	OME        ovenmediaengine.Options
 	Srt        srt.Options
 	Telnet     telnet.Options
 	Transcoder transcoder.Options
@@ -48,6 +50,11 @@ func New() *Config {
 		Monitoring: monitoring.Options{
 			Enabled:       true,
 			ListenAddress: ":2112",
+		},
+		OME: ovenmediaengine.Options{
+			Enabled: true,
+			URL:     "ovenmediaengine:1915",
+			App:     "play",
 		},
 		Srt: srt.Options{
 			Enabled:       true,
@@ -77,7 +84,7 @@ func New() *Config {
 			ViewersCounterRefreshPeriod: 20000,
 		},
 		WebRTC: webrtc.Options{
-			Enabled:     true,
+			Enabled:     false,
 			MaxPortUDP:  11000,
 			MinPortUDP:  10000,
 			STUNServers: []string{"stun:stun.l.google.com:19302"},

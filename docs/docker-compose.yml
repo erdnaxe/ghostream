@@ -26,11 +26,10 @@ services:
       - "--certificatesResolvers.mytlschallenge.acme.httpChallenge.entryPoint=web"
 
   ghostream:
-    build: ..
+    build: https://gitlab.crans.org/nounous/ghostream.git
     restart: always
     ports:
       - 9710:9710/udp
-      - 10000-11000:10000-11000/udp
     volumes:
       - ./ghostream_data:/etc/ghostream:ro
     labels:
@@ -40,3 +39,30 @@ services:
       - "traefik.http.routers.ghostream.tls.certresolver=mytlschallenge"
       - "traefik.http.routers.ghostream.service=ghostream"
       - "traefik.http.services.ghostream.loadbalancer.server.port=8080"
+
+  ovenmediaengine:
+    image: airensoft/ovenmediaengine:0.10.8
+    restart: always
+    ports:
+      # WebRTC ICE
+      - 10006-10010:10006-10010/udp
+    volumes:
+      - ./ovenmediaengine_data/conf/Server-docker.xml:/opt/ovenmediaengine/bin/origin_conf/Server.xml:ro
+    labels:
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+
+      - "traefik.http.routers.ovenmediaengine.rule=Host(`stream.example.com`) && PathPrefix(`/play/`)"
+      - "traefik.http.routers.ovenmediaengine.priority=101"
+      - "traefik.http.routers.ovenmediaengine.entrypoints=websecure"
+      - "traefik.http.routers.ovenmediaengine.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.ovenmediaengine.loadbalancer.server.port=3333"
+      - "traefik.http.routers.ovenmediaengine.service=ovenmediaengine"
+      - "traefik.http.routers.ovenmediaengine.middlewares=sslheader"
+
+      - "traefik.http.routers.ovenmediaengine-hls.rule=Host(`stream.example.com`) && Path(`/play/{app_name:.*}/{filename:.*}.{ext:(m3u8|mpd|ts)}`)"
+      - "traefik.http.routers.ovenmediaengine-hls.priority=102"
+      - "traefik.http.routers.ovenmediaengine-hls.entrypoints=websecure"
+      - "traefik.http.routers.ovenmediaengine-hls.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.ovenmediaengine-hls.loadbalancer.server.port=80"
+      - "traefik.http.routers.ovenmediaengine-hls.service=ovenmediaengine-hls"
+      - "traefik.http.routers.ovenmediaengine-hls.middlewares=sslheader"

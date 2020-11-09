@@ -6,14 +6,14 @@
 
     <!-- Links and settings under video -->
     <div class="controls">
-      <span class="control-quality">
+      <!-- <span class="control-quality">
         <select id="quality">
           <option value="source">Source</option>
           <option value="720p">720p</option>
           <option value="480p">480p</option>
           <option value="240p">240p</option>
         </select>  
-      </span>
+      </span> -->
       <code class="control-srt-link">srt://{{.Cfg.Hostname}}:{{.Cfg.SRTServerPort}}?streamid={{.Path}}</code>
       <span class="control-viewers" id="connected-people">0</span>
       <svg class="control-indicator" id="connectionIndicator" fill="#dc3545" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
@@ -34,8 +34,17 @@
   {{end}}
 </div>
 
+{{if .OMECfg.Enabled}}
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="/static/ovenplayer/ovenplayer.js"></script>
+  <script src="/static/js/ovenplayer.js"></script>
+{{end}}
 <script type="module">
-  import { initViewerPage } from "/static/js/viewer.js";
+  {{if .OMECfg.Enabled}}
+    import { initViewerPage } from "/static/js/ovenplayer.js";
+  {{else}}
+    import { initViewerPage } from "/static/js/viewer.js";
+  {{end}}
 
   // Some variables that need to be fixed by web page
   const viewersCounterRefreshPeriod = Number("{{.Cfg.ViewersCounterRefreshPeriod}}");
@@ -45,6 +54,10 @@
     "{{$value}}",
     {{end}}
   ]
-  initViewerPage(stream, stunServers, viewersCounterRefreshPeriod)
+  {{if .OMECfg.Enabled}}
+    initViewerPage(stream, {{.OMECfg.App}}, viewersCounterRefreshPeriod, {{.Cfg.PlayerPoster}})
+  {{else}}
+    initViewerPage(stream, stunServers, viewersCounterRefreshPeriod)
+  {{end}}
 </script>
 {{end}}

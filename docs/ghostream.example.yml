@@ -61,6 +61,19 @@ monitoring:
   # To limit access to only localhost, use 127.0.0.1:2112
   #listenAddress: :2112
 
+## OvenMediaEngine ##
+# Send the stream data to OvenMediaEngine to handle properly the web client
+ome:
+  # If you disable OME module, the laggy webrtc client will be used.
+  #
+  #enabled: true
+  #
+  # The URL where OME listens RTMP, without the prefix.
+  #url: ovenmediaengine:1915
+  #
+  # The OME app where OME is waiting for the data of Ghostream.
+  #app: play
+
 ## SRT server ##
 # The SRT server receive incoming stream and can also serve video to clients.
 srt:
@@ -164,7 +177,7 @@ web:
 webrtc:
   # If you disable webrtc module, the web client won't be able to play streams.
   #
-  #enabled: true
+  #enabled: false
 
   # UDP port range used to stream
   # This range must be opened in your firewall.

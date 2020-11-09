@@ -2,6 +2,7 @@
 package web
 
 import (
+	"gitlab.crans.org/nounous/ghostream/stream/ovenmediaengine"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -31,6 +32,8 @@ type Options struct {
 
 var (
 	cfg *Options
+
+	omeCfg *ovenmediaengine.Options
 
 	// Preload templates
 	templates *template.Template
@@ -70,9 +73,10 @@ func loadTemplates() error {
 }
 
 // Serve HTTP server
-func Serve(s *messaging.Streams, c *Options) {
+func Serve(s *messaging.Streams, c *Options, ome *ovenmediaengine.Options) {
 	streams = s
 	cfg = c
+	omeCfg = ome
 
 	if !cfg.Enabled {
 		// Web server is not enabled, ignore
