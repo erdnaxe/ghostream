@@ -34,8 +34,13 @@
   {{end}}
 </div>
 
-<!-- <script type="module">
-  import { initViewerPage } from "/static/js/viewer.js";
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script src="/static/ovenplayer/ovenplayer.js"></script>
+<script src="/static/js/ovenplayer.js"></script>
+<script type="module">
+  // import { initViewerPage } from "/static/js/viewer.js";
+  import { initViewerPage } from "/static/js/ovenplayer.js";
 
   // Some variables that need to be fixed by web page
   const viewersCounterRefreshPeriod = Number("{{.Cfg.ViewersCounterRefreshPeriod}}");
@@ -45,60 +50,6 @@
     "{{$value}}",
     {{end}}
   ]
-  initViewerPage(stream, stunServers, viewersCounterRefreshPeriod)
-</script> -->
-
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-<script src="/static/ovenplayer/ovenplayer.js"></script>
-<script>
-  {{if .WidgetURL}}
-    // Toggle chat
-    const chatToggle = document.getElementById("sideWidgetToggle")
-    chatToggle.addEventListener("click", function () {
-      const chatCol = document.getElementById("sideWidget")
-      if (chatCol.style.display === "none") {
-        chatCol.style.display = "block"
-        chatToggle.textContent = "»"
-      } else {
-        chatCol.style.display = "none"
-        chatToggle.textContent = "«"
-      }
-    })
-  {{end}}
-
-  // Create player
-  player = OvenPlayer.create("viewer", {
-    title: "Parlons-Maths",
-    image: "{{.Cfg.PlayerPoster}}",
-    autoStart: true,
-    mute: false,
-    expandFullScreenUI: true,
-    sources: [
-      {
-        "file": "wss://" + window.location.host + "/app/{{.Path}}",
-        "type": "webrtc",
-        "label": " WebRTC - Source"
-      },
-      {
-        "type": "hls",
-        "file": "https://" + window.location.host + "/app/{{.Path}}_bypass/playlist.m3u8",
-        "label": " HLS"
-      }
-    ]
-  });
-  player.on("error", function(error){
-    if (error.code === 501) {
-      // Change message
-      const errorMsg = document.getElementsByClassName("op-message-text")[0]
-      errorMsg.textContent = "Le stream semble inactif. Cette page se rafraîchit toutes les 30 secondes."
-
-      // Reload in 5s
-      setTimeout(function () {
-        player.load()
-      }, 30000)
-    } else {
-      console.log(error);
-    }
-  });
+  initViewerPage(stream, /*stunServers,*/ viewersCounterRefreshPeriod, {{.Cfg.PlayerPoster}})
 </script>
 {{end}}
