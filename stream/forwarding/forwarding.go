@@ -74,8 +74,8 @@ func forward(streamName string, q *messaging.Quality, fwdCfg []string) {
 		formattedURL = strings.ReplaceAll(formattedURL, "%S", fmt.Sprintf("%02d", now.Second()))
 		formattedURL = strings.ReplaceAll(formattedURL, "%name", streamName)
 
-		params = append(params, "-f", "flv", "-preset", "ultrafast", "-tune", "zerolatency",
-			"-c", "copy", formattedURL)
+		params = append(params, "-f", "flv",
+			"-c:v", "copy", "-c:a", "libopus", formattedURL)
 	}
 	ffmpeg := exec.Command("ffmpeg", params...)
 
