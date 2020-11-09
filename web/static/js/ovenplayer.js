@@ -78,4 +78,25 @@ export function initViewerPage(stream, viewersCounterRefreshPeriod, posterUrl) {
             console.log(error);
         }
     });
+
+    // Register keyboard events
+    window.addEventListener("keydown", (event) => {
+        switch (event.key) {
+            case "f":
+                // F key put player in fullscreen
+                if (document.fullscreenElement !== null) {
+                    document.exitFullscreen();
+                } else {
+                    player.requestFullscreen();
+                }
+                break;
+            case "m":
+            case " ":
+                // M and space key mute player
+                player.setMute(!player.getMute());
+                event.preventDefault();
+                player.play();
+                break;
+        }
+    });
 }
