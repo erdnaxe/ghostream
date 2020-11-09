@@ -75,7 +75,7 @@ func forward(streamName string, q *messaging.Quality, fwdCfg []string) {
 		formattedURL = strings.ReplaceAll(formattedURL, "%name", streamName)
 
 		params = append(params, "-f", "flv",
-			"-c:v", "copy", "-c:a", "libopus", formattedURL)
+			"-c:v", "copy", "-c:a", "aac", "-b:a", "160k,", "-ar", "44100", formattedURL)
 	}
 	ffmpeg := exec.Command("ffmpeg", params...)
 
