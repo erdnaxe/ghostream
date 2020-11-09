@@ -52,7 +52,16 @@ export function initViewerPage(stream, viewersCounterRefreshPeriod, posterUrl) {
             }
         ]
     });
+    player.on("stateChanged", function (prevstate, newstate) {
+        if (newstate === "loading") {
+            document.getElementById("connectionIndicator").style.fill = '#ffc107'
+        }
+        if (newstate === "ready" || newstate === "play") {
+            document.getElementById("connectionIndicator").style.fill = '#28a745'
+        }
+    })
     player.on("error", function (error) {
+        document.getElementById("connectionIndicator").style.fill = '#dc3545'
         if (error.code === 501 || error.code === 406) {
             // Clear messages
             const errorMsg = document.getElementsByClassName("op-message-text")[0]
