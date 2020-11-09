@@ -4,22 +4,24 @@ package web
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/markbates/pkger"
+	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
+	"gitlab.crans.org/nounous/ghostream/stream/ovenmediaengine"
+	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
 	"html/template"
 	"log"
 	"net"
 	"net/http"
 	"regexp"
 	"strings"
-
-	"github.com/markbates/pkger"
-	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
-	"gitlab.crans.org/nounous/ghostream/stream/ovenmediaengine"
-	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
+	"time"
 )
 
 var (
 	// Precompile regex
 	validPath = regexp.MustCompile("^/[a-z0-9@_-]*$")
+
+	connectedClients = make(map[string]map[string]int64)
 )
 
 // Handle site index and viewer pages
@@ -90,14 +92,33 @@ func staticHandler() http.Handler {
 }
 
 func statisticsHandler(w http.ResponseWriter, r *http.Request) {
+	// Retrieve stream name from URL
 	name := strings.SplitN(strings.Replace(r.URL.Path[7:], "/", "", -1), "@", 2)[0]
 	userCount := 0
+
+	// Clients have a unique generated identifier per session, that expires in 40 seconds.
+	// Each time the client connects to this page, the identifier is renewed.
+	// Yeah, that's not a good way to have stats, but it works...
+	if connectedClients[name] == nil {
+		connectedClients[name] = make(map[string]int64)
+	}
+	currentTime := time.Now().Unix()
+	if _, ok := r.URL.Query()["uid"]; ok {
+		uid := r.URL.Query()["uid"][0]
+		connectedClients[name][uid] = currentTime
+	}
+	for uid, oldTime := range connectedClients[name] {
+		if currentTime-oldTime > 40 {
+			delete(connectedClients, uid)
+		}
+	}
 
 	// Get requested stream
 	stream, err := streams.Get(name)
 	if err == nil {
 		userCount = stream.ClientCount()
 		userCount += webrtc.GetNumberConnectedSessions(name)
+		userCount += len(connectedClients[name])
 	}
 
 	// Display connected users statistics

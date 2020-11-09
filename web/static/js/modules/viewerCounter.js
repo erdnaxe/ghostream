@@ -9,6 +9,7 @@ export class ViewerCounter {
     constructor(element, streamName) {
         this.element = element;
         this.url = "/_stats/" + streamName;
+        this.uid = Math.floor(1e19 * Math.random()).toString(16);
     }
 
     /**
@@ -21,7 +22,7 @@ export class ViewerCounter {
     }
 
     refreshViewersCounter() {
-        fetch(this.url)
+        fetch(this.url + "?uid=" + this.uid)
             .then(response => response.json())
             .then((data) => this.element.innerText = data.ConnectedViewers)
             .catch(console.log);
