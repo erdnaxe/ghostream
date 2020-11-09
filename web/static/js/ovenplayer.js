@@ -52,12 +52,15 @@ export function initViewerPage(stream, viewersCounterRefreshPeriod, posterUrl) {
             }
         ]
     });
-    player.on("stateChanged", function (prevstate, newstate) {
-        if (newstate === "loading") {
+    player.on("stateChanged", function (data) {
+        if (data.newstate === "loading") {
             document.getElementById("connectionIndicator").style.fill = '#ffc107'
         }
-        if (newstate === "ready" || newstate === "play") {
+        if (data.newstate === "playing") {
             document.getElementById("connectionIndicator").style.fill = '#28a745'
+        }
+        if (data.newstate === "idle") {
+            document.getElementById("connectionIndicator").style.fill = '#dc3545'
         }
     })
     player.on("error", function (error) {
@@ -65,10 +68,10 @@ export function initViewerPage(stream, viewersCounterRefreshPeriod, posterUrl) {
         if (error.code === 501 || error.code === 406) {
             // Clear messages
             const errorMsg = document.getElementsByClassName("op-message-text")[0]
-            //errorMsg.textContent = ""
+            errorMsg.textContent = ""
 
             const warningIcon = document.getElementsByClassName("op-message-icon")[0]
-            //warningIcon.textContent = ""
+            warningIcon.textContent = ""
 
             // Reload in 30s
             setTimeout(function () {
@@ -99,6 +102,4 @@ export function initViewerPage(stream, viewersCounterRefreshPeriod, posterUrl) {
                 break;
         }
     });
-
-    return player;
 }
