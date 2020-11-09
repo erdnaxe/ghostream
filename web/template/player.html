@@ -50,6 +50,6 @@
     "{{$value}}",
     {{end}}
   ]
-  initViewerPage(stream, /*stunServers,*/ viewersCounterRefreshPeriod, {{.Cfg.PlayerPoster}})
+  let player = initViewerPage(stream, /*stunServers,*/ viewersCounterRefreshPeriod, {{.Cfg.PlayerPoster}})
 </script>
 {{end}}
