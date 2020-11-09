@@ -6,14 +6,14 @@
 
     <!-- Links and settings under video -->
     <div class="controls">
-      <span class="control-quality">
+      <!-- <span class="control-quality">
         <select id="quality">
           <option value="source">Source</option>
           <option value="720p">720p</option>
           <option value="480p">480p</option>
           <option value="240p">240p</option>
         </select>  
-      </span>
+      </span> -->
       <code class="control-srt-link">srt://{{.Cfg.Hostname}}:{{.Cfg.SRTServerPort}}?streamid={{.Path}}</code>
       <span class="control-viewers" id="connected-people">0</span>
       <svg class="control-indicator" id="connectionIndicator" fill="#dc3545" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
@@ -34,7 +34,7 @@
   {{end}}
 </div>
 
-<script type="module">
+<!-- <script type="module">
   import { initViewerPage } from "/static/js/viewer.js";
 
   // Some variables that need to be fixed by web page
@@ -46,5 +46,59 @@
     {{end}}
   ]
   initViewerPage(stream, stunServers, viewersCounterRefreshPeriod)
+</script> -->
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script src="/static/ovenplayer/ovenplayer.js"></script>
+<script>
+  {{if .WidgetURL}}
+    // Toggle chat
+    const chatToggle = document.getElementById("sideWidgetToggle")
+    chatToggle.addEventListener("click", function () {
+      const chatCol = document.getElementById("sideWidget")
+      if (chatCol.style.display === "none") {
+        chatCol.style.display = "block"
+        chatToggle.textContent = "»"
+      } else {
+        chatCol.style.display = "none"
+        chatToggle.textContent = "«"
+      }
+    })
+  {{end}}
+
+  // Create player
+  player = OvenPlayer.create("player", {
+    title: "Parlons-Maths",
+    image: "{{.Cfg.PlayerPoster}}",
+    autoStart: true,
+    mute: false,
+    expandFullScreenUI: true,
+    sources: [
+      {
+        "file": "wss://" + window.location.host + "/app/{{.Path}}",
+        "type": "webrtc",
+        "label": " WebRTC - Source"
+      },
+      {
+        "type": "hls",
+        "file": "https://" + window.location.host + "/app/{{.Path}}_bypass/playlist.m3u8",
+        "label": " HLS"
+      }
+    ]
+  });
+  player.on("error", function(error){
+    if (error.code === 501) {
+      // Change message
+      const errorMsg = document.getElementsByClassName("op-message-text")[0]
+      errorMsg.textContent = "Le stream semble inactif. Cette page se rafraîchit toutes les 30 secondes."
+
+      // Reload in 5s
+      setTimeout(function () {
+        player.load()
+      }, 30000)
+    } else {
+      console.log(error);
+    }
+  });
 </script>
 {{end}}

@@ -164,7 +164,7 @@ web:
 webrtc:
   # If you disable webrtc module, the web client won't be able to play streams.
   #
-  #enabled: true
+  #enabled: false
 
   # UDP port range used to stream
   # This range must be opened in your firewall.

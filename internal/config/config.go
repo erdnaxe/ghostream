@@ -77,7 +77,7 @@ func New() *Config {
 			ViewersCounterRefreshPeriod: 20000,
 		},
 		WebRTC: webrtc.Options{
-			Enabled:     true,
+			Enabled:     false,
 			MaxPortUDP:  11000,
 			MinPortUDP:  10000,
 			STUNServers: []string{"stun:stun.l.google.com:19302"},
