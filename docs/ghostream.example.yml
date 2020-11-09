@@ -49,6 +49,7 @@ forwarding:
   #  - rtmp://live-cdg.twitch.tv/app/STREAM_KEY
   #  - rtmp://a.rtmp.youtube.com/live2/STREAM_KEY
   #  - /home/ghostream/lives/%name/live-%Y-%m-%d-%H-%M-%S.flv
+  #  - rtmp://ovenmediaengine:1915/app/demo    # For player
 
 ## Prometheus monitoring ##
 # Expose a monitoring endpoint for Prometheus
