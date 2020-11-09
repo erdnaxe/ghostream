@@ -4,23 +4,26 @@ package web
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/markbates/pkger"
-	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
-	"gitlab.crans.org/nounous/ghostream/stream/ovenmediaengine"
-	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
 	"html/template"
 	"log"
 	"net"
 	"net/http"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
+
+	"github.com/markbates/pkger"
+	"gitlab.crans.org/nounous/ghostream/internal/monitoring"
+	"gitlab.crans.org/nounous/ghostream/stream/ovenmediaengine"
+	"gitlab.crans.org/nounous/ghostream/stream/webrtc"
 )
 
 var (
 	// Precompile regex
 	validPath = regexp.MustCompile("^/[a-z0-9@_-]*$")
 
+	counterMutex     = new(sync.Mutex)
 	connectedClients = make(map[string]map[string]int64)
 )
 
@@ -100,14 +103,19 @@ func statisticsHandler(w http.ResponseWriter, r *http.Request) {
 	// Each time the client connects to this page, the identifier is renewed.
 	// Yeah, that's not a good way to have stats, but it works...
 	if connectedClients[name] == nil {
+		counterMutex.Lock()
 		connectedClients[name] = make(map[string]int64)
+		counterMutex.Unlock()
 	}
 	currentTime := time.Now().Unix()
 	if _, ok := r.URL.Query()["uid"]; ok {
 		uid := r.URL.Query()["uid"][0]
+		counterMutex.Lock()
 		connectedClients[name][uid] = currentTime
+		counterMutex.Unlock()
 	}
 	toDelete := make([]string, 0)
+	counterMutex.Lock()
 	for uid, oldTime := range connectedClients[name] {
 		if currentTime-oldTime > 40 {
 			toDelete = append(toDelete, uid)
@@ -116,6 +124,7 @@ func statisticsHandler(w http.ResponseWriter, r *http.Request) {
 	for _, uid := range toDelete {
 		delete(connectedClients[name], uid)
 	}
+	counterMutex.Unlock()
 
 	// Get requested stream
 	stream, err := streams.Get(name)
