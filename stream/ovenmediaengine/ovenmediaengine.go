@@ -22,8 +22,10 @@ var (
 )
 
 // Serve handles incoming packets from SRT and forward them to OME
-func Serve(streams *messaging.Streams, cfg *Options) {
-	if !cfg.Enabled {
+func Serve(streams *messaging.Streams, c *Options) {
+	cfg = c
+
+	if !c.Enabled {
 		return
 	}
 
