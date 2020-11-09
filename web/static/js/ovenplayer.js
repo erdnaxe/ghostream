@@ -41,13 +41,13 @@ export function initViewerPage(stream, viewersCounterRefreshPeriod, posterUrl) {
         expandFullScreenUI: true,
         sources: [
             {
-                "file": "wss://" + window.location.host + "/app/{{.Path}}",
+                "file": "wss://" + window.location.host + "/app/" + stream,
                 "type": "webrtc",
                 "label": " WebRTC - Source"
             },
             {
                 "type": "hls",
-                "file": "https://" + window.location.host + "/app/{{.Path}}_bypass/playlist.m3u8",
+                "file": "https://" + window.location.host + "/app/" + stream + "_bypass/playlist.m3u8",
                 "label": " HLS"
             }
         ]
