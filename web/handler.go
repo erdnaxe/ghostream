@@ -107,10 +107,14 @@ func statisticsHandler(w http.ResponseWriter, r *http.Request) {
 		uid := r.URL.Query()["uid"][0]
 		connectedClients[name][uid] = currentTime
 	}
+	toDelete := make([]string, 0)
 	for uid, oldTime := range connectedClients[name] {
 		if currentTime-oldTime > 40 {
-			delete(connectedClients, uid)
+			toDelete = append(toDelete, uid)
 		}
+	}
+	for _, uid := range toDelete {
+		delete(connectedClients[name], uid)
 	}
 
 	// Get requested stream
