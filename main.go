@@ -5,6 +5,7 @@
 package main
 
 import (
+	"gitlab.crans.org/nounous/ghostream/stream/ovenmediaengine"
 	"log"
 
 	"github.com/pkg/profile"
@@ -49,9 +50,10 @@ func main() {
 	go transcoder.Init(streams, &cfg.Transcoder)
 	go forwarding.Serve(streams, cfg.Forwarding)
 	go monitoring.Serve(&cfg.Monitoring)
+	go ovenmediaengine.Serve(streams, &cfg.OME)
 	go srt.Serve(streams, authBackend, &cfg.Srt)
 	go telnet.Serve(streams, &cfg.Telnet)
-	go web.Serve(streams, &cfg.Web)
+	go web.Serve(streams, &cfg.Web, &cfg.OME)
 	go webrtc.Serve(streams, &cfg.WebRTC)
 
 	// Wait for routines

@@ -49,7 +49,6 @@ forwarding:
   #  - rtmp://live-cdg.twitch.tv/app/STREAM_KEY
   #  - rtmp://a.rtmp.youtube.com/live2/STREAM_KEY
   #  - /home/ghostream/lives/%name/live-%Y-%m-%d-%H-%M-%S.flv
-  #  - rtmp://ovenmediaengine:1915/app/demo    # For player
 
 ## Prometheus monitoring ##
 # Expose a monitoring endpoint for Prometheus
@@ -61,6 +60,19 @@ monitoring:
   # You should not expose monitoring metrics to the whole world.
   # To limit access to only localhost, use 127.0.0.1:2112
   #listenAddress: :2112
+
+## OvenMediaEngine ##
+# Send the stream data to OvenMediaEngine to handle properly the web client
+ome:
+  # If you disable OME module, the laggy webrtc client will be used.
+  #
+  #enabled: true
+  #
+  # The URL where OME listens RTMP, without the prefix.
+  #url: ovenmediaengine:1915
+  #
+  # The OME app where OME is waiting for the data of Ghostream.
+  #app: play
 
 ## SRT server ##
 # The SRT server receive incoming stream and can also serve video to clients.

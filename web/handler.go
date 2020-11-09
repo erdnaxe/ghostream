@@ -61,7 +61,8 @@ func viewerHandler(w http.ResponseWriter, r *http.Request) {
 		Cfg       *Options
 		Path      string
 		WidgetURL string
-	}{Path: path, Cfg: cfg, WidgetURL: ""}
+		OMEApp    string
+	}{Path: path, Cfg: cfg, WidgetURL: "", OMEApp: omeCfg.App}
 
 	// Load widget is user does not disable it with ?nowidget
 	if _, ok := r.URL.Query()["nowidget"]; !ok {

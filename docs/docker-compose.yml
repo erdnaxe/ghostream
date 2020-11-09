@@ -51,7 +51,7 @@ services:
     labels:
       - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
 
-      - "traefik.http.routers.ovenmediaengine.rule=Host(`stream.example.com`) && PathPrefix(`/app/`)"
+      - "traefik.http.routers.ovenmediaengine.rule=Host(`stream.example.com`) && PathPrefix(`/play/`)"
       - "traefik.http.routers.ovenmediaengine.priority=101"
       - "traefik.http.routers.ovenmediaengine.entrypoints=websecure"
       - "traefik.http.routers.ovenmediaengine.tls.certresolver=mytlschallenge"
@@ -59,7 +59,7 @@ services:
       - "traefik.http.routers.ovenmediaengine.service=ovenmediaengine"
       - "traefik.http.routers.ovenmediaengine.middlewares=sslheader"
 
-      - "traefik.http.routers.ovenmediaengine-hls.rule=Host(`stream.example.com`) && Path(`/app/{app_name:.*}/{filename:.*}.{ext:(m3u8|mpd|ts)}`)"
+      - "traefik.http.routers.ovenmediaengine-hls.rule=Host(`stream.example.com`) && Path(`/play/{app_name:.*}/{filename:.*}.{ext:(m3u8|mpd|ts)}`)"
       - "traefik.http.routers.ovenmediaengine-hls.priority=102"
       - "traefik.http.routers.ovenmediaengine-hls.entrypoints=websecure"
       - "traefik.http.routers.ovenmediaengine-hls.tls.certresolver=mytlschallenge"

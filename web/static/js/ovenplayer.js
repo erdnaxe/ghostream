@@ -4,10 +4,11 @@ import { ViewerCounter } from "./modules/viewerCounter.js";
  * Initialize viewer page
  *
  * @param {String} stream
+ * @param {String} omeApp
  * @param {Number} viewersCounterRefreshPeriod
  * @param {String} posterUrl
  */
-export function initViewerPage(stream, viewersCounterRefreshPeriod, posterUrl) {
+export function initViewerPage(stream, omeApp, viewersCounterRefreshPeriod, posterUrl) {
     // Create viewer counter
     const viewerCounter = new ViewerCounter(
         document.getElementById("connected-people"),
@@ -41,13 +42,13 @@ export function initViewerPage(stream, viewersCounterRefreshPeriod, posterUrl) {
         expandFullScreenUI: true,
         sources: [
             {
-                "file": "wss://" + window.location.host + "/app/" + stream,
+                "file": "wss://" + window.location.host + "/" + omeApp + "/" + stream,
                 "type": "webrtc",
                 "label": " WebRTC - Source"
             },
             {
                 "type": "hls",
-                "file": "https://" + window.location.host + "/app/" + stream + "_bypass/playlist.m3u8",
+                "file": "https://" + window.location.host + "/" + omeApp + "/" + stream + "_bypass/playlist.m3u8",
                 "label": " HLS"
             }
         ]

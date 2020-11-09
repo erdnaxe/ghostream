@@ -36,7 +36,7 @@
             </Domain>
             <Applications>
                 <Application>
-                    <Name>app</Name>
+                    <Name>play</Name>
                     <Type>live</Type>
                     <Encodes>
                         <Encode>
