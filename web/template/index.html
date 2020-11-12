@@ -9,7 +9,11 @@
   </p>
 
   <h2>Comment je diffuse ?</h2>
-  <p>Pour diffuser un contenu vous devez être adhérent Crans.</p>
+  <p>
+    Pour diffuser un contenu vous devez avoir des identifiants valides.
+    Si le service est hébergé par une association, il est probable que
+    vous deviez être membre de cette association.
+  </p>
 
   <h3>Avec Open Broadcaster Software</h3>
   <p>
@@ -21,7 +25,7 @@
   <ul>
     <li>
       <b>Serveur :</b>
-      <code>srt://{{.Cfg.Hostname}}:{{.Cfg.SRTServerPort}}?IDENTIFIANT:MOT_DE_PASS</code>,
+      <code>srt://{{.Cfg.Hostname}}:{{.Cfg.SRTServerPort}}?IDENTIFIANT:MOT_DE_PASSE</code>,
       avec <code>IDENTIFIANT</code> et <code>MOT_DE_PASSE</code>
       vos identifiants.
     </li>
@@ -42,7 +46,8 @@
   <p>
     <code>
       {{/* FIXME replace with good SRT params */}}
-      ffmpeg -re -i mavideo.webm -vcodec libx264 -vprofile baseline
+      ffmpeg -re -i mavideo.webm -vcodec libx264
+      -preset:v veryfast -vprofile baseline -tune zerolatency
       -acodec aac -strict -2 -f flv
       srt://{{.Cfg.Hostname}}:{{.Cfg.SRTServerPort}}?streamid=IDENTIFIANT:MOT_DE_PASSE
     </code>
@@ -95,10 +100,9 @@
     Bien que VLC supporte officiellement le protocole SRT,
     toutes les options ne sont pas encore implémentées,
     notamment l'option pour choisir son stream.
-    <a href="https://patches.videolan.org/patch/30299/">Un patch</a>
-    a été soumis et est en attente d'acceptation.
-    Une fois le patch accepté, il sera appliqué dans les versions
-    de développement de VLC. Sous Arch Linux, il suffit de récupérer
+    Cette option n'est supportée que dans la version de développement
+    depuis très récemment, grâce à un patch de l'un des développeurs
+    de Ghostream.  Sous Arch Linux, il suffit de récupérer
     le paquet <code>vlc-git</code> de l'AUR. Avec un VLC à jour,
     il suffit d'exécuter :
   </p>
@@ -128,18 +132,18 @@
     Le service de diffusion vidéo du Crans est un service d'hébergement
     au sens de l'article 6, I, 2e de la loi 2004-575 du 21 juin 2004.
     Conformément aux dispositions de l'article 6, II du même,
-    l'association Crans conserve les données de nature à permettre
+     conserve les données de nature à permettre
     l'identification des auteurs du contenu diffusé.
-    Ce service est hébergé par l'association Crans, au
-    61 Avenue du Président Wilson, 94235 Cachan Cedex, France.
+    Ce service est hébergé par {{.Cfg.LegalMentionsEntity}}, au
+    {{.Cfg.LegalMentionsAddress}}.
   </p>
   <p>
     <b>En cas de réclamation sur le contenu diffusé</b>,
     la loi vous autorise à contacter directement l'hébergeur à
     l'adresse suivante :
-    <pre>Association Cr@ns - ENS Paris-Saclay<br/>Notification de Contenus Illicites<br/>4, avenue des Sciences<br/>91190 Gif-sur-Yvette<br/>France</pre>
+    <pre>{{range $i, $element := .Cfg.LegalMentionsFullAddress}}{{$element}}<br/>{{end}}</pre>
     Vous pouvez également envoyer directement vos réclamations par
-    courrier électronique à l'adresse <code>bureau[at]crans.org</code>.
+    courrier électronique à l'adresse <code>{{.Cfg.LegalMentionsEmail}}</code>.
   </p>
 </div>
 {{end}}

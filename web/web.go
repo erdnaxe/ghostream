@@ -28,6 +28,10 @@ type Options struct {
 	STUNServers                 []string
 	ViewersCounterRefreshPeriod int
 	WidgetURL                   string
+	LegalMentionsEntity         string
+	LegalMentionsAddress        string
+	LegalMentionsFullAddress    []string
+	LegalMentionsEmail          string
 }
 
 var (

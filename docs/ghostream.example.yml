@@ -173,6 +173,18 @@ web:
   #
   #widgetURL: ""
 
+  # IMPORTANT, CHANGE THIS
+  # You need to declare which entity you are and to specify an address to claim some content.
+  legalMentionsEntity: "l'association Crans"
+  legalMentionsAddress: "61 Avenue du Président Wilson, 94235 Cachan Cedex, France"
+  legalMentionsFullAddress:
+    - Association Cr@ns - ENS Paris-Saclay
+    - Notification de Contenus Illicites
+    - 4, avenue des Sciences
+    - 91190 Gif-sur-Yvette
+    - France
+  legalMentionsEmail: "bureau[at]crans.org"
+
 ## WebRTC server ##
 webrtc:
   # If you disable webrtc module, the web client won't be able to play streams.

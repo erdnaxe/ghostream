@@ -82,6 +82,11 @@ func New() *Config {
 			MapDomainToStream:           make(map[string]string),
 			PlayerPoster:                "/static/img/no_stream.svg",
 			ViewersCounterRefreshPeriod: 20000,
+			LegalMentionsEntity:         "l'association Crans",
+			LegalMentionsAddress:        "61 Avenue du Président Wilson, 94235 Cachan Cedex, France",
+			LegalMentionsFullAddress: []string{"Association Cr@ns - ENS Paris-Saclay",
+				"Notification de Contenus Illicites", "4, avenue des Sciences", "91190 Gif-sur-Yvette", "France"},
+			LegalMentionsEmail: "bureau[at]crans.org",
 		},
 		WebRTC: webrtc.Options{
 			Enabled:     false,
