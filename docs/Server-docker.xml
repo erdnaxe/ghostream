@@ -21,8 +21,11 @@
                 </IceCandidates>
             </WebRTC>
             <HLS>
-                <Port>80</Port>
+              <Port>80</Port>
             </HLS>
+            <DASH>
+                <Port>80</Port>
+            </DASH>
         </Publishers>
     </Bind>
 
@@ -52,14 +55,15 @@
                             </Video>
                         </Encode>
                         <Encode>
-                            <Name>BYPASS</Name>
-                            <Video>
-                                <Bypass>true</Bypass>
-                            </Video>
+                            <Name>bypass</Name>
                             <Audio>
                                 <Bypass>true</Bypass>
                             </Audio>
+                            <Video>
+                                <Bypass>true</Bypass>
+                            </Video>
                         </Encode>
+
                     </Encodes>
                     <Streams>
                         <Stream>
@@ -71,9 +75,10 @@
                         <Stream>
                             <Name>${OriginStreamName}_bypass</Name>
                             <Profiles>
-                                <Profile>BYPASS</Profile>
+                                <Profile>bypass</Profile>
                             </Profiles>
                         </Stream>
+
                     </Streams>
                     <Providers>
                         <RTMP>
@@ -86,12 +91,25 @@
                             <Timeout>30000</Timeout>
                         </WebRTC>
                         <HLS>
-                            <SegmentDuration>5</SegmentDuration>
+                            <SegmentDuration>2</SegmentDuration>
                             <SegmentCount>2</SegmentCount>
                             <CrossDomain>
                                 <Url>*</Url>
                             </CrossDomain>
                         </HLS>
+                        <DASH>
+                            <SegmentDuration>2</SegmentDuration>
+                            <SegmentCount>2</SegmentCount>
+                            <CrossDomain>
+                                <Url>*</Url>
+                            </CrossDomain>
+                        </DASH>
+                        <LLDASH>
+                            <SegmentDuration>2</SegmentDuration>
+                            <CrossDomain>
+                                <Url>*</Url>
+                            </CrossDomain>
+                        </LLDASH>
                     </Publishers>
                 </Application>
             </Applications>

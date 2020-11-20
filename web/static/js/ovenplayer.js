@@ -47,10 +47,20 @@ export function initViewerPage(stream, omeApp, viewersCounterRefreshPeriod, post
                 "label": " WebRTC - Source"
             },
             {
-                "type": "hls",
                 "file": "https://" + window.location.host + "/" + omeApp + "/" + stream + "_bypass/playlist.m3u8",
+                "type": "hls",
                 "label": " HLS"
-            }
+            },
+            {
+                "file": "https://" + window.location.host + "/" + omeApp + "/" + stream + "_bypass/manifest.mpd",
+                "type": "dash",
+                "label": "DASH"
+            },
+            {
+                "file": "https://" + window.location.host + "/" + omeApp + "/" + stream + "_bypass/manifest_ll.mpd",
+                "type": "dash",
+                "label": "LL-DASH"
+            },
         ]
     });
     player.on("stateChanged", function (data) {
