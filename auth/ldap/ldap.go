@@ -23,7 +23,7 @@ type LDAP struct {
 // Returns (true, nil) if success
 func (a LDAP) Login(username string, password string) (bool, error) {
 	// Resolve stream alias if necessary
-	for aliasFor, ok := a.Cfg.Aliases[username]; ok; {
+	for aliasFor, ok := a.Cfg.Aliases[username]; ok; aliasFor, ok = a.Cfg.Aliases[username] {
 		log.Printf("[LDAP] Use stream alias %s for username %s", username, aliasFor)
 		username = aliasFor
 	}
