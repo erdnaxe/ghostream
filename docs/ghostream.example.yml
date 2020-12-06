@@ -34,6 +34,11 @@ auth:
   #ldap:
   #  uri: ldap://127.0.0.1:389
   #  userdn: cn=users,dc=example,dc=com
+  #
+  #  # You can define aliases, to stream on stream.example.com/example with the credentials of the demo account.
+  #  aliases:
+  #    example: demo
+  #
 
 ## Stream forwarding ##
 # Forward an incoming stream to other servers

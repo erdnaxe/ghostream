@@ -3,12 +3,14 @@ package ldap
 
 import (
 	"github.com/go-ldap/ldap/v3"
+	"log"
 )
 
 // Options holds package configuration
 type Options struct {
-	URI    string
-	UserDn string
+	Aliases map[string]string
+	URI     string
+	UserDn  string
 }
 
 // LDAP authentification backend
@@ -20,6 +22,12 @@ type LDAP struct {
 // Login tries to bind to LDAP
 // Returns (true, nil) if success
 func (a LDAP) Login(username string, password string) (bool, error) {
+	// Resolve stream alias if necessary
+	for aliasFor, ok := a.Cfg.Aliases[username]; ok; {
+		log.Printf("[LDAP] Use stream alias %s for username %s", username, aliasFor)
+		username = aliasFor
+	}
+
 	// Try to bind as user
 	bindDn := "cn=" + username + "," + a.Cfg.UserDn
 	err := a.Conn.Bind(bindDn, password)

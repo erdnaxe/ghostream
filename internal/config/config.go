@@ -42,8 +42,9 @@ func New() *Config {
 				Credentials: make(map[string]string),
 			},
 			LDAP: ldap.Options{
-				URI:    "ldap://127.0.0.1:389",
-				UserDn: "cn=users,dc=example,dc=com",
+				Aliases: make(map[string]string),
+				URI:     "ldap://127.0.0.1:389",
+				UserDn:  "cn=users,dc=example,dc=com",
 			},
 		},
 		Forwarding: make(map[string][]string),
