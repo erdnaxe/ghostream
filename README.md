@@ -11,6 +11,13 @@
 
 This project was developped at [Cr@ns](https://crans.org/) to stream events.
 
+> **Note**
+> *This project is no longer maintained!*
+>
+> As an alternative, you should try [Galène](https://galene.org/) which supports [WebRTC-HTTP ingestion protocol (WHIP)](https://datatracker.ietf.org/doc/draft-ietf-wish-whip/) for low-latency streaming.
+> OBS Studio introduced WHIP output in version 30.0.
+> Galène supports WHIP since Galène 0.8.
+
 Features:
 
 -   WebRTC playback with a lightweight web interface.
